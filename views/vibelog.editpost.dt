@@ -1,0 +1,73 @@
+extends layout
+
+block title
+	- auto title = (post ? "Modify" : "Add new") ~ " blog post";
+
+block body
+	#vibelogContent
+		h1= title
+		
+		p
+			a(href='#{post?"../":"manage"}') Cancel
+
+		- if( !post || post.author == loginUser.username || loginUser.isPostAdmin() )
+			form(action='#{post?"put":"make_post"}', method="POST")
+				input(type="hidden", name="id", value="#{post ? post.id.toString() : null}")
+				p
+					- if( post && post.isPublic )
+						input(type="checkbox", name="isPublic", value="yes", checked)
+					- else
+						input(type="checkbox", name="isPublic", value="yes")
+					label(for="isPublic") Public
+				p
+					- if( !post || post.commentsAllowed )
+						input(type="checkbox", name="commentsAllowed", value="yes", checked)
+					- else
+						input(type="checkbox", name="commentsAllowed", value="yes")
+					label(for="commentsAllowed") Comments allowed
+				p
+					- if( loginUser.isPostAdmin() )
+						label(for="author") Author
+						select(name="author", size="1")
+							- foreach( usr; users )
+								- if( usr.username == (post ? post.author : loginUser.username) )
+									option(value="#{usr.username}", selected) #{usr.name} (#{usr.username})
+								- else
+									option(value="#{usr.username}") #{usr.name} (#{usr.username})
+					- else
+						input(type="hidden", name="author", value="#{loginUser.username}")
+						p Author: #{loginUser.name} (#{loginUser.username})
+				p
+					label(for="category") Category
+					select(name="category", size="1")
+						- foreach( cat; globalConfig.categories )
+							- if( loginUser.isPostAdmin() || loginUser.mayPostInCategory(cat) )
+								- if( post && cat == post.category )
+									option(value="#{cat}", selected)= cat
+								- else
+									option(value="#{cat}")= cat
+				p
+					label(for="slug") Post slug
+					input(type="text", name="slug", size="100", value="#{post ? post.slug : null}")
+				p
+					label(for="headerImage") Header image
+					input(type="text", name="headerImage", size="100", value="#{post ? post.headerImage : null}")
+				p
+					label(for="header") Heading
+					input(type="text", name="header", size="100", value="#{post ? post.header : null}")
+				p
+					label(for="subHeader") Sub-Heading
+					input(type="text", name="subHeader", size="100", value="#{post ? post.subHeader : null}")
+				p
+					textarea(name="content", rows="24", cols="80")= post ? post.content : null
+				input(type="submit", value='#{post?"Apply changes":"Create post!"}')
+		
+		- else
+			p.error You are not the author of this post and are not authorized to change it.
+			
+			p Public: #{post.isPublic ? "yes" : "no"}
+			p Author: #{post.author}
+			p Heading: #{post.header}
+			p Sub-Heading: #{post.subHeader}
+			p Content:
+			pre= post.content

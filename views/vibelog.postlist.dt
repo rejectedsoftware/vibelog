@@ -1,0 +1,35 @@
+extends layout
+
+block title
+	- auto title = "Blog";
+
+block body
+	#vibelogContent
+		h1= title
+
+		#vibelogPostList
+			- foreach( post; posts )
+				.blogPost
+					header
+						h2
+							a(href="posts/#{post.name}")= post.header
+						- if( post.headerImage.length )
+							img.headerImage(alt="Header image", src="#{post.headerImage}")
+						.blogPostHeaderText
+							span.blogPostDate= toRFC822DateString(post.date)
+							|#{post.subHeader}
+					.blogPostContent
+						!= post.renderContentAsHtml()
+					footer
+						| Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
+						a(href="posts/#{post.name}##comments") #{post.comments.length} comments
+						- if( post.trackbacks.length > 0 )
+							a(href="posts/#{post.name}##trackback") #{post.trackbacks.length} trackbacks
+
+		.pageNumbers
+			p Pages:
+				- foreach( p; 0 .. pageCount )
+					- if( p == pageNumber )
+						em #{p+1}
+					- else
+						a(href="?page=#{p+1}") #{p+1}

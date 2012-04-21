@@ -1,0 +1,67 @@
+extends layout
+
+block title
+	- auto title = post.header;
+
+block body
+	- import std.datetime;
+	#vibelogContent
+		.blogSinglePost
+			header
+				h1= post.header
+				- if( post.headerImage.length )
+					img.headerImage(alt="Header image", src="#{post.headerImage}")
+				.blogPostHeaderText
+					span.blogPostDate= toRFC822DateString(post.date)
+					|#{post.subHeader}
+			section.blogPostContent
+				!= post.renderContentAsHtml()
+
+			footer
+				| Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
+				a(href="##comments") #{post.comments.length} comments
+				- if( post.trackbacks.length > 0 )
+					a(href="##trackbacks") #{post.trackbacks.length} trackbacks
+
+		section.comments
+			h2#comments Comments
+			
+			- import vibe.textfilter.html;
+			- foreach( c; post.comments )
+				.comment
+					.commentHeader
+						- if( c.authorName.length > 0 && c.authorHomepage.length > 0 )
+							a(href="#{c.authorHomepage}")= c.authorName
+						- else if( c.authorName.length > 0 )
+							| #{c.authorName}
+						- else
+							| anonymous
+						- if( c.authorMail.length > 0 )
+							|!= "&lt;" ~ filterHtmlAllEscape(c.authorMail) ~ "&gt;"
+						| on #{toRFC822DateString(c.date)}, #{toRFC822TimeString(c.date)}:
+					.commentContent= c.content
+			
+			- if( post.commentsAllowed )
+				h2 Post a comment
+				form(action="#{post.name}/post_comment", method="POST")
+					table
+						tr
+							td Name:
+							td
+								input(type="text", name="name", size="30")
+						tr
+							td eMail:
+							td
+								input(type="text", name="email", size="30")
+						tr
+							td Homepage:
+							td
+								input(type="text", name="homepage", size="30", value="http://")
+						tr
+							td(colspan="2")
+								textarea(name="message", cols="38", rows="6")
+						tr
+							td
+								input(type="submit", value="Post")
+			- else
+				p.error Commenting is currently disabled for this article.
