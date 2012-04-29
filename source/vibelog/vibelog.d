@@ -181,6 +181,7 @@ class VibeLog {
 		ch.imageLink = m_config.feedLink;
 
 		m_db.getPostsForCategory(m_config.categories, 0, (size_t i, Post p){
+				if( !p.isPublic ) return true;
 				auto itm = new RssEntry;
 				itm.title = p.header;
 				itm.description = p.subHeader;
