@@ -18,28 +18,26 @@ block body
 				!= post.renderContentAsHtml()
 
 			footer
-				| Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
-				a(href="##comments") #{post.comments.length} comments
-				- if( post.trackbacks.length > 0 )
-					a(href="##trackbacks") #{post.trackbacks.length} trackbacks
+				p Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
 
 		section.comments
-			h2#comments Comments
-			
-			- import vibe.textfilter.html;
-			- foreach( c; post.comments )
-				.comment
-					.commentHeader
-						- if( c.authorName.length > 0 && c.authorHomepage.length > 0 )
-							a(href="#{c.authorHomepage}")= c.authorName
-						- else if( c.authorName.length > 0 )
-							| #{c.authorName}
-						- else
-							| anonymous
-						- if( c.authorMail.length > 0 )
-							|!= "&lt;" ~ filterHtmlAllEscape(c.authorMail) ~ "&gt;"
-						| on #{toRFC822DateString(c.date)}, #{toRFC822TimeString(c.date)}:
-					.commentContent= c.content
+			- if( post.comments.length )
+				h2#comments Comments
+				
+				- import vibe.textfilter.html;
+				- foreach( c; post.comments )
+					.comment
+						.commentHeader
+							- if( c.authorName.length > 0 && c.authorHomepage.length > 0 )
+								a(href="#{c.authorHomepage}")= c.authorName
+							- else if( c.authorName.length > 0 )
+								| #{c.authorName}
+							- else
+								| anonymous
+							- if( c.authorMail.length > 0 )
+								|!= "&lt;" ~ filterHtmlAllEscape(c.authorMail) ~ "&gt;"
+							| on #{toRFC822DateString(c.date)}, #{toRFC822TimeString(c.date)}:
+						.commentContent= c.content
 			
 			- if( post.commentsAllowed )
 				h2 Post a comment
@@ -48,21 +46,20 @@ block body
 						tr
 							td Name:
 							td
-								input(type="text", name="name", size="30")
+								input(type="text", name="name", size="40")
 						tr
 							td eMail:
 							td
-								input(type="text", name="email", size="30")
+								input(type="text", name="email", size="40")
 						tr
 							td Homepage:
 							td
-								input(type="text", name="homepage", size="30", value="http://")
+								input(type="text", name="homepage", size="40", value="http://")
 						tr
 							td(colspan="2")
-								textarea(name="message", cols="38", rows="6")
+								textarea(name="message", cols="47", rows="6")
 						tr
-							td
+							td(colspan="2")
 								input(type="submit", value="Post")
-							td
 			- else
 				p.error Commenting is currently disabled for this article.
