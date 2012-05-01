@@ -44,7 +44,7 @@ block body
 			- if( post.commentsAllowed )
 				h2 Post a comment
 				form(action="#{post.name}/post_comment", method="POST")
-					table
+					table.blind
 						tr
 							td Name:
 							td
@@ -63,5 +63,6 @@ block body
 						tr
 							td
 								input(type="submit", value="Post")
+							td
 			- else
 				p.error Commenting is currently disabled for this article.
