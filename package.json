@@ -1,6 +1,10 @@
 {
     "name": "vibelog",
-    "author": "Sönke Ludwig",
+	"description": "A light-weight embeddable blog implementation",
+	"homepage": "https://github.com/rejectedsoftware/vibelog",
+    "authors": [
+		"Sönke Ludwig"
+	],
     "version": "0.0.1",
     "dependencies": {
     }
