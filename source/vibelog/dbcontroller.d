@@ -143,6 +143,18 @@ class DBController {
 		}
 	}
 
+	void getPublicPostsForCategory(string[] categories, int nskip, bool delegate(size_t idx, Post post) del)
+	{
+		auto cats = new Bson[categories.length];
+		foreach( i; 0 .. categories.length ) cats[i] = Bson(categories[i]);
+		Bson category = Bson(["$in" : Bson(cats)]);
+		Bson[string] query = ["query" : Bson(["category" : category, "isPublic": Bson(true)]), "orderby" : Bson(["_id" : Bson(-1)])];
+		foreach( idx, post; m_posts.find(query, null, QueryFlags.None, nskip) ){
+			if( !del(idx, Post.fromBson(post)) )
+				break;
+		}
+	}
+
 	void getAllPosts(int nskip, bool delegate(size_t idx, Post post) del)
 	{
 		Bson[string] query;

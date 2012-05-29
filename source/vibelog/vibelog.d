@@ -94,12 +94,11 @@ class VibeLog {
 	{
 		Post[] ret;
 		try {
-			size_t cnt = n*m_settings.postsPerPage;
-			m_db.getPostsForCategory(m_config.categories, n*m_settings.postsPerPage, (size_t i, Post p){
-				if( !p.isPublic ) return true;
-				if( cnt++ >= (n+1)*m_settings.postsPerPage )
-					return false;
+			size_t cnt = 0;
+			m_db.getPublicPostsForCategory(m_config.categories, n*m_settings.postsPerPage, (size_t i, Post p){
 				ret ~= p;
+				if( ++cnt >= m_settings.postsPerPage )
+					return false;
 				return true;
 			});
 		} catch( Exception e ){
@@ -125,9 +124,9 @@ class VibeLog {
 		User[string] users = m_db.getAllUsers();
 		int pageNumber = 0;
 		auto pageCount = getPageCount();
-		auto posts = getPostsForPage(pageNumber);
 		if( auto pp = "page" in req.query ) pageNumber = to!int(*pp)-1;
 		else pageNumber = 0;
+		auto posts = getPostsForPage(pageNumber);
 		//parseJadeFile!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
 		res.renderCompat!("vibelog.postlist.dt",
 			HttpServerRequest, "req",
