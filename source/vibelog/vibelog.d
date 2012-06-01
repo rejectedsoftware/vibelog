@@ -21,6 +21,7 @@ class VibeLogSettings {
 	string configName = "default";
 	int postsPerPage = 4;
 	string basePath = "/";
+	string function(string)[] textFilters;
 }
 
 void registerVibeLog(VibeLogSettings settings, UrlRouter router)
@@ -132,9 +133,10 @@ class VibeLog {
 			HttpServerRequest, "req",
 			User[string], "users",
 			Post[], "posts",
+			string function(string)[], "textFilters",
 			int, "pageNumber",
 			int, "pageCount")
-			(Variant(req), Variant(users), Variant(posts), Variant(pageNumber), Variant(pageCount));
+			(Variant(req), Variant(users), Variant(posts), Variant(m_settings.textFilters), Variant(pageNumber), Variant(pageCount));
 	}
 
 	protected void showPost(HttpServerRequest req, HttpServerResponse res)
@@ -145,8 +147,9 @@ class VibeLog {
 		res.renderCompat!("vibelog.post.dt",
 			HttpServerRequest, "req",
 			User[string], "users",
-			Post, "post")
-			(Variant(req), Variant(users), Variant(post));
+			Post, "post",
+			string function(string)[], "textFilters")
+			(Variant(req), Variant(users), Variant(post), Variant(m_settings.textFilters));
 	}
 
 	protected void postComment(HttpServerRequest req, HttpServerResponse res)

@@ -15,7 +15,7 @@ block body
 					span.blogPostDate= toRFC822DateString(post.date)
 					|#{post.subHeader}
 			section.blogPostContent
-				!= post.renderContentAsHtml()
+				!= post.renderContentAsHtml(textFilters)
 
 			footer
 				p Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}

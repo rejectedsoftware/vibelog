@@ -89,11 +89,12 @@ class Post {
 		return ret.data;
 	}
 
-	string renderContentAsHtml()
+	string renderContentAsHtml(string function(string)[] filters)
 	const {
-		auto ret = appender!string();
-		filterMarkdown(ret, content);
-		return ret.data;
+		auto html = filterMarkdown(content);
+		foreach( flt; filters )
+			html = flt(html);
+		return html;
 	}
 }
 
