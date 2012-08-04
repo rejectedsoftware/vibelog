@@ -16,7 +16,7 @@ import std.string;
 
 class VibeLogSettings {
 	string databaseHost = "localhost";
-	ushort databasePort = MongoDB.defaultPort;
+	ushort databasePort = MongoConnection.defaultPort;
 	string databaseName = "vibelog";
 	string configName = "default";
 	int postsPerPage = 4;
@@ -142,8 +142,10 @@ class VibeLog {
 	protected void showPost(HttpServerRequest req, HttpServerResponse res)
 	{
 		User[string] users = m_db.getAllUsers();
-		auto post = m_db.getPost(req.params["postname"]);
-		//res.render!("vibelog.post.dt", req, post);
+		Post post;
+		try post = m_db.getPost(req.params["postname"]);
+		catch(Exception e){ return; } // -> gives 404 error
+		//res.render!("vibelog.post.dt", req, users, post, textFilters);
 		res.renderCompat!("vibelog.post.dt",
 			HttpServerRequest, "req",
 			User[string], "users",
