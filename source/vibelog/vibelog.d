@@ -81,6 +81,7 @@ class VibeLog {
 		router.get(m_subPath ~ "posts/:postname/edit",        auth(&showEditPost));
 		router.post(m_subPath ~ "posts/:postname/put",        auth(&putPost));
 		router.post(m_subPath ~ "posts/:postname/delete",     auth(&deletePost));
+		router.post(m_subPath ~ "posts/:postname/set_comment_public", auth(&setCommentPublic));
 		router.get(m_subPath ~ "make_post",                   auth(&showMakePost));
 		router.post(m_subPath ~ "make_post",                  auth(&putPost));
 	}
@@ -128,15 +129,18 @@ class VibeLog {
 		if( auto pp = "page" in req.query ) pageNumber = to!int(*pp)-1;
 		else pageNumber = 0;
 		auto posts = getPostsForPage(pageNumber);
-		//parseJadeFile!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
+		long[] commentCount;
+		foreach( p; posts ) commentCount ~= m_db.getCommentCount(p.id);
+		//res.render!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
 		res.renderCompat!("vibelog.postlist.dt",
 			HttpServerRequest, "req",
 			User[string], "users",
 			Post[], "posts",
+			long[], "commentCount",
 			string function(string)[], "textFilters",
 			int, "pageNumber",
 			int, "pageCount")
-			(Variant(req), Variant(users), Variant(posts), Variant(m_settings.textFilters), Variant(pageNumber), Variant(pageCount));
+			(Variant(req), Variant(users), Variant(posts), Variant(commentCount), Variant(m_settings.textFilters), Variant(pageNumber), Variant(pageCount));
 	}
 
 	protected void showPost(HttpServerRequest req, HttpServerResponse res)
@@ -145,13 +149,15 @@ class VibeLog {
 		Post post;
 		try post = m_db.getPost(req.params["postname"]);
 		catch(Exception e){ return; } // -> gives 404 error
+		Comment[] comments = m_db.getComments(post.id);
 		//res.render!("vibelog.post.dt", req, users, post, textFilters);
 		res.renderCompat!("vibelog.post.dt",
 			HttpServerRequest, "req",
 			User[string], "users",
 			Post, "post",
+			Comment[], "comments",
 			string function(string)[], "textFilters")
-			(Variant(req), Variant(users), Variant(post), Variant(m_settings.textFilters));
+			(Variant(req), Variant(users), Variant(post), Variant(comments), Variant(m_settings.textFilters));
 	}
 
 	protected void postComment(HttpServerRequest req, HttpServerResponse res)
@@ -423,26 +429,30 @@ class VibeLog {
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		Post post;
+		Comment[] comments;
 		res.renderCompat!("vibelog.editpost.dt",
 			HttpServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
 			Config, "globalConfig",
-			Post, "post")
-			(Variant(req), Variant(users), Variant(loginUser), Variant(globalConfig), Variant(post));
+			Post, "post",
+			Comment[], "comments")
+			(Variant(req), Variant(users), Variant(loginUser), Variant(globalConfig), Variant(post), Variant(comments));
 	}
 
 	protected void showEditPost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		auto post = m_db.getPost(req.params["postname"]);
+		auto comments = m_db.getComments(post.id, true);
 		res.renderCompat!("vibelog.editpost.dt",
 			HttpServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
 			Config, "globalConfig",
-			Post, "post")
-			(Variant(req), Variant(users), Variant(loginUser), Variant(globalConfig), Variant(post));
+			Post, "post",
+			Comment[], "comments")
+			(Variant(req), Variant(users), Variant(loginUser), Variant(globalConfig), Variant(post), Variant(comments));
 	}
 
 	protected void deletePost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
@@ -450,6 +460,13 @@ class VibeLog {
 		auto id = BsonObjectID.fromHexString(req.form["id"]);
 		m_db.deletePost(id);
 		res.redirect(m_subPath ~ "posts/");
+	}
+
+	protected void setCommentPublic(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	{
+		auto id = BsonObjectID.fromHexString(req.form["id"]);
+		m_db.setCommentPublic(id, to!int(req.form["public"]) != 0);
+		res.redirect(m_subPath ~ "posts/"~req.params["postname"]~"/edit");
 	}
 
 	protected void putPost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)

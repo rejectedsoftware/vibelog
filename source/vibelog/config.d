@@ -8,6 +8,7 @@ class Config {
 	string[] categories;
 	string language = "en-us";
 	string copyrightString;
+	string mailServer;
 	string feedTitle;
 	string feedLink;
 	string feedDescription;
@@ -37,6 +38,7 @@ class Config {
 			ret.categories ~= grp.opt!string();
 		ret.language = bson["language"].opt!string("en-us");
 		ret.copyrightString = bson["copyrightString"].opt!string();
+		ret.mailServer = bson["mailServer"].opt!string();
 		ret.feedTitle = bson["feedTitle"].opt!string();
 		ret.feedLink = bson["feedLink"].opt!string();
 		ret.feedDescription = bson["feedDescription"].opt!string();
@@ -57,6 +59,7 @@ class Config {
 		ret["categories"] = Bson(bcategories);
 		ret["language"] = Bson(language);
 		ret["copyrightString"] = Bson(copyrightString);
+		ret["mailServer"] = Bson(mailServer);
 		ret["feedTitle"] = Bson(feedTitle);
 		ret["feedLink"] = Bson(feedLink);
 		ret["feedDescription"] = Bson(feedDescription);

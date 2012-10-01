@@ -7,8 +7,12 @@ public import vibelog.user;
 import vibe.db.mongo.mongo;
 import vibe.core.log;
 import vibe.data.bson;
+import vibe.mail.smtp;
+import vibe.stream.memory;
+import vibe.templ.diet;
 
 import std.exception;
+import std.variant;
 
 
 class DBController {
@@ -18,15 +22,27 @@ class DBController {
 		MongoCollection m_configs;
 		MongoCollection m_users;
 		MongoCollection m_posts;
+		MongoCollection m_comments;
 	}
 
 	this(string host, ushort port, string dbname)
 	{
 		m_db = connectMongoDB(host, port);
 		m_dbname = dbname;
-		m_configs = m_db[m_dbname~"."~"configs"];
-		m_users = m_db[m_dbname~"."~"users"];
-		m_posts = m_db[m_dbname~"."~"posts"];
+		m_configs = m_db[m_dbname~".configs"];
+		m_users = m_db[m_dbname~".users"];
+		m_posts = m_db[m_dbname~".posts"];
+		m_comments = m_db[m_dbname~".comments"];
+
+		// Upgrade post contained comments to their collection
+		foreach( p; m_posts.find(["comments": ["$exists": true]], ["comments": 1]) ){
+			foreach( c; p.comments ){
+				c["_id"] = BsonObjectID.generate();
+				c["postId"] = p._id;
+				m_comments.insert(c);
+			}
+			m_posts.update(["_id": p._id], ["$unset": ["comments": 1]]);
+		}
 	}
 
 	Config getConfig(string name, bool createdefault = false)
@@ -208,10 +224,61 @@ class DBController {
 		m_posts.remove(["_id": Bson(id)]);
 	}
 
+	Comment[] getComments(BsonObjectID post_id, bool allow_inactive = false)
+	{
+		Comment[] ret;
+		foreach( c; m_comments.find(["postId": post_id]) )
+			if( allow_inactive || c.isPublic.get!bool )
+				ret ~= Comment.fromBson(c);
+		return ret;
+	}
 
-	void addComment(BsonObjectID post, Comment comment)
+	long getCommentCount(BsonObjectID post_id)
+	{
+		return m_comments.count(["postId": Bson(post_id), "isPublic": Bson(true)]);
+	}
+
+
+	void addComment(BsonObjectID post_id, Comment comment)
 	{
 		Bson cmtbson = comment.toBson();
-		m_posts.update(["_id": Bson(post)], Bson(["$push" : Bson(["comments" : cmtbson])]));
+		comment.id = BsonObjectID.generate();
+		comment.postId = post_id;
+		m_comments.insert(comment.toBson());
+
+		try {
+			auto p = m_posts.findOne(["_id": post_id]);
+			auto u = m_users.findOne(["username": p.author]);
+			auto msg = new MemoryOutputStream;
+
+			auto post = Post.fromBson(p);
+
+			parseDietFileCompat!("mail.new_comment.dt",
+				Comment, "comment",
+				Post, "post")(msg, Variant(comment), Variant(post));
+
+			auto mail = new Mail;
+			mail.headers["From"] = comment.authorName ~ " <" ~ comment.authorMail ~ ">";
+			mail.headers["To"] = u.email.get!string;
+			mail.headers["Subject"] = "[VibeLog] New comment";
+			mail.headers["Content-Type"] = "text/html";
+			mail.bodyText = cast(string)msg.data();
+
+			auto settings = new SmtpClientSettings;
+			//settings.host = m_settings.mailServer;
+			sendMail(settings, mail);
+		} catch(Exception e){
+			logWarn("Failed to send comment mail: %s", e.msg);
+		}
+	}
+
+	void setCommentPublic(BsonObjectID comment_id, bool is_public)
+	{
+		m_comments.update(["_id": comment_id], ["$set": ["isPublic": is_public]]);
+	}
+
+	void deleteNonPublicComments(BsonObjectID post_id)
+	{
+		m_posts.remove(["postId": Bson(post_id), "isPublic": Bson(false)]);
 	}
 }

@@ -1,0 +1,14 @@
+!!! 5
+html
+	head
+		title New comment
+	body
+		p A new comment has been made on
+			a(href="#{post.slug}") post.title
+			| by
+			a(href="mailto:#{comment.authorMail}")= comment.authorName
+			|.
+
+		p Homepage: #{comment.authorHomepage}
+
+		p Comment: #{comment.content}

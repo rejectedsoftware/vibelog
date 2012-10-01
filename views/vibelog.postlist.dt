@@ -10,7 +10,7 @@ block body
 		h1= title
 
 		#vibelogPostList
-			- foreach( post; posts )
+			- foreach( i, post; posts )
 				.blogPost
 					header
 						h2
@@ -24,7 +24,7 @@ block body
 						!= post.renderContentAsHtml(textFilters)
 					footer
 						| Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
-						a(href="posts/#{post.name}##comments") #{post.comments.length} comments
+						a(href="posts/#{post.name}##comments") #{commentCount[i]} comments
 						- if( post.trackbacks.length > 0 )
 							a(href="posts/#{post.name}##trackback") #{post.trackbacks.length} trackbacks
 

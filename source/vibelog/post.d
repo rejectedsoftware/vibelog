@@ -22,7 +22,6 @@ class Post {
 	string content;
 	string headerImage;
 	string[] tags;
-	Comment[] comments;
 	string[] trackbacks;
 
 	this()
@@ -49,8 +48,6 @@ class Post {
 		ret.content = cast(string)bson["content"];
 		foreach( t; cast(Bson[])bson["tags"] )
 			ret.tags ~= cast(string)t;
-		foreach( c; cast(Bson[])bson["comments"] )
-			ret.comments ~= Comment.fromBson(c);
 		return ret;
 	}
 	
@@ -59,10 +56,6 @@ class Post {
 		Bson[] btags;
 		foreach( t; tags )
 			btags ~= Bson(t);
-
-		Bson[] bcomments;
-		foreach( c; comments )
-			bcomments ~= c.toBson();
 
 		Bson[string] ret;
 		ret["_id"] = Bson(id);
@@ -77,7 +70,6 @@ class Post {
 		ret["headerImage"] = Bson(headerImage);
 		ret["content"] = Bson(content);
 		ret["tags"] = Bson(btags);
-		ret["comments"] = Bson(bcomments);
 
 		return Bson(ret);
 	}
@@ -99,6 +91,8 @@ class Post {
 }
 
 class Comment {
+	BsonObjectID id;
+	BsonObjectID postId;
 	bool isPublic;
 	SysTime date;
 	int answerTo;
@@ -111,6 +105,8 @@ class Comment {
 	static Comment fromBson(Bson bson)
 	{
 		auto ret = new Comment;
+		ret.id = cast(BsonObjectID)bson["_id"];
+		ret.postId = cast(BsonObjectID)bson["postId"];
 		ret.isPublic = cast(bool)bson["isPublic"];
 		ret.date = SysTime.fromISOExtString(cast(string)bson["date"]);
 		ret.answerTo = cast(int)bson["answerTo"];
@@ -125,6 +121,8 @@ class Comment {
 	Bson toBson()
 	const {
 		Bson[string] ret;
+		ret["_id"] = Bson(id);
+		ret["postId"] = Bson(postId);
 		ret["isPublic"] = Bson(isPublic);
 		ret["date"] = Bson(date.toISOExtString());
 		ret["answerTo"] = Bson(answerTo);

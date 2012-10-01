@@ -6,7 +6,7 @@ block title
 block body
 	- import std.datetime;
 	- import vibe.inet.message;
-	
+
 	#vibelogContent
 		.blogSinglePost
 			header
@@ -23,11 +23,11 @@ block body
 				p Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
 
 		section.comments
-			- if( post.comments.length )
+			- if( comments.length )
 				h2#comments Comments
 				
 				- import vibe.textfilter.html;
-				- foreach( c; post.comments )
+				- foreach( c; comments )
 					.comment
 						.commentHeader
 							- if( c.authorName.length > 0 && c.authorHomepage.length > 0 )

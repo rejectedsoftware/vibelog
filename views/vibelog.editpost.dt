@@ -61,7 +61,31 @@ block body
 				p
 					textarea(name="content", rows="24", cols="80")= post ? post.content : null
 				input(type="submit", value='#{post?"Apply changes":"Create post!"}')
-		
+
+
+			- if( comments.length )
+				h2 Comments
+
+				table
+					tr
+						th Date
+						th Name
+						th Mail
+						th Homepage
+						th Content
+						th Action
+					- foreach( c; comments )
+						tr
+							td= c.date.toISOExtString()
+							td= c.authorName
+							td= c.authorMail
+							td= c.authorHomepage
+							td= c.content.length > 32 ? c.content[0 .. 32] : c.content
+							td
+								form(action="set_comment_public", method="POST")
+									input(type="hidden", name="public", value="#{c.isPublic ? 0 : 1}")
+									input(type="hidden", name="id", value="#{c.id}")
+									button(type="submit")= c.isPublic ? "Hide" : "Show"
 		- else
 			p.error You are not the author of this post and are not authorized to change it.
 			
