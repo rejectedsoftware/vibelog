@@ -1,7 +1,7 @@
 module vibelog.rss;
 
 import vibe.stream.stream;
-import vibe.http.common : toRFC822DateTimeString;
+import vibe.inet.message : toRFC822DateTimeString;
 
 import std.datetime;
 

@@ -5,6 +5,8 @@ block title
 
 block body
 	- import std.datetime;
+	- import vibe.inet.message;
+	
 	#vibelogContent
 		.blogSinglePost
 			header
