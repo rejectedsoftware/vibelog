@@ -171,6 +171,8 @@ class VibeLog {
 		c.authorName = req.form["name"];
 		c.authorMail = req.form["email"];
 		c.authorHomepage = req.form["homepage"];
+		c.authorIP = req.peer;
+		if( auto fip = "X-Forwarded-For" in req.headers ) c.authorIP = *fip;
 		if( c.authorHomepage == "http://" ) c.authorHomepage = "";
 		c.content = req.form["message"];
 		m_db.addComment(post.id, c);

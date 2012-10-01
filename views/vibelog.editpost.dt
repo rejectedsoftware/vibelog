@@ -1,6 +1,8 @@
 extends layout
 
 block title
+	- import std.datetime;
+
 	- auto title = (post ? "Modify" : "Add new") ~ " blog post";
 
 block body
@@ -73,14 +75,17 @@ block body
 						th Mail
 						th Homepage
 						th Content
+						th IP
 						th Action
 					- foreach( c; comments )
-						tr
-							td= c.date.toISOExtString()
+						tr(class='#{c.isPublic ? "" : "inactive"}')
+							- auto d = c.date; d.fracSec = FracSec.from!"usecs"(0);
+							td= d.toSimpleString()
 							td= c.authorName
 							td= c.authorMail
 							td= c.authorHomepage
 							td= c.content.length > 32 ? c.content[0 .. 32] : c.content
+							td= c.authorIP
 							td
 								form(action="set_comment_public", method="POST")
 									input(type="hidden", name="public", value="#{c.isPublic ? 0 : 1}")

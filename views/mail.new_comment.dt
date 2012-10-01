@@ -4,11 +4,13 @@ html
 		title New comment
 	body
 		p A new comment has been made on
-			a(href="#{post.slug}") post.title
+			a(href="#{post.slug}") "#{post.header}"
 			| by
 			a(href="mailto:#{comment.authorMail}")= comment.authorName
 			|.
 
 		p Homepage: #{comment.authorHomepage}
+
+		p IP: #{comment.authorIP}
 
 		p Comment: #{comment.content}

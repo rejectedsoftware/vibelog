@@ -99,6 +99,7 @@ class Comment {
 	string authorName;
 	string authorMail;
 	string authorHomepage;
+	string authorIP;
 	string header;
 	string content;
 
@@ -113,6 +114,7 @@ class Comment {
 		ret.authorName = cast(string)bson["authorName"];
 		ret.authorMail = cast(string)bson["authorMail"];
 		ret.authorHomepage = cast(string)bson["authorHomepage"];
+		ret.authorIP = bson["authorIP"].opt!string();
 		ret.header = cast(string)bson["header"];
 		ret.content = cast(string)bson["content"];
 		return ret;
@@ -129,6 +131,7 @@ class Comment {
 		ret["authorName"] = Bson(authorName);
 		ret["authorMail"] = Bson(authorMail);
 		ret["authorHomepage"] = Bson(authorHomepage);
+		ret["authorIP"] = Bson(authorIP);
 		ret["header"] = Bson(header);
 		ret["content"] = Bson(content);
 		return Bson(ret);
