@@ -12,10 +12,10 @@ block body
 			header
 				- if( post.headerImage.length )
 					img.headerImage(alt="Header image", src="#{post.headerImage}")
-				.blogPostHeaderText(class='#{post.headerImage.length ? "width-image" : "without-image"}')
+				.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 					span.blogPostDate= toRFC822DateString(post.date)
 					|#{post.subHeader}
-			section.blogPostContent(class='#{post.headerImage.length ? "width-image" : "without-image"}')
+			section.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 				!= post.renderContentAsHtml(textFilters)
 
 			footer
