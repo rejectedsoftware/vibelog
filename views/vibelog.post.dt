@@ -36,7 +36,7 @@ block body
 							- else
 								| anonymous
 							- if( c.authorMail.length > 0 )
-								|!= "&lt;" ~ filterHtmlAllEscape(c.authorMail) ~ "&gt;"
+								|!= "&lt;" ~ htmlAllEscape(c.authorMail) ~ "&gt;"
 							| on #{toRFC822DateString(c.date)}, #{toRFC822TimeString(c.date)}:
 						.commentContent= c.content
 			
