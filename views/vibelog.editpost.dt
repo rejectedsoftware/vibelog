@@ -4,6 +4,10 @@ block title
 	- import std.datetime;
 
 	- auto title = (post ? "Modify" : "Add new") ~ " blog post";
+	script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
+	script(type="text/javascript", src="#{req.rootDir}scripts/vibelog-edit.js")
+	script(type="text/javascript")
+		window.rootDir = "../../";
 
 block body
 	#vibelogContent
@@ -61,7 +65,11 @@ block body
 					label(for="subHeader") Sub-Heading
 					input(type="text", name="subHeader", size="100", value="#{post ? post.subHeader : null}")
 				p
-					textarea(name="content", rows="24", cols="80")= post ? post.content : null
+					#message-area
+						textarea#message(name="content", rows="18", cols="80")= post ? post.content : null
+						#message-preview(style="display: none;")
+					input#preview-checkbox(type="checkbox", onchange="previewToggle()", style="width: auto;")
+					label(for="preview-checkbox") Preview
 				input(type="submit", value='#{post?"Apply changes":"Create post!"}')
 
 

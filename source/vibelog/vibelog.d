@@ -60,6 +60,7 @@ class VibeLog {
 		router.get(m_subPath ~ "posts/:postname", &showPost);
 		router.post(m_subPath ~ "posts/:postname/post_comment", &postComment);
 		router.get(m_subPath ~ "feed/rss", &rssFeed);
+		router.post(m_subPath ~ "markup", &markup);
 
 		//
 		// restricted pages
@@ -239,6 +240,13 @@ class VibeLog {
 
 		res.headers["Content-Type"] = "application/rss+xml";
 		feed.render(res.bodyWriter);
+	}
+
+	protected void markup(HttpServerRequest req, HttpServerResponse res)
+	{
+		auto post = new Post;
+		post.content = req.form["message"];
+		res.writeBody(post.renderContentAsHtml(m_settings.textFilters), "text/html");
 	}
 
 	protected HttpServerRequestDelegate auth(void delegate(HttpServerRequest, HttpServerResponse, User[string], User) del)
