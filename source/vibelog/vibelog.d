@@ -115,7 +115,7 @@ class VibeLog {
 	Post[] getRecentPosts()
 	{
 		Post[] ret;
-		m_db.getPostsForCategory(m_config.categories, 0, (i, p){
+		m_db.getPublicPostsForCategory(m_config.categories, 0, (i, p){
 			if( i > 20 ) return false;
 			ret ~= p;
 			return true;
