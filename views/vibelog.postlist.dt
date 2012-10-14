@@ -11,13 +11,14 @@ block body
 			- foreach( i, post; posts )
 				.blogPost
 					header
-						h2
-							a(href="posts/#{post.name}")= post.header
 						- if( post.headerImage.length )
 							img.headerImage(alt="Header image", src="#{post.headerImage}")
-						.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
-							span.blogPostDate= toRFC822DateString(post.date)
-							|#{post.subHeader}
+						.blogPostHeaderContent
+							h2
+								a(href="posts/#{post.name}")= post.header
+							.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
+								span.blogPostDate= toRFC822DateString(post.date)
+								|#{post.subHeader}
 					.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 						!= post.renderContentAsHtml(textFilters)
 					footer
