@@ -1,36 +1,39 @@
-extends layout
+extends vibelog.blocks
 
 block title
 	- import vibe.inet.message;
 
 	- auto title = "Blog";
 
-block body
+block vibelog-content
 	#vibelogContent
 		#vibelogPostList
-			- foreach( i, post; posts )
+			- foreach( i, post; info.posts )
 				.blogPost
 					header
-						- if( post.headerImage.length )
-							img.headerImage(alt="Header image", src="#{post.headerImage}")
+						h2
+							a(href="posts/#{post.name}")= post.header
 						.blogPostHeaderContent
-							h2
-								a(href="posts/#{post.name}")= post.header
+							- if( post.headerImage.length )
+								img.headerImage(alt="Header image", src="#{post.headerImage}")
 							.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 								span.blogPostDate= toRFC822DateString(post.date)
 								|#{post.subHeader}
 					.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
-						!= post.renderContentAsHtml(textFilters)
+						!= post.renderContentAsHtml(info.textFilters)
 					footer
-						| Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
-						a(href="posts/#{post.name}#comments") #{commentCount[i]} comments
+						| Posted at #{toRFC822TimeString(post.date)} by #{post.author in info.users ? info.users[post.author].name : post.author}
+						a(href="posts/#{post.name}#comments") #{info.commentCount[i]} comments
 						- if( post.trackbacks.length > 0 )
 							a(href="posts/#{post.name}#trackback") #{post.trackbacks.length} trackbacks
 
 		.pageNumbers
 			p Pages:
-				- foreach( p; 0 .. pageCount )
-					- if( p == pageNumber )
+				- foreach( p; 0 .. info.pageCount )
+					- if( p == info.pageNumber )
 						em #{p+1}
 					- else
 						a(href="?page=#{p+1}") #{p+1}
+
+block vibelog-recent-list
+	include vibelog.inc.postlist

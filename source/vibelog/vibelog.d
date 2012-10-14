@@ -112,6 +112,17 @@ class VibeLog {
 		return ret;
 	}
 
+	Post[] getRecentPosts()
+	{
+		Post[] ret;
+		m_db.getPostsForCategory(m_config.categories, 0, (i, p){
+			if( i > 20 ) return false;
+			ret ~= p;
+			return true;
+		});
+		return ret;
+	}
+
 	string getShowPagePath(int page)
 	{
 		return m_subPath ~ "?page=" ~ to!string(page+1);
@@ -123,41 +134,59 @@ class VibeLog {
 
 	protected void showPostList(HttpServerRequest req, HttpServerResponse res)
 	{
-		User[string] users = m_db.getAllUsers();
-		int pageNumber = 0;
-		auto pageCount = getPageCount();
-		if( auto pp = "page" in req.query ) pageNumber = to!int(*pp)-1;
-		else pageNumber = 0;
-		auto posts = getPostsForPage(pageNumber);
-		long[] commentCount;
-		foreach( p; posts ) commentCount ~= m_db.getCommentCount(p.id);
+		struct ShowPostListInfo {
+			string rootDir;
+			User[string] users;
+			string function(string)[] textFilters;
+			int pageNumber = 0;
+			int pageCount;
+			Post[] posts;
+			long[] commentCount;
+			Post[] recentPosts;
+		}
+		
+		ShowPostListInfo info;
+		info.rootDir = m_subPath; // TODO: use relative path
+		info.users = m_db.getAllUsers();
+		info.textFilters = m_settings.textFilters;
+		info.pageCount = getPageCount();
+		if( auto pp = "page" in req.query ) info.pageNumber = to!int(*pp)-1;
+		info.posts = getPostsForPage(info.pageNumber);
+		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
+		info.recentPosts = getRecentPosts();
+
 		//res.render!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
 		res.renderCompat!("vibelog.postlist.dt",
 			HttpServerRequest, "req",
-			User[string], "users",
-			Post[], "posts",
-			long[], "commentCount",
-			string function(string)[], "textFilters",
-			int, "pageNumber",
-			int, "pageCount")
-			(Variant(req), Variant(users), Variant(posts), Variant(commentCount), Variant(m_settings.textFilters), Variant(pageNumber), Variant(pageCount));
+			ShowPostListInfo*, "info")
+			(Variant(req), Variant(&info));
 	}
 
 	protected void showPost(HttpServerRequest req, HttpServerResponse res)
 	{
-		User[string] users = m_db.getAllUsers();
-		Post post;
-		try post = m_db.getPost(req.params["postname"]);
+		struct ShowPostInfo {
+			string rootDir;
+			User[string] users;
+			string function(string)[] textFilters;
+			Post post;
+			Comment[] comments;
+			Post[] recentPosts;
+		}
+
+		ShowPostInfo info;
+		info.rootDir = m_subPath; // TODO: use relative path
+		info.users = m_db.getAllUsers();
+		info.textFilters = m_settings.textFilters;
+		try info.post = m_db.getPost(req.params["postname"]);
 		catch(Exception e){ return; } // -> gives 404 error
-		Comment[] comments = m_db.getComments(post.id);
+		info.comments = m_db.getComments(info.post.id);
+		info.recentPosts = getRecentPosts();
+		
 		//res.render!("vibelog.post.dt", req, users, post, textFilters);
 		res.renderCompat!("vibelog.post.dt",
 			HttpServerRequest, "req",
-			User[string], "users",
-			Post, "post",
-			Comment[], "comments",
-			string function(string)[], "textFilters")
-			(Variant(req), Variant(users), Variant(post), Variant(comments), Variant(m_settings.textFilters));
+			ShowPostInfo*, "info")
+			(Variant(req), Variant(&info));
 	}
 
 	protected void postComment(HttpServerRequest req, HttpServerResponse res)

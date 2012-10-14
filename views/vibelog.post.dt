@@ -1,32 +1,33 @@
-extends layout
+extends vibelog.blocks
 
 block title
-	- auto title = post.header;
+	- auto title = info.post.header;
 
-block body
+block vibelog-content
 	- import std.datetime;
 	- import vibe.inet.message;
 
 	#vibelogContent
 		.blogSinglePost
 			header
-				- if( post.headerImage.length )
-					img.headerImage(alt="Header image", src="#{post.headerImage}")
-				.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
-					span.blogPostDate= toRFC822DateString(post.date)
-					|#{post.subHeader}
-			section.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
-				!= post.renderContentAsHtml(textFilters)
+				.blogPostHeaderContent
+					- if( info.post.headerImage.length )
+						img.headerImage(alt="Header image", src="#{info.post.headerImage}")
+					.blogPostHeaderText(class='#{info.post.headerImage.length ? "with-image" : "without-image"}')
+						span.blogPostDate= toRFC822DateString(info.post.date)
+						|#{info.post.subHeader}
+			section.blogPostContent(class='#{info.post.headerImage.length ? "with-image" : "without-image"}')
+				!= info.post.renderContentAsHtml(info.textFilters)
 
 			footer
-				p Posted at #{toRFC822TimeString(post.date)} by #{post.author in users ? users[post.author].name : post.author}
+				p Posted at #{toRFC822TimeString(info.post.date)} by #{info.post.author in info.users ? info.users[info.post.author].name : info.post.author}
 
 		section.comments
-			- if( comments.length )
+			- if( info.comments.length )
 				h2#comments Comments
 				
 				- import vibe.textfilter.html;
-				- foreach( c; comments )
+				- foreach( c; info.comments )
 					.comment
 						.commentHeader
 							- if( c.authorName.length > 0 && c.authorHomepage.length > 0 )
@@ -40,9 +41,9 @@ block body
 							| on #{toRFC822DateString(c.date)}, #{toRFC822TimeString(c.date)}:
 						.commentContent= c.content
 			
-			- if( post.commentsAllowed )
+			- if( info.post.commentsAllowed )
 				h2 Post a comment
-				form(action="#{post.name}/post_comment", method="POST")
+				form(action="#{info.post.name}/post_comment", method="POST")
 					table.blind
 						tr
 							td Name:
@@ -64,3 +65,6 @@ block body
 								input(type="submit", value="Post")
 			- else
 				p.error Commenting is currently disabled for this article.
+
+block vibelog-recent-list
+	include vibelog.inc.postlist
