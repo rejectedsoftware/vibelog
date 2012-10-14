@@ -44,22 +44,23 @@ block vibelog-content
 			- if( info.post.commentsAllowed )
 				h2 Post a comment
 				form(action="#{info.post.name}/post_comment", method="POST")
-					table.blind
+					table.blind.comment-form
+						col.caption
 						tr
 							td Name:
 							td
-								input(type="text", name="name", size="40")
+								input(type="text", name="name")
 						tr
-							td eMail:
+							td Email:
 							td
-								input(type="text", name="email", size="40")
+								input(type="text", name="email")
 						tr
 							td Homepage:
 							td
-								input(type="text", name="homepage", size="40", value="http://")
+								input(type="text", name="homepage", value="http://")
 						tr
 							td(colspan="2")
-								textarea(name="message", cols="47", rows="6")
+								textarea(name="message", rows="6")
 						tr
 							td(colspan="2")
 								input(type="submit", value="Post")
