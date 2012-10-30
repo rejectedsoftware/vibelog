@@ -525,6 +525,7 @@ class VibeLog {
 		p.isPublic = ("isPublic" in req.form) !is null;
 		p.commentsAllowed = ("commentsAllowed" in req.form) !is null;
 		p.author = req.form["author"];
+		p.date = SysTime.fromSimpleString(req.form["date"]);
 		p.category = req.form["category"];
 		p.slug = req.form["slug"].length ? req.form["slug"] : makeSlugFromHeader(req.form["header"]);
 		p.headerImage = req.form["headerImage"];

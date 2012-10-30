@@ -66,6 +66,11 @@ block body
 											option(value="#{cat}")= cat
 					tr
 						td
+							label(for="date") Date
+						td
+							input#date(type="text", name="date", value="#{post ? post.date.toSimpleString() : null}")
+					tr
+						td
 							label(for="slug") Post slug
 						td
 							input#slug(type="text", name="slug", value="#{post ? post.slug : null}")
