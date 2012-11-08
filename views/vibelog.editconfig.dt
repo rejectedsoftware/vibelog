@@ -40,7 +40,7 @@ block body
 
 			p
 				label(for="feedLink") Feed link
-				input(type="text", name="feedLink", value="#{config.feedLink}")
+				input(type="url", name="feedLink", value="#{config.feedLink}")
 
 			p
 				label(for="feedDescription") Feed description
@@ -52,6 +52,6 @@ block body
 
 			p
 				label(for="feedImageUrl") Feed image URL
-				input(type="text", name="feedImageUrl", value="#{config.feedImageUrl}")
+				input(type="url", name="feedImageUrl", value="#{config.feedImageUrl}")
 
 			input(type="submit", value="Apply changes")

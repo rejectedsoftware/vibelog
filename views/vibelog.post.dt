@@ -53,11 +53,11 @@ block vibelog-content
 						tr
 							td Email:
 							td
-								input(type="text", name="email")
+								input(type="email", name="email")
 						tr
 							td Homepage:
 							td
-								input(type="text", name="homepage", value="http://")
+								input(type="url", name="homepage", value="http://")
 						tr
 							td(colspan="2")
 								textarea(name="message", rows="6")

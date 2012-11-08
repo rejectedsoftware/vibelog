@@ -21,7 +21,7 @@ block body
 				input(type="text", name="name", value="#{user.name}")
 			p
 				label(for="email") Email
-				input(type="text", name="email", value="#{user.email}")
+				input(type="email", name="email", value="#{user.email}")
 			- if( !loginUser.isUserAdmin() )
 				p
 					label(for="oldPassword") Current Password
