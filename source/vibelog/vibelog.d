@@ -421,7 +421,7 @@ class VibeLog {
 		foreach( usr; users )
 			if( usr.username == req.params["username"] ){
 				m_db.deleteUser(usr._id);
-				res.redirect(m_subPath ~ "edit_posts");
+				res.redirect(m_subPath ~ "users/");
 				return;
 			}
 		enforce(false, "Unknown user name.");
