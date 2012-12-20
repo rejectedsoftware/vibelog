@@ -68,7 +68,7 @@ block body
 						td
 							label(for="date") Date
 						td
-							input#date(type="text", name="date", value="#{post ? post.date.toSimpleString() : null}")
+							input#date(type="text", name="date", value="#{post ? post.date.toSimpleString() : Clock.currTime().toSimpleString()}")
 					tr
 						td
 							label(for="slug") Post slug
