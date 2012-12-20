@@ -417,9 +417,9 @@ class VibeLog {
 	protected void deleteUser(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
 	{
 		enforce(loginUser.isUserAdmin(), "You are not authorized to delete users!");
-		enforce(loginUser.username != req.form["username"], "Cannot delete the own user account!");
+		enforce(loginUser.username != req.params["username"], "Cannot delete the own user account!");
 		foreach( usr; users )
-			if( usr.username == req.form["username"] ){
+			if( usr.username == req.params["username"] ){
 				m_db.deleteUser(usr._id);
 				res.redirect(m_subPath ~ "edit_posts");
 				return;

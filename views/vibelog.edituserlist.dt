@@ -31,8 +31,7 @@ block body
 							form(action="#{usr.username}/edit", method="GET")
 								input(type="submit", value="edit")
 						td
-							form(action="#{usr.name}/delete", method="POST")
-								input(type="hidden", name="name", value="#{usr.username}")
+							form(action="#{usr.username}/delete", method="POST")
 								input(type="submit", value="delete")
 		- else
 			p Sorry, you are not authorized to edit users. You can, however,
