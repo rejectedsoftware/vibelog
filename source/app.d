@@ -10,7 +10,7 @@ static this()
 
 	auto blogsettings = new VibeLogSettings;
 	blogsettings.configName = "vibelog";
-	blogsettings.basePath = "/";
+	blogsettings.siteUrl = Url.parse("http://localhost:8080/");
 	registerVibeLog(blogsettings, router);
 	
 	auto settings = new HttpServerSettings;

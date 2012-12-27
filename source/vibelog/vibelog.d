@@ -20,7 +20,7 @@ class VibeLogSettings {
 	string databaseName = "vibelog";
 	string configName = "default";
 	int postsPerPage = 4;
-	string basePath = "/";
+	Url siteUrl = Url.parse("http://localhost:8080/");
 	string function(string)[] textFilters;
 }
 
@@ -46,11 +46,11 @@ class VibeLog {
 			logError("ERR: %s", e);
 			throw e;
 		}
-		
-		enforce(settings.basePath.startsWith("/"), "All local URLs must start with '/'.");
-		if( !settings.basePath.endsWith("/") ) settings.basePath ~= "/";
 
-		m_subPath = settings.basePath;
+		m_subPath = settings.siteUrl.path.toString();
+
+		enforce(m_subPath.startsWith("/") && m_subPath.endsWith("/"), "All local URLs must start with and end with '/'.");
+
 
 		//
 		// public pages
@@ -61,6 +61,8 @@ class VibeLog {
 		router.post(m_subPath ~ "posts/:postname/post_comment", &postComment);
 		router.get(m_subPath ~ "feed/rss", &rssFeed);
 		router.post(m_subPath ~ "markup", &markup);
+
+		router.get(m_subPath ~ "sitemap.xml", &sitemap);
 
 		//
 		// restricted pages
@@ -227,7 +229,7 @@ class VibeLog {
 				auto itm = new RssEntry;
 				itm.title = p.header;
 				itm.description = p.subHeader;
-				itm.link = "http://vibed.org/blog/posts/"~p.name;
+				itm.link = m_settings.siteUrl.toString() ~ "posts/" ~ p.name;
 				itm.author = p.author;
 				itm.guid = "xxyyzz";
 				itm.pubDate = p.date;
@@ -247,6 +249,30 @@ class VibeLog {
 		auto post = new Post;
 		post.content = req.form["message"];
 		res.writeBody(post.renderContentAsHtml(m_settings.textFilters), "text/html");
+	}
+
+	protected void sitemap(HttpServerRequest req, HttpServerResponse res)
+	{
+		res.contentType = "application/xml";
+		res.bodyWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", false);
+		res.bodyWriter.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n", false);
+		void writeEntry(string[] parts...){
+			res.bodyWriter.write("<url><loc>", false);
+			res.bodyWriter.write(m_settings.siteUrl.toString(), false);
+			foreach( p; parts )
+				res.bodyWriter.write(p, false);
+			res.bodyWriter.write("</loc></url>\n", false);
+		}
+
+		// home page
+		writeEntry();
+
+		m_db.getPostsForCategory(m_config.categories, 0, (size_t i, Post p){
+				if( p.isPublic ) writeEntry("posts/", p.name);
+				return true;
+			});
+		
+		res.bodyWriter.write("</urlset>\n");
 	}
 
 	protected HttpServerRequestDelegate auth(void delegate(HttpServerRequest, HttpServerResponse, User[string], User) del)
@@ -533,7 +559,7 @@ class VibeLog {
 		p.subHeader = req.form["subHeader"];
 		p.content = req.form["content"];
 
-		enforce(!m_db.hasPost(p.slug) || m_db.getPost(p.slug).id == p.id);
+		enforce(!m_db.hasPost(p.slug) || m_db.getPost(p.slug).id == p.id, "Post slug is already used for another article.");
 
 		if( id.length > 0 ){
 			m_db.modifyPost(p);
