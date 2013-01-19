@@ -4,9 +4,10 @@ public import vibelog.config;
 public import vibelog.post;
 public import vibelog.user;
 
-import vibe.db.mongo.mongo;
 import vibe.core.log;
+import vibe.crypto.passwordhash;
 import vibe.data.bson;
+import vibe.db.mongo.mongo;
 import vibe.mail.smtp;
 import vibe.stream.memory;
 import vibe.templ.diet;
@@ -90,7 +91,7 @@ class DBController {
 		if( ret.length == 0 ){
 			auto initial_admin = new User;
 			initial_admin.username = "admin";
-			initial_admin.password = generatePasswordHash("admin");
+			initial_admin.password = generateSimplePasswordHash("admin");
 			initial_admin.name = "Default Administrator";
 			initial_admin.groups ~= "admin";
 			m_users.insert(initial_admin);

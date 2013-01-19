@@ -3,11 +3,12 @@ module vibelog.vibelog;
 import vibelog.dbcontroller;
 import vibelog.rss;
 
+import vibe.core.log;
+import vibe.crypto.passwordhash;
 import vibe.db.mongo.db;
 import vibe.http.auth.basic_auth;
 import vibe.http.router;
 import vibe.templ.diet;
-import vibe.core.log;
 
 import std.conv;
 import std.datetime;
@@ -284,7 +285,7 @@ class VibeLog {
 			{
 				auto pu = user in users;
 				if( pu is null ) return false;
-				return testPassword(password, pu.password);
+				return testSimplePasswordHash(password, pu.password);
 			}
 			string username = performBasicAuth(req, res, "VibeLog admin area", &testauth);
 			auto pusr = username in users;
@@ -412,8 +413,8 @@ class VibeLog {
 		usr.email = req.form["email"];
 
 		if( req.form["password"].length || req.form["passwordConfirmation"].length ){
-			enforce(loginUser.isUserAdmin() || testPassword(req.form["oldPassword"], usr.password), "Old password does not match.");
-			usr.password = generatePasswordHash(req.form["password"]);
+			enforce(loginUser.isUserAdmin() || testSimplePasswordHash(req.form["oldPassword"], usr.password), "Old password does not match.");
+			usr.password = generateSimplePasswordHash(req.form["password"]);
 		}
 
 		if( loginUser.isUserAdmin() ){

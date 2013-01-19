@@ -1,5 +1,6 @@
 module vibelog.user;
 
+import vibe.crypto.passwordhash;
 import vibe.data.bson;
 import vibe.textfilter.markdown;
 import vibe.textfilter.html;
@@ -8,7 +9,6 @@ import std.array;
 import std.base64;
 import std.conv;
 import std.exception;
-import std.md5;
 import std.random;
 public import std.datetime;
 
@@ -81,24 +81,4 @@ class User {
 
 		return Bson(ret);
 	}
-}
-
-bool testPassword(string password, string hashstring)
-{
-	ubyte[] upass = Base64.decode(hashstring);
-	enforce(upass.length == 20);
-	auto salt = upass[0 .. 4];
-	auto hashcmp = upass[4 .. 20];
-	ubyte[16] hash;
-	sum(hash, salt, password);
-	return hash == hashcmp;
-}
-
-string generatePasswordHash(string password)
-{
-	ubyte[4] salt;
-	foreach( i; 0 .. 4 ) salt[i] = cast(ubyte)uniform(0, 256);
-	ubyte[16] hash;
-	sum(hash, salt ~ cast(ubyte[])password);
-	return Base64.encode(salt ~ hash).idup;
 }
