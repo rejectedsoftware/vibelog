@@ -5,7 +5,7 @@ import vibelog.rss;
 
 import vibe.core.log;
 import vibe.crypto.passwordhash;
-import vibe.db.mongo.db;
+import vibe.db.mongo.connection;
 import vibe.http.auth.basic_auth;
 import vibe.http.router;
 import vibe.templ.diet;

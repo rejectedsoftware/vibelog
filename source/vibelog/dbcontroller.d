@@ -18,8 +18,6 @@ import std.variant;
 
 class DBController {
 	private {
-		MongoDB m_db;
-		string m_dbname;
 		MongoCollection m_configs;
 		MongoCollection m_users;
 		MongoCollection m_posts;
@@ -28,12 +26,11 @@ class DBController {
 
 	this(string host, ushort port, string dbname)
 	{
-		m_db = connectMongoDB(host, port);
-		m_dbname = dbname;
-		m_configs = m_db[m_dbname~".configs"];
-		m_users = m_db[m_dbname~".users"];
-		m_posts = m_db[m_dbname~".posts"];
-		m_comments = m_db[m_dbname~".comments"];
+		auto db = connectMongoDB(host, port).getDatabase(dbname);
+		m_configs = db["configs"];
+		m_users = db["users"];
+		m_posts = db["posts"];
+		m_comments = db["comments"];
 
 		// Upgrade post contained comments to their collection
 		foreach( p; m_posts.find(["comments": ["$exists": true]], ["comments": 1]) ){
