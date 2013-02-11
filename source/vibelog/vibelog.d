@@ -285,7 +285,7 @@ class VibeLog {
 			{
 				auto pu = user in users;
 				if( pu is null ) return false;
-				return testSimplePasswordHash(password, pu.password);
+				return testSimplePasswordHash(pu.password, password);
 			}
 			string username = performBasicAuth(req, res, "VibeLog admin area", &testauth);
 			auto pusr = username in users;
