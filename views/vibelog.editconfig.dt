@@ -1,6 +1,7 @@
 extends layout
 
 block title
+	- import std.array;
 	- auto title = "Edit configuration '"~config.name~"'";
 
 block body
@@ -14,7 +15,7 @@ block body
 				p
 					label(for="categories") Categories
 					br
-					textarea(name="categories", rows="10", cols="40")= joinLines(config.categories)
+					textarea(name="categories", rows="10", cols="40")= join(config.categories, "\n")
 			- else
 				p Categories
 				p

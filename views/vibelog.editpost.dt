@@ -50,9 +50,8 @@ block body
 											option(value="#{usr.username}") #{usr.name} (#{usr.username})
 						- else
 							td Author
-							td
+							td #{loginUser.name} (#{loginUser.username})
 								input(type="hidden", name="author", value="#{loginUser.username}")
-								#{loginUser.name} (#{loginUser.username})
 					tr
 						td
 							label(for="category") Category
