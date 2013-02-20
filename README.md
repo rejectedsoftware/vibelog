@@ -20,7 +20,7 @@ Main features
 Prerequisites
 -------------
 
-VibeLog needs [vibe.d](http://vibed.org/) and [MongoDB](http://www.mongodb.org/) installed.
+VibeLog needs [dub](https://github.com/rejectedsoftware/dub/) and [MongoDB](http://www.mongodb.org/) installed.
 
 Running a simple stand-alone blog
 ---------------------------------
@@ -32,7 +32,7 @@ Running a simple stand-alone blog
 2. Compile and run
 
 		$ cd vibelog
-		$ vibe
+		$ dub run
 
 The blog is now accessible at <http://127.0.0.1:8080/>.
 
@@ -42,12 +42,12 @@ Embedding VibeLog into your own application
 
 1. Create a new project:
 
-		$ vibe init my-blog
+		$ dub init my-blog
 		$ cd my-blog
 
-2. Edit package.json and add the following entry to the "dependencies" section:
+2. Edit package.json and add the following entries to the "dependencies" section:
 
-		"vibelog": ">=0.0.6"	
+		"vibelog": ">=0.0.9"
 
 3. Edit source/app.d:
 
@@ -74,9 +74,9 @@ Embedding VibeLog into your own application
 
 	If you want to run multiple blogs on the same database, you should choose a meaningful configuration name instead of "vibelog". Each blog should have its own configuration name.
 
-4. Start the application (vibe will automatically download vibelog)
+4. Start the application (dub will automatically download vibelog and vibe.d as dependencies)
 
-		$ vibe
+		$ dub run
 
 You will probably also want to copy the views/layout.dt file to your own project and modify it to your needs (e.g. by adding a style sheet). The blog is accessible at <http://127.0.0.1:8080>.
 
