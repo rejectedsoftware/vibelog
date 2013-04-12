@@ -163,7 +163,7 @@ class VibeLog {
 		res.renderCompat!("vibelog.postlist.dt",
 			HttpServerRequest, "req",
 			ShowPostListInfo*, "info")
-			(Variant(req), Variant(&info));
+			(req, &info);
 	}
 
 	protected void showPost(HttpServerRequest req, HttpServerResponse res)
@@ -190,7 +190,7 @@ class VibeLog {
 		res.renderCompat!("vibelog.post.dt",
 			HttpServerRequest, "req",
 			ShowPostInfo*, "info")
-			(Variant(req), Variant(&info));
+			(req, &info);
 	}
 
 	protected void postComment(HttpServerRequest req, HttpServerResponse res)
@@ -300,7 +300,7 @@ class VibeLog {
 			HttpServerRequest, "req",
 			User[string], "users",
 			User, "loginUser")
-			(Variant(req), Variant(users), Variant(loginUser));
+			(req, users, loginUser);
 	}
 
 	//
@@ -315,7 +315,7 @@ class VibeLog {
 			HttpServerRequest, "req",
 			User, "loginUser",
 			Config[], "configs")
-			(Variant(req), Variant(loginUser), Variant(configs));
+			(req, loginUser, configs);
 	}
 
 	protected void showConfigEdit(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
@@ -328,7 +328,7 @@ class VibeLog {
 			User, "loginUser",
 			Config, "globalConfig",
 			Config, "config")
-			(Variant(req), Variant(loginUser), Variant(globalConfig), Variant(config));
+			(req, loginUser, globalConfig, config);
 	}
 
 	protected void putConfig(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
@@ -376,7 +376,7 @@ class VibeLog {
 			HttpServerRequest, "req",
 			User, "loginUser",
 			User[string], "users")
-			(Variant(req), Variant(loginUser), Variant(users));
+			(req, loginUser, users);
 	}
 
 	protected void showUserEdit(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
@@ -388,7 +388,7 @@ class VibeLog {
 			User, "loginUser",
 			Config, "globalConfig",
 			User, "user")
-			(Variant(req), Variant(loginUser), Variant(globalConfig), Variant(user));
+			(req, loginUser, globalConfig, user);
 	}
 
 	protected void putUser(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
@@ -488,7 +488,7 @@ class VibeLog {
 			User[string], "users",
 			User, "loginUser",
 			Post[], "posts")
-			(Variant(req), Variant(users), Variant(loginUser), Variant(posts));
+			(req, users, loginUser, posts);
 	}
 
 	protected void showMakePost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
@@ -503,7 +503,7 @@ class VibeLog {
 			Config, "globalConfig",
 			Post, "post",
 			Comment[], "comments")
-			(Variant(req), Variant(users), Variant(loginUser), Variant(globalConfig), Variant(post), Variant(comments));
+			(req, users, loginUser, globalConfig, post, comments);
 	}
 
 	protected void showEditPost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
@@ -518,7 +518,7 @@ class VibeLog {
 			Config, "globalConfig",
 			Post, "post",
 			Comment[], "comments")
-			(Variant(req), Variant(users), Variant(loginUser), Variant(globalConfig), Variant(post), Variant(comments));
+			(req, users, loginUser, globalConfig, post, comments);
 	}
 
 	protected void deletePost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
