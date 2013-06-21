@@ -8,6 +8,7 @@ import vibe.crypto.passwordhash;
 import vibe.db.mongo.connection;
 import vibe.http.auth.basic_auth;
 import vibe.http.router;
+import vibe.inet.url;
 import vibe.templ.diet;
 
 import std.conv;
@@ -21,11 +22,11 @@ class VibeLogSettings {
 	string databaseName = "vibelog";
 	string configName = "default";
 	int postsPerPage = 4;
-	Url siteUrl = Url.parse("http://localhost:8080/");
+	URL siteUrl = URL.parse("http://localhost:8080/");
 	string function(string)[] textFilters;
 }
 
-void registerVibeLog(VibeLogSettings settings, UrlRouter router)
+void registerVibeLog(VibeLogSettings settings, URLRouter router)
 {
 	new VibeLog(settings, router);
 }
@@ -38,7 +39,7 @@ class VibeLog {
 		Config m_config;
 	}
 
-	this(VibeLogSettings settings, UrlRouter router)
+	this(VibeLogSettings settings, URLRouter router)
 	{
 		m_settings = settings;
 		m_db = new DBController(settings.databaseHost, settings.databasePort, settings.databaseName);
@@ -136,7 +137,7 @@ class VibeLog {
 	// public pages
 	//
 
-	protected void showPostList(HttpServerRequest req, HttpServerResponse res)
+	protected void showPostList(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		struct ShowPostListInfo {
 			string rootDir;
@@ -161,12 +162,12 @@ class VibeLog {
 
 		//res.render!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
 		res.renderCompat!("vibelog.postlist.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			ShowPostListInfo*, "info")
 			(req, &info);
 	}
 
-	protected void showPost(HttpServerRequest req, HttpServerResponse res)
+	protected void showPost(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		struct ShowPostInfo {
 			string rootDir;
@@ -188,12 +189,12 @@ class VibeLog {
 		
 		//res.render!("vibelog.post.dt", req, users, post, textFilters);
 		res.renderCompat!("vibelog.post.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			ShowPostInfo*, "info")
 			(req, &info);
 	}
 
-	protected void postComment(HttpServerRequest req, HttpServerResponse res)
+	protected void postComment(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		auto post = m_db.getPost(req.params["postname"]);
 		enforce(post.commentsAllowed, "Posting comments is not allowed for this article.");
@@ -213,7 +214,7 @@ class VibeLog {
 		res.redirect(m_subPath ~ "posts/"~post.name);
 	}
 
-	protected void rssFeed(HttpServerRequest req, HttpServerResponse res)
+	protected void rssFeed(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		auto ch = new RssChannel;
 		ch.title = m_config.feedTitle;
@@ -245,14 +246,14 @@ class VibeLog {
 		feed.render(res.bodyWriter);
 	}
 
-	protected void markup(HttpServerRequest req, HttpServerResponse res)
+	protected void markup(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		auto post = new Post;
 		post.content = req.form["message"];
 		res.writeBody(post.renderContentAsHtml(m_settings.textFilters), "text/html");
 	}
 
-	protected void sitemap(HttpServerRequest req, HttpServerResponse res)
+	protected void sitemap(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		res.contentType = "application/xml";
 		res.bodyWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", false);
@@ -276,9 +277,9 @@ class VibeLog {
 		res.bodyWriter.write("</urlset>\n");
 	}
 
-	protected HttpServerRequestDelegate auth(void delegate(HttpServerRequest, HttpServerResponse, User[string], User) del)
+	protected HTTPServerRequestDelegate auth(void delegate(HTTPServerRequest, HTTPServerResponse, User[string], User) del)
 	{
-		return (HttpServerRequest req, HttpServerResponse res)
+		return (HTTPServerRequest req, HTTPServerResponse res)
 		{
 			User[string] users = m_db.getAllUsers();
 			bool testauth(string user, string password)
@@ -294,10 +295,10 @@ class VibeLog {
 		};
 	}
 
-	protected void showAdminPanel(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showAdminPanel(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		res.renderCompat!("vibelog.admin.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser")
 			(req, users, loginUser);
@@ -307,31 +308,31 @@ class VibeLog {
 	// Configs
 	//
 
-	protected void showConfigList(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showConfigList(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		enforce(loginUser.isConfigAdmin());
 		Config[] configs = m_db.getAllConfigs();
 		res.renderCompat!("vibelog.editconfiglist.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User, "loginUser",
 			Config[], "configs")
 			(req, loginUser, configs);
 	}
 
-	protected void showConfigEdit(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showConfigEdit(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		enforce(loginUser.isConfigAdmin());
 		Config config = m_db.getConfig(req.params["configname"]);
 		res.renderCompat!("vibelog.editconfig.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User, "loginUser",
 			Config, "globalConfig",
 			Config, "config")
 			(req, loginUser, globalConfig, config);
 	}
 
-	protected void putConfig(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void putConfig(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		enforce(loginUser.isConfigAdmin());
 		Config cfg = m_db.getConfig(req.params["configname"]);
@@ -358,7 +359,7 @@ class VibeLog {
 		res.redirect(m_subPath ~ "configs/");
 	}
 
-	protected void deleteConfig(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void deleteConfig(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		enforce(loginUser.isConfigAdmin());
 		m_db.deleteConfig(req.params["configname"]);
@@ -370,28 +371,28 @@ class VibeLog {
 	// Users
 	//
 
-	protected void showUserList(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showUserList(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		res.renderCompat!("vibelog.edituserlist.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User, "loginUser",
 			User[string], "users")
 			(req, loginUser, users);
 	}
 
-	protected void showUserEdit(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showUserEdit(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		User user = m_db.getUser(req.params["username"]);
 		res.renderCompat!("vibelog.edituser.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User, "loginUser",
 			Config, "globalConfig",
 			User, "user")
 			(req, loginUser, globalConfig, user);
 	}
 
-	protected void putUser(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void putUser(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto id = req.form["id"];
 		User usr;
@@ -441,7 +442,7 @@ class VibeLog {
 		else res.redirect(m_subPath~"manage");
 	}
 
-	protected void deleteUser(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void deleteUser(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		enforce(loginUser.isUserAdmin(), "You are not authorized to delete users!");
 		enforce(loginUser.username != req.params["username"], "Cannot delete the own user account!");
@@ -454,7 +455,7 @@ class VibeLog {
 		enforce(false, "Unknown user name.");
 	}
 
-	protected void addUser(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void addUser(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		enforce(loginUser.isUserAdmin(), "You are not authorized to add users!");
 		string uname = req.form["username"];
@@ -470,7 +471,7 @@ class VibeLog {
 	// Posts
 	//
 
-	protected void showEditPosts(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showEditPosts(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		Post[] posts;
 		m_db.getAllPosts(0, (size_t idx, Post post){
@@ -484,20 +485,20 @@ class VibeLog {
 		logInfo("Showing %d posts.", posts.length);
 		//parseJadeFile!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
 		res.renderCompat!("vibelog.editpostslist.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
 			Post[], "posts")
 			(req, users, loginUser, posts);
 	}
 
-	protected void showMakePost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showMakePost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		Post post;
 		Comment[] comments;
 		res.renderCompat!("vibelog.editpost.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
 			Config, "globalConfig",
@@ -506,13 +507,13 @@ class VibeLog {
 			(req, users, loginUser, globalConfig, post, comments);
 	}
 
-	protected void showEditPost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void showEditPost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		auto post = m_db.getPost(req.params["postname"]);
 		auto comments = m_db.getComments(post.id, true);
 		res.renderCompat!("vibelog.editpost.dt",
-			HttpServerRequest, "req",
+			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
 			Config, "globalConfig",
@@ -521,21 +522,21 @@ class VibeLog {
 			(req, users, loginUser, globalConfig, post, comments);
 	}
 
-	protected void deletePost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void deletePost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto id = BsonObjectID.fromHexString(req.form["id"]);
 		m_db.deletePost(id);
 		res.redirect(m_subPath ~ "posts/");
 	}
 
-	protected void setCommentPublic(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void setCommentPublic(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto id = BsonObjectID.fromHexString(req.form["id"]);
 		m_db.setCommentPublic(id, to!int(req.form["public"]) != 0);
 		res.redirect(m_subPath ~ "posts/"~req.params["postname"]~"/edit");
 	}
 
-	protected void putPost(HttpServerRequest req, HttpServerResponse res, User[string] users, User loginUser)
+	protected void putPost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto id = req.form["id"];
 		Post p;
