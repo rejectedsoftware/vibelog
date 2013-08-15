@@ -262,7 +262,7 @@ class DBController {
 			mail.headers["Content-Type"] = "text/html";
 			mail.bodyText = cast(string)msg.data();
 
-			auto settings = new SmtpClientSettings;
+			auto settings = new SMTPClientSettings;
 			//settings.host = m_settings.mailServer;
 			sendMail(settings, mail);
 		} catch(Exception e){
