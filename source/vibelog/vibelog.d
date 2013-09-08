@@ -256,14 +256,14 @@ class VibeLog {
 	protected void sitemap(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		res.contentType = "application/xml";
-		res.bodyWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", false);
-		res.bodyWriter.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n", false);
+		res.bodyWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+		res.bodyWriter.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
 		void writeEntry(string[] parts...){
-			res.bodyWriter.write("<url><loc>", false);
-			res.bodyWriter.write(m_settings.siteUrl.toString(), false);
+			res.bodyWriter.write("<url><loc>");
+			res.bodyWriter.write(m_settings.siteUrl.toString());
 			foreach( p; parts )
-				res.bodyWriter.write(p, false);
-			res.bodyWriter.write("</loc></url>\n", false);
+				res.bodyWriter.write(p);
+			res.bodyWriter.write("</loc></url>\n");
 		}
 
 		// home page
@@ -275,6 +275,7 @@ class VibeLog {
 			});
 		
 		res.bodyWriter.write("</urlset>\n");
+		res.bodyWriter.flush();
 	}
 
 	protected HTTPServerRequestDelegate auth(void delegate(HTTPServerRequest, HTTPServerResponse, User[string], User) del)

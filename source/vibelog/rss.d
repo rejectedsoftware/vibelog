@@ -11,11 +11,12 @@ class RssFeed {
 
 	void render(OutputStream dst)
 	{
-		dst.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n", false);
-		dst.write("<rss version=\"2.0\">\n", false);
+		dst.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+		dst.write("<rss version=\"2.0\">\n");
 		foreach( ch; channels )
 			ch.render(dst);
-		dst.write("</rss>\n", false);
+		dst.write("</rss>\n");
+		dst.flush();
 	}
 }
 
@@ -35,23 +36,23 @@ class RssChannel {
 
 	void render(OutputStream dst)
 	{
-		dst.write("\t<channel>\n", false);
-		dst.write("\t\t<title>", false); dst.write(title, false); dst.write("</title>\n", false);
-		dst.write("\t\t<link>", false); dst.write(link, false); dst.write("</link>\n", false);
-		dst.write("\t\t<description>", false); dst.write(description, false); dst.write("</description>\n", false);
-		dst.write("\t\t<language>", false); dst.write(language, false); dst.write("</language>\n", false);
-		dst.write("\t\t<copyright>", false); dst.write(copyright, false); dst.write("</copyright>\n", false);
-		dst.write("\t\t<pubDate>", false); dst.write(toRFC822DateTimeString(pubDate), false); dst.write("</pubDate>\n", false);
+		dst.write("\t<channel>\n");
+		dst.write("\t\t<title>"); dst.write(title); dst.write("</title>\n");
+		dst.write("\t\t<link>"); dst.write(link); dst.write("</link>\n");
+		dst.write("\t\t<description>"); dst.write(description); dst.write("</description>\n");
+		dst.write("\t\t<language>"); dst.write(language); dst.write("</language>\n");
+		dst.write("\t\t<copyright>"); dst.write(copyright); dst.write("</copyright>\n");
+		dst.write("\t\t<pubDate>"); dst.write(toRFC822DateTimeString(pubDate)); dst.write("</pubDate>\n");
 		if( imageUrl.length ){
-			dst.write("\t\t<image>\n", false);
-			dst.write("\t\t\t<url>", false); dst.write(imageUrl, false); dst.write("</url>\n", false);
-			dst.write("\t\t\t<title>", false); dst.write(imageTitle, false); dst.write("</title>\n", false);
-			dst.write("\t\t\t<link>", false); dst.write(imageLink, false); dst.write("</link>\n", false);
-			dst.write("\t\t</image>\n", false);
+			dst.write("\t\t<image>\n");
+			dst.write("\t\t\t<url>"); dst.write(imageUrl); dst.write("</url>\n");
+			dst.write("\t\t\t<title>"); dst.write(imageTitle); dst.write("</title>\n");
+			dst.write("\t\t\t<link>"); dst.write(imageLink); dst.write("</link>\n");
+			dst.write("\t\t</image>\n");
 		}
 		foreach( e; entries )
 			e.render(dst);
-		dst.write("\t</channel>\n", false);
+		dst.write("\t</channel>\n");
 	}
 }
 
@@ -66,13 +67,13 @@ class RssEntry {
 
 	void render(OutputStream dst)
 	{
-		dst.write("\t\t<item>\n", false);
-		dst.write("\t\t\t<title>", false); dst.write(title, false); dst.write("</title>\n", false);
-		dst.write("\t\t\t<description>", false); dst.write(description, false); dst.write("</description>\n", false);
-		dst.write("\t\t\t<link>", false); dst.write(link, false); dst.write("</link>\n", false);
-		dst.write("\t\t\t<author>", false); dst.write(author, false); dst.write("</author>\n", false);
-		dst.write("\t\t\t<guid>", false); dst.write(guid, false); dst.write("</guid>\n", false);
-		dst.write("\t\t\t<pubDate>", false); dst.write(toRFC822DateTimeString(pubDate), false); dst.write("</pubDate>\n", false);
-		dst.write("\t\t</item>\n", false);
+		dst.write("\t\t<item>\n");
+		dst.write("\t\t\t<title>"); dst.write(title); dst.write("</title>\n");
+		dst.write("\t\t\t<description>"); dst.write(description); dst.write("</description>\n");
+		dst.write("\t\t\t<link>"); dst.write(link); dst.write("</link>\n");
+		dst.write("\t\t\t<author>"); dst.write(author); dst.write("</author>\n");
+		dst.write("\t\t\t<guid>"); dst.write(guid); dst.write("</guid>\n");
+		dst.write("\t\t\t<pubDate>"); dst.write(toRFC822DateTimeString(pubDate)); dst.write("</pubDate>\n");
+		dst.write("\t\t</item>\n");
 	}
 }

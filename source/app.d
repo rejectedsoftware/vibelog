@@ -6,14 +6,14 @@ static this()
 {
 	//setLogLevel(LogLevel.Trace);
 
-	auto router = new UrlRouter;
+	auto router = new URLRouter;
 
 	auto blogsettings = new VibeLogSettings;
 	blogsettings.configName = "vibelog";
-	blogsettings.siteUrl = Url.parse("http://localhost:8080/");
+	blogsettings.siteUrl = URL("http://localhost:8080/");
 	registerVibeLog(blogsettings, router);
 	
-	auto settings = new HttpServerSettings;
+	auto settings = new HTTPServerSettings;
 	settings.port = 8080;
-	listenHttp(settings, router);
+	listenHTTP(settings, router);
 }
