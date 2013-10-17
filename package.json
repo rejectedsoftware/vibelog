@@ -2,6 +2,7 @@
     "name": "vibelog",
 	"description": "A light-weight embeddable blog implementation",
 	"homepage": "https://github.com/rejectedsoftware/vibelog",
+	"license": "AGPL v3",
     "authors": [
 		"Sönke Ludwig"
 	],
