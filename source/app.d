@@ -2,7 +2,7 @@ import vibe.d;
 
 import vibelog.vibelog;
 
-static this()
+shared static this()
 {
 	//setLogLevel(LogLevel.Trace);
 
