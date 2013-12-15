@@ -1,12 +1,13 @@
 {
-    "name": "vibelog",
+	"name": "vibelog",
 	"description": "A light-weight embeddable blog implementation",
 	"homepage": "https://github.com/rejectedsoftware/vibelog",
 	"license": "AGPL-3.0",
-    "authors": [
+	"authors": [
 		"Sönke Ludwig"
 	],
-    "dependencies": {
-    	"vibe-d": "~master"
-    }
+	"dependencies": {
+		"vibe-d": "~master"
+	},
+	"versions": ["VibeDefaultMain"]
 }
