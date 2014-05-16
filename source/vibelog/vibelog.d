@@ -10,6 +10,7 @@ import vibe.http.auth.basic_auth;
 import vibe.http.router;
 import vibe.inet.url;
 import vibe.templ.diet;
+import vibe.textfilter.markdown;
 
 import std.conv;
 import std.datetime;
@@ -24,6 +25,13 @@ class VibeLogSettings {
 	int postsPerPage = 4;
 	URL siteUrl = URL.parse("http://localhost:8080/");
 	string function(string)[] textFilters;
+	MarkdownSettings markdownSettings;
+
+	this()
+	{
+		markdownSettings = new MarkdownSettings;
+		markdownSettings.flags = MarkdownFlags.backtickCodeBlocks;
+	}
 }
 
 void registerVibeLog(VibeLogSettings settings, URLRouter router)
@@ -142,7 +150,7 @@ class VibeLog {
 		struct ShowPostListInfo {
 			string rootDir;
 			User[string] users;
-			string function(string)[] textFilters;
+			VibeLogSettings settings;
 			int pageNumber = 0;
 			int pageCount;
 			Post[] posts;
@@ -153,7 +161,7 @@ class VibeLog {
 		ShowPostListInfo info;
 		info.rootDir = m_subPath; // TODO: use relative path
 		info.users = m_db.getAllUsers();
-		info.textFilters = m_settings.textFilters;
+		info.settings = m_settings;
 		info.pageCount = getPageCount();
 		if( auto pp = "page" in req.query ) info.pageNumber = to!int(*pp)-1;
 		info.posts = getPostsForPage(info.pageNumber);
@@ -172,7 +180,7 @@ class VibeLog {
 		struct ShowPostInfo {
 			string rootDir;
 			User[string] users;
-			string function(string)[] textFilters;
+			VibeLogSettings settings;
 			Post post;
 			Comment[] comments;
 			Post[] recentPosts;
@@ -181,7 +189,7 @@ class VibeLog {
 		ShowPostInfo info;
 		info.rootDir = m_subPath; // TODO: use relative path
 		info.users = m_db.getAllUsers();
-		info.textFilters = m_settings.textFilters;
+		info.settings = m_settings;
 		try info.post = m_db.getPost(req.params["postname"]);
 		catch(Exception e){ return; } // -> gives 404 error
 		info.comments = m_db.getComments(info.post.id);
@@ -250,7 +258,7 @@ class VibeLog {
 	{
 		auto post = new Post;
 		post.content = req.form["message"];
-		res.writeBody(post.renderContentAsHtml(m_settings.textFilters), "text/html");
+		res.writeBody(post.renderContentAsHtml(m_settings), "text/html");
 	}
 
 	protected void sitemap(HTTPServerRequest req, HTTPServerResponse res)

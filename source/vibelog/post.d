@@ -1,5 +1,7 @@
 module vibelog.post;
 
+import vibelog.vibelog;
+
 import vibe.data.bson;
 import vibe.textfilter.markdown;
 import vibe.textfilter.html;
@@ -74,17 +76,17 @@ class Post {
 		return Bson(ret);
 	}
 
-	string renderSubHeaderAsHtml()
+	string renderSubHeaderAsHtml(VibeLogSettings settings)
 	const {
 		auto ret = appender!string();
-		filterMarkdown(ret, subHeader);
+		filterMarkdown(ret, subHeader, settings.markdownSettings);
 		return ret.data;
 	}
 
-	string renderContentAsHtml(string function(string)[] filters)
+	string renderContentAsHtml(VibeLogSettings settings)
 	const {
-		auto html = filterMarkdown(content);
-		foreach( flt; filters )
+		auto html = filterMarkdown(content, settings.markdownSettings);
+		foreach (flt; settings.textFilters)
 			html = flt(html);
 		return html;
 	}
