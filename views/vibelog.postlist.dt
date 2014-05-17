@@ -9,23 +9,24 @@ block vibelog-content
 	#vibelogContent
 		#vibelogPostList
 			- foreach( i, post; info.posts )
-				.blogPost
-					header
-						h2
-							a(href="posts/#{post.name}")= post.header
-						.blogPostHeaderContent
-							- if( post.headerImage.length )
-								img.headerImage(alt="Header image", src="#{post.headerImage}")
-							.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
-								span.blogPostDate= toRFC822DateString(post.date)
-								|#{post.subHeader}
-					.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
-						!= post.renderContentAsHtml(info.settings)
-					footer
-						| Posted at #{toRFC822TimeString(post.date)} by #{post.author in info.users ? info.users[post.author].name : post.author}
-						a(href="posts/#{post.name}#comments") #{info.commentCount[i]} comments
-						- if( post.trackbacks.length > 0 )
-							a(href="posts/#{post.name}#trackback") #{post.trackbacks.length} trackbacks
+				.blogMultiPost
+					.blogPost
+						header
+							h2
+								a(href="posts/#{post.name}")= post.header
+							.blogPostHeaderContent
+								- if( post.headerImage.length )
+									img.headerImage(alt="Header image", src="#{post.headerImage}")
+								.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
+									span.blogPostDate= toRFC822DateString(post.date)
+									|#{post.subHeader}
+						.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
+							!= post.renderContentAsHtml(info.settings)
+						footer
+							| Posted at #{toRFC822TimeString(post.date)} by #{post.author in info.users ? info.users[post.author].name : post.author}
+							a(href="posts/#{post.name}#comments") #{info.commentCount[i]} comments
+							- if( post.trackbacks.length > 0 )
+								a(href="posts/#{post.name}#trackback") #{post.trackbacks.length} trackbacks
 
 		.pageNumbers
 			p Pages:

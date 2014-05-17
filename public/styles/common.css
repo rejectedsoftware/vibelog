@@ -1,0 +1,105 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: sans-serif;
+	font-size: 10pt;
+	background-color: #fdfdfd;
+}
+
+body > header {
+	padding: 10pt;
+	color: white;
+	text-align: center;
+	background-color: #222;
+	border-bottom: 1px solid #000;
+	box-shadow: 0 10px 40px #aaa;
+}
+
+a {
+	color: black;
+}
+
+h1, h2 {
+	font-weight: lighter;
+}
+
+h1 a, h2 a { text-decoration: none; }
+h1 a:hover, h2 a:hover { text-decoration: underline; }
+
+h1 {
+	font-size: 24pt;
+}
+
+#vibelogContent {
+	margin: 0;
+	padding: 0;
+	max-width: 600pt;
+	margin: 0 auto;
+	/*box-shadow: 0 0 100px #888;*/
+}
+
+#vibelogContent .blogMultiPost, #vibelogContent .blogSinglePost {
+	border: 1px solid #888;
+	border-top: 5pt solid #222;
+	background-color: white;
+	margin-top: 30pt;
+	padding: 0;
+	box-shadow: 0 10px 40px #aaa;
+}
+
+#vibelogContent .blogMultiPost h2 {
+	font-size: 18pt;
+}
+
+#vibelogContent .blogPostDate {
+	display: block;
+	width: 100pt;
+	margin-left: -10pt;
+	margin-top: -74pt;
+	margin-bottom: 50pt;
+	padding: 5pt;
+	color: white;
+	background-color: #222;
+	text-align: center;
+}
+
+#vibelogContent .blogPost header {
+	padding: 10pt 20pt;
+	background-color: #eee;
+	border-bottom: 1px solid #ddd;
+}
+
+#vibelogContent .blogPostContent {
+	padding: 10pt 20pt;
+}
+
+#vibelogContent .blogPost footer {
+	padding: 5pt 20pt;
+	text-align: center;
+	color: #bbb;
+	background-color: #222;
+	border-top: 1px solid #000;
+}
+
+#vibelogContent .blogPost footer a {
+	color: #ddd;
+}
+
+#vibelogContent .blogSinglePost .blogPostDate {
+	margin-top: -23pt;
+	margin-bottom: 20pt;
+}
+
+#vibelogRecentList {
+	float: right;
+	margin-right: 10pt;
+	padding: 10pt;
+	background-color: rgba(200, 200, 200, 0.5);
+	border: 1px solid rgba(0, 0, 0, 0.25);
+	border-top: none;
+}
+
+#vibelogRecentList ul {
+	margin: 0;
+	padding: 0;
+}

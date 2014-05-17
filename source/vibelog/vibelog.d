@@ -7,6 +7,7 @@ import vibe.core.log;
 import vibe.crypto.passwordhash;
 import vibe.db.mongo.connection;
 import vibe.http.auth.basic_auth;
+import vibe.http.fileserver;
 import vibe.http.router;
 import vibe.inet.url;
 import vibe.templ.diet;
@@ -21,7 +22,7 @@ class VibeLogSettings {
 	string databaseHost = "localhost";
 	ushort databasePort = MongoConnection.defaultPort;
 	string databaseName = "vibelog";
-	string configName = "default";
+	string configName = "global";
 	int postsPerPage = 4;
 	URL siteUrl = URL.parse("http://localhost:8080/");
 	string function(string)[] textFilters;
@@ -73,6 +74,10 @@ class VibeLog {
 		router.post(m_subPath ~ "markup", &markup);
 
 		router.get(m_subPath ~ "sitemap.xml", &sitemap);
+
+		auto fsettings = new HTTPFileServerSettings;
+		fsettings.serverPathPrefix = m_subPath;
+		router.get(m_subPath ~ "*", serveStaticFiles("public", fsettings));
 
 		//
 		// restricted pages

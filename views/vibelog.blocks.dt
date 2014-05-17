@@ -1,5 +1,7 @@
 extends layout
 
 block body
+	#vibelogRecentList
+		block vibelog-recent-list
+
 	block vibelog-content
-	block vibelog-recent-list
