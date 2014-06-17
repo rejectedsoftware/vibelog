@@ -6,7 +6,7 @@ block title
 	- auto title = (post ? "Modify" : "Add new") ~ " blog post";
 	script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
 	script(type="text/javascript", src="#{req.rootDir}scripts/vibelog-edit.js")
-	script(type="text/javascript")
+	script(type="text/javascript").
 		window.rootDir = "../../";
 
 block body
