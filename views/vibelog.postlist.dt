@@ -38,3 +38,4 @@ block vibelog-content
 
 block vibelog-recent-list
 	include vibelog.inc.postlist
+	- insertVibelogPostList();

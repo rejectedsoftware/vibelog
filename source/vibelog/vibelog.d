@@ -40,6 +40,8 @@ void registerVibeLog(VibeLogSettings settings, URLRouter router)
 	new VibeLog(settings, router);
 }
 
+
+
 class VibeLog {
 	private {
 		DBController m_db;
@@ -48,7 +50,7 @@ class VibeLog {
 		Config m_config;
 	}
 
-	this(VibeLogSettings settings, URLRouter router)
+	this(VibeLogSettings settings)
 	{
 		m_settings = settings;
 		m_db = new DBController(settings.databaseHost, settings.databasePort, settings.databaseName);
@@ -61,8 +63,16 @@ class VibeLog {
 		m_subPath = settings.siteUrl.path.toString();
 
 		enforce(m_subPath.startsWith("/") && m_subPath.endsWith("/"), "All local URLs must start with and end with '/'.");
+	}
 
+	this(VibeLogSettings settings, URLRouter router)
+	{
+		this(settings);
+		register(router);
+	}
 
+	void register(URLRouter router)
+	{
 		//
 		// public pages
 		//
@@ -103,6 +113,21 @@ class VibeLog {
 		router.get(m_subPath ~ "make_post",                   auth(&showMakePost));
 		router.post(m_subPath ~ "make_post",                  auth(&putPost));
 	}
+
+
+	PostListInfo getPostListInfo(HTTPServerRequest req)
+	{
+		PostListInfo info;
+		info.rootDir = m_subPath; // TODO: use relative path
+		info.users = m_db.getAllUsers();
+		info.settings = m_settings;
+		info.pageCount = getPageCount();
+		if (auto pp = "page" in req.query) info.pageNumber = to!int(*pp)-1;
+		info.posts = getPostsForPage(info.pageNumber);
+		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
+		info.recentPosts = getRecentPosts();
+		return info;
+	}	
 
 	int getPageCount()
 	{
@@ -152,31 +177,12 @@ class VibeLog {
 
 	protected void showPostList(HTTPServerRequest req, HTTPServerResponse res)
 	{
-		struct ShowPostListInfo {
-			string rootDir;
-			User[string] users;
-			VibeLogSettings settings;
-			int pageNumber = 0;
-			int pageCount;
-			Post[] posts;
-			long[] commentCount;
-			Post[] recentPosts;
-		}
-		
-		ShowPostListInfo info;
-		info.rootDir = m_subPath; // TODO: use relative path
-		info.users = m_db.getAllUsers();
-		info.settings = m_settings;
-		info.pageCount = getPageCount();
-		if( auto pp = "page" in req.query ) info.pageNumber = to!int(*pp)-1;
-		info.posts = getPostsForPage(info.pageNumber);
-		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
-		info.recentPosts = getRecentPosts();
+		auto info = getPostListInfo(req);
 
-		//res.render!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
+		//res.render!("vibelog.postlist.dt", req, info);
 		res.renderCompat!("vibelog.postlist.dt",
 			HTTPServerRequest, "req",
-			ShowPostListInfo*, "info")
+			PostListInfo*, "info")
 			(req, &info);
 	}
 
@@ -585,4 +591,24 @@ class VibeLog {
 		}
 		res.redirect(m_subPath~"posts/");
 	}
+}
+
+struct PostListInfo {
+	string rootDir;
+	User[string] users;
+	VibeLogSettings settings;
+	int pageNumber = 0;
+	int pageCount;
+	Post[] posts;
+	long[] commentCount;
+	Post[] recentPosts;
+}
+
+struct VibelogHeadlineListConfig {
+	bool showSummaries = true;
+	size_t maxPosts = 10;
+	size_t headerLevel = 2;
+	bool headerLinks = true;
+	bool footerLinks = false;
+	bool dateFirst = true;
 }

@@ -1,20 +1,22 @@
 - import vibelog.post;
-- int year(Post p){ return p.date.year; }
-- Post[][] splitYears(Post[] posts)
-	- Post[][] ret;
-	- while( posts.length )
-		- if( ret.length == 0 || year(posts[0]) != year(ret[$-1][0]) )
-			- ret ~= [posts[0]];
-		- else
-			- ret[$-1] ~= posts[0];
-		- posts = posts[1 ..$];
-	- return ret;
 
-ul
-	- foreach( yr; splitYears(info.recentPosts) )
-		li
-			| #{year(yr[0])}
-			ul
-				- foreach( p; yr )
-					li
-						a(href="#{info.rootDir}posts/#{p.name}")= p.header
+- void insertVibelogPostList()
+	- int year(Post p){ return p.date.year; }
+	- Post[][] splitYears(Post[] posts)
+		- Post[][] ret;
+		- while( posts.length )
+			- if( ret.length == 0 || year(posts[0]) != year(ret[$-1][0]) )
+				- ret ~= [posts[0]];
+			- else
+				- ret[$-1] ~= posts[0];
+			- posts = posts[1 ..$];
+		- return ret;
+
+	ul
+		- foreach( yr; splitYears(info.recentPosts) )
+			li
+				| #{year(yr[0])}
+				ul
+					- foreach( p; yr )
+						li
+							a(href="#{info.rootDir}posts/#{p.name}")= p.header
