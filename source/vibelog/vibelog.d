@@ -317,7 +317,7 @@ class VibeLog {
 
 	protected void showAdminPanel(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
-		res.renderCompat!("vibelog.admin.dt",
+		res.renderCompat!("admin/vibelog.admin.dt",
 			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser")
@@ -332,7 +332,7 @@ class VibeLog {
 	{
 		enforce(loginUser.isConfigAdmin());
 		Config[] configs = m_db.getAllConfigs();
-		res.renderCompat!("vibelog.editconfiglist.dt",
+		res.renderCompat!("admin/vibelog.editconfiglist.dt",
 			HTTPServerRequest, "req",
 			User, "loginUser",
 			Config[], "configs")
@@ -344,7 +344,7 @@ class VibeLog {
 		auto globalConfig = m_db.getConfig("global", true);
 		enforce(loginUser.isConfigAdmin());
 		Config config = m_db.getConfig(req.params["configname"]);
-		res.renderCompat!("vibelog.editconfig.dt",
+		res.renderCompat!("admin/vibelog.editconfig.dt",
 			HTTPServerRequest, "req",
 			User, "loginUser",
 			Config, "globalConfig",
@@ -393,7 +393,7 @@ class VibeLog {
 
 	protected void showUserList(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
-		res.renderCompat!("vibelog.edituserlist.dt",
+		res.renderCompat!("admin/vibelog.edituserlist.dt",
 			HTTPServerRequest, "req",
 			User, "loginUser",
 			User[string], "users")
@@ -404,7 +404,7 @@ class VibeLog {
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		User user = m_db.getUser(req.params["username"]);
-		res.renderCompat!("vibelog.edituser.dt",
+		res.renderCompat!("admin/vibelog.edituser.dt",
 			HTTPServerRequest, "req",
 			User, "loginUser",
 			Config, "globalConfig",
@@ -504,7 +504,7 @@ class VibeLog {
 		});
 		logInfo("Showing %d posts.", posts.length);
 		//parseJadeFile!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
-		res.renderCompat!("vibelog.editpostslist.dt",
+		res.renderCompat!("admin/vibelog.editpostslist.dt",
 			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
@@ -517,7 +517,7 @@ class VibeLog {
 		auto globalConfig = m_db.getConfig("global", true);
 		Post post;
 		Comment[] comments;
-		res.renderCompat!("vibelog.editpost.dt",
+		res.renderCompat!("admin/vibelog.editpost.dt",
 			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
@@ -532,7 +532,7 @@ class VibeLog {
 		auto globalConfig = m_db.getConfig("global", true);
 		auto post = m_db.getPost(req.params["postname"]);
 		auto comments = m_db.getComments(post.id, true);
-		res.renderCompat!("vibelog.editpost.dt",
+		res.renderCompat!("admin/vibelog.editpost.dt",
 			HTTPServerRequest, "req",
 			User[string], "users",
 			User, "loginUser",
