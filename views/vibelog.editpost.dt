@@ -1,4 +1,4 @@
-extends layout
+extends layout.admin
 
 block title
 	- import std.datetime;

@@ -1,0 +1,10 @@
+*.dub
+*.a
+*.lib
+*.o
+*.obj
+bin/
+*.exe
+*.txt
+vibelog
+

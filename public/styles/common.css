@@ -7,7 +7,7 @@ body {
 }
 
 body > header {
-	padding: 10pt;
+	padding: 1px;
 	color: white;
 	text-align: center;
 	background-color: #222;
