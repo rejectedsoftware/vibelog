@@ -1,0 +1,39 @@
+extends layout.admin
+
+block title
+	- auto title = "User overview";
+
+block body
+	- import std.datetime;
+	
+	#vibelogContent
+		h1= title
+		p
+			a(href="../manage") Back to admin panel
+			
+		form(action="../add_user", method="POST")
+			p Add user:
+				input(type="text", name="username")
+				input(type="submit", value="create")
+
+		- if( loginUser.isUserAdmin() )
+			table(width="100%")
+				tr
+					th Username
+					th Full name
+					th Edit
+					th Delete
+				- foreach( usr; users )
+					tr
+						td= usr.username
+						td= usr.name
+						td
+							form(action="#{usr.username}/edit", method="GET")
+								input(type="submit", value="edit")
+						td
+							form(action="#{usr.username}/delete", method="POST")
+								input(type="submit", value="delete")
+		- else
+			p Sorry, you are not authorized to edit users. You can, however,
+				a(href="#{loginUser.username}/edit") edit your own account
+				|.

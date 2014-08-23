@@ -1,0 +1,58 @@
+extends layout.admin
+
+block title
+	- import std.array;
+	- auto title = "Edit configuration '"~config.name~"'";
+
+block body
+	#vibelogContent
+		h1= title
+		p
+			a(href="../") Back to config list
+			
+		form(action="put", method="POST")
+			- if( config.name == "global" )
+				p
+					label(for="categories") Categories
+					br
+					textarea(name="categories", rows="10", cols="40")= join(config.categories, "\n")
+			- else
+				p Categories
+				p
+					- foreach( grp; globalConfig.categories )
+						- if( config.hasCategory(grp) )
+							input(type="checkbox", name="category_#{grp}", value="1", checked)
+						- else
+							input(type="checkbox", name="category_#{grp}", value="1")
+						label(for="category_#{grp}")= grp
+						br
+
+			p
+				label(for="language") Language
+				input(type="text", name="language", value="#{config.language}")
+
+			p
+				label(for="copyrightString") Copyright String
+				input(type="text", name="copyrightString", value="#{config.copyrightString}")
+
+			p
+				label(for="feedTitle") Feed title
+				input(type="text", name="feedTitle", value="#{config.feedTitle}")
+
+			p
+				label(for="feedLink") Feed link
+				input(type="url", name="feedLink", value="#{config.feedLink}")
+
+			p
+				label(for="feedDescription") Feed description
+				input(type="text", name="feedDescription", value="#{config.feedDescription}")
+
+			p
+				label(for="feedImageTitle") Feed image title
+				input(type="text", name="feedImageTitle", value="#{config.feedImageTitle}")
+
+			p
+				label(for="feedImageUrl") Feed image URL
+				input(type="url", name="feedImageUrl", value="#{config.feedImageUrl}")
+
+			input(type="submit", value="Apply changes")

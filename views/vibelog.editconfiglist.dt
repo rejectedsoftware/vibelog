@@ -1,0 +1,28 @@
+extends layout.admin
+
+block title
+	- auto title = "Configuration overview";
+
+block body
+	- import std.datetime;
+	
+	#vibelogContent
+		h1= title
+		p
+			a(href="../manage") Back to admin panel
+			
+		table(width="100%")
+			tr
+				th Name
+				th Edit
+				th Delete
+			- foreach( cfg; configs )
+				tr
+					td= cfg.name
+					td
+						form(action="#{cfg.name}/edit", method="GET")
+							input(type="submit", value="edit")
+					td
+						form(action="#{cfg.name}/delete", method="POST")
+							input(type="hidden", name="name", value="#{cfg.name}")
+							input(type="submit", value="delete")

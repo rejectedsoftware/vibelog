@@ -1,0 +1,43 @@
+extends layout.admin
+
+block title
+	- auto title = "Post overview";
+
+block body
+	- import std.datetime;
+	
+	#vibelogContent
+		h1= title
+		p
+			a(href="../manage") Back to admin panel
+			
+		p
+			a(href="../make_post") Make new post
+		table(width="100%")
+			tr
+				th Date
+				th Pub
+				th Header
+				th Author
+				th Category
+				th View
+				th Edit
+				th Delete
+			- foreach( post; posts )
+				-if( loginUser.isPostAdmin() || loginUser.username == post.author )
+					tr
+						td= (cast(Date)post.date).toSimpleString()
+						td= post.isPublic ? "yes" : ""
+						td= post.header
+						td= post.author
+						td= post.category
+						td
+							form(action="#{post.name}", method="GET")
+								input(type="submit", value="view")
+						td
+							form(action="#{post.name}/edit", method="GET")
+								input(type="submit", value="edit")
+						td
+							form(action="#{post.name}/delete", method="POST")
+								input(type="hidden", name="id", value="#{post.id.toString()}")
+								input(type="submit", value="delete")

@@ -1,0 +1,137 @@
+extends layout.admin
+
+block title
+	- import std.datetime;
+
+	- auto title = (post ? "Modify" : "Add new") ~ " blog post";
+	script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
+	script(type="text/javascript", src="#{req.rootDir}scripts/vibelog-edit.js")
+	script(type="text/javascript").
+		window.rootDir = "../../";
+
+block body
+	#vibelogContent
+		h1= title
+		
+		p
+			a(href='#{post?"../":"manage"}') Cancel
+
+		- if( !post || post.author == loginUser.username || loginUser.isPostAdmin() )
+			form(action='#{post?"put":"make_post"}', method="POST")
+				input(type="hidden", name="id", value="#{post ? post.id.toString() : null}")
+				table.blind
+					col.caption
+					tr
+						td
+							label(for="isPublic") Public
+						td
+							- if( post && post.isPublic )
+								input#isPublic.checkbox(type="checkbox", name="isPublic", value="yes", checked)
+							- else
+								input#isPublic.checkbox(type="checkbox", name="isPublic", value="yes")
+					tr
+						td
+							label(for="commentsAllowed") Comments allowed
+						td
+							- if( !post || post.commentsAllowed )
+								input#commentsAllowed.checkbox(type="checkbox", name="commentsAllowed", value="yes", checked)
+							- else
+								input#commentsAllowed.checkbox(type="checkbox", name="commentsAllowed", value="yes")
+					tr
+						- if( loginUser.isPostAdmin() )
+							td
+								label(for="author") Author
+							td
+								select#author(name="author", size="1")
+									- foreach( usr; users )
+										- if( usr.username == (post ? post.author : loginUser.username) )
+											option(value="#{usr.username}", selected) #{usr.name} (#{usr.username})
+										- else
+											option(value="#{usr.username}") #{usr.name} (#{usr.username})
+						- else
+							td Author
+							td #{loginUser.name} (#{loginUser.username})
+								input(type="hidden", name="author", value="#{loginUser.username}")
+					tr
+						td
+							label(for="category") Category
+						td
+							select#category(name="category", size="1")
+								- foreach( cat; globalConfig.categories )
+									- if( loginUser.isPostAdmin() || loginUser.mayPostInCategory(cat) )
+										- if( post && cat == post.category )
+											option(value="#{cat}", selected)= cat
+										- else
+											option(value="#{cat}")= cat
+					tr
+						td
+							label(for="date") Date
+						td
+							input#date(type="text", name="date", value="#{post ? post.date.toSimpleString() : Clock.currTime().toSimpleString()}")
+					tr
+						td
+							label(for="slug") Post slug
+						td
+							input#slug(type="text", name="slug", value="#{post ? post.slug : null}")
+					tr
+						td
+							label(for="headerImage-field") Header image
+						td
+							input#headerImage-field(type="text", name="headerImage", value="#{post ? post.headerImage : null}")
+					tr
+						td
+							label(for="header-field") Heading
+						td
+							input#header-field(type="text", name="header", value="#{post ? post.header : null}")
+					tr
+						td
+							label(for="subHeader") Sub-Heading
+						td
+							input#subHeader(type="text", name="subHeader", value="#{post ? post.subHeader : null}")
+					tr
+						td Article text
+							p
+								input#preview-checkbox.checkbox(type="checkbox", onchange="previewToggle()", style="width: auto;")
+								label(for="preview-checkbox") Preview
+						td
+							#message-area
+								textarea#message(name="content", rows="18")= post ? post.content : null
+								#message-preview(style="display: none;")
+				input(type="submit", value='#{post?"Apply changes":"Create post!"}')
+
+
+			- if( comments.length )
+				h2 Comments
+
+				table
+					tr
+						th Date
+						th Name
+						th Mail
+						th Homepage
+						th Content
+						th IP
+						th Action
+					- foreach( c; comments )
+						tr(class='#{c.isPublic ? "" : "inactive"}')
+							- auto d = c.date; d.fracSec = FracSec.from!"usecs"(0);
+							td= d.toSimpleString()
+							td= c.authorName
+							td= c.authorMail
+							td= c.authorHomepage
+							td= c.content.length > 32 ? c.content[0 .. 32] : c.content
+							td= c.authorIP
+							td
+								form(action="set_comment_public", method="POST")
+									input(type="hidden", name="public", value="#{c.isPublic ? 0 : 1}")
+									input(type="hidden", name="id", value="#{c.id}")
+									button(type="submit")= c.isPublic ? "Hide" : "Show"
+		- else
+			p.error You are not the author of this post and are not authorized to change it.
+			
+			p Public: #{post.isPublic ? "yes" : "no"}
+			p Author: #{post.author}
+			p Heading: #{post.header}
+			p Sub-Heading: #{post.subHeader}
+			p Content:
+			pre= post.content

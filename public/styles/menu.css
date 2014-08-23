@@ -32,7 +32,7 @@ ul {
 }
     
 .headerMenu a:hover {
-    background:url(img/cizgi.png) right no-repeat #f57e20;
+    background-color: #f57e20;
 }
 
 .headerMenu  li {

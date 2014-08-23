@@ -1,0 +1,54 @@
+extends layout.admin
+
+block title
+	- auto title = "Edit user '"~user.username~"'";
+
+block body
+	- import std.datetime;
+	
+	#vibelogContent
+		h1= title
+		p
+			a(href="../") Back to user list
+			
+		form(action="put", method="POST")
+			input(type="hidden", name="id", value="#{user._id.toString()}")
+			p
+				label(for="username") Username
+				input(type="text", name="username", value="#{user.username}")
+			p
+				label(for="name") Full name
+				input(type="text", name="name", value="#{user.name}")
+			p
+				label(for="email") Email
+				input(type="email", name="email", value="#{user.email}")
+			- if( !loginUser.isUserAdmin() )
+				p
+					label(for="oldPassword") Current Password
+					input(type="password", name="oldPassword", value="")
+			p
+				label(for="password") New Password
+				input(type="password", name="password", value="")
+			p
+				label(for="passwordConfirmation") Confim new password
+				input(type="password", name="passwordConfirmation", value="")
+			- if( loginUser.isUserAdmin() )
+				p Groups:
+				p
+					- foreach( grp; globalConfig.groups )
+						- if( user.inGroup(grp) )
+							input(type="checkbox", name="group_#{grp}", value="1", checked)
+						- else
+							input(type="checkbox", name="group_#{grp}", value="1")
+						label(for="group_#{grp}")= grp
+						br
+				p Allowed categories:
+				p
+					- foreach( grp; globalConfig.categories )
+						- if( user.mayPostInCategory(grp) )
+							input(type="checkbox", name="category_#{grp}", value="1", checked)
+						- else
+							input(type="checkbox", name="category_#{grp}", value="1")
+						label(for="category_#{grp}")= grp
+						br
+			input(type="submit", value="Apply changes")

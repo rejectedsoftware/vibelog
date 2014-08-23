@@ -1,0 +1,11 @@
+extends layout.admin
+
+block title
+	- auto title = "VibeLog Admin Panel";
+	
+block body
+	#vibelogContent
+		h1= title
+		
+		section#actions.vibelogAdminSection
+			h2 Dashboard 
