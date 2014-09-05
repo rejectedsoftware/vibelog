@@ -21,7 +21,7 @@ block vibelog-content
 									span.blogPostDate= toRFC822DateString(post.date)
 									|#{post.subHeader}
 						.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
-							!= post.renderContentAsHtml(info.settings)
+							!= post.renderContentAsHtml(info.settings, 2)
 						footer
 							| Posted at #{toRFC822TimeString(post.date)} by #{post.author in info.users ? info.users[post.author].name : post.author}
 							a(href="posts/#{post.name}#comments") #{info.commentCount[i]} comments

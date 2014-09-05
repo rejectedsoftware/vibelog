@@ -83,9 +83,13 @@ class Post {
 		return ret.data;
 	}
 
-	string renderContentAsHtml(VibeLogSettings settings)
+	string renderContentAsHtml(VibeLogSettings settings, int header_level_nesting = 0)
 	const {
-		auto html = filterMarkdown(content, settings.markdownSettings);
+		scope ms = new MarkdownSettings;
+		ms.flags = settings.markdownSettings.flags;
+		ms.headingBaseLevel = settings.markdownSettings.headingBaseLevel + header_level_nesting;
+
+		auto html = filterMarkdown(content, ms);
 		foreach (flt; settings.textFilters)
 			html = flt(html);
 		return html;
