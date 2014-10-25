@@ -317,11 +317,21 @@ class VibeLog {
 
 	protected void showAdminPanel(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
+        struct DashboardInfo {
+            int posts;
+            int pages;
+            int comments;
+        }
+
+        DashboardInfo info;
+        info.posts = m_db.getPostsCount();
+
 		res.renderCompat!("vibelog.admin.home.dt",
 			HTTPServerRequest, "req",
 			User[string], "users",
-			User, "loginUser")
-			(req, users, loginUser);
+			User, "loginUser",
+            DashboardInfo*, "info")
+			(req, users, loginUser, &info);
 	}
 
 	//

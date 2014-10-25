@@ -145,6 +145,11 @@ class DBController {
 		return cnt;
 	}
 
+    int getPostsCount()
+    {
+        return cast(int)m_posts.count(["isPublic": Bson(true)]);
+    }
+
 	void getPostsForCategory(string[] categories, int nskip, bool delegate(size_t idx, Post post) del)
 	{
 		auto cats = new Bson[categories.length];

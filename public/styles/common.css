@@ -115,3 +115,35 @@ h1 {
 	font-weight: normal;
 	margin-bottom: 0;
 }
+
+
+/* ADMIN DASHBOARD STYLE
+ ---------------------------------------------------------*/
+#dashboard {
+    /*border: 1px solid red;*/
+    width: 800px;
+    margin: auto;
+    padding: 10px;
+}
+.dashboardWindow {
+    /*border: 1px solid green;*/
+    padding: 10px;
+    margin-top: 20px;
+}
+.header {
+    border: 1px solid silver;
+    background-color: #eee;
+    padding: 6px;
+}
+.dashboardWindow table {
+    border: 2px solid silver;
+    border-collapse: collapse;
+    width: 780px;
+    margin-top: 8px;
+}
+.dashboardWindow table td {
+    border: 1px solid silver;
+    height: 50px;
+    padding: 6px;
+    width: 480px;
+}

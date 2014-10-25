@@ -2,10 +2,24 @@ extends layout.admin
 
 block title
 	- auto title = "VibeLog Admin Panel";
-	
+
 block body
 	#vibelogContent
 		h1= title
-		
-		section#actions.vibelogAdminSection
-			h2 Dashboard 
+
+		div(id="dashboard")
+
+			// Quick Look Section
+			div(class="dashboardWindow")
+				div(class="header") Quick Look
+				table(border="1")
+					tr
+						td #{info.posts} Posts
+						td 1 Comments
+					tr
+						td 1 Pages
+						td empty
+
+			// Recent Comments Section (Last 5)
+			div(class="dashboardWindow")
+				div(class="header") Recent Comments

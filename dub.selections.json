@@ -1,5 +1,6 @@
 {
 	"fileVersion": 1,
+    "buildRequirements": ["disallowDeprecations"],
 	"versions": {
 		"vibe-d": "0.7.21-rc.3",
 		"libevent": "2.0.1+2.0.16",
