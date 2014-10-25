@@ -137,6 +137,11 @@ class DBController {
 		assert(id.valid);
 		m_users.remove(["_id": Bson(id)]);
 	}
+    
+    int getUserCount()
+    {
+        return cast(int)m_users.count(Bson(""));
+    }
 
 	int countPostsForCategory(string[] categories)
 	{
@@ -145,7 +150,7 @@ class DBController {
 		return cnt;
 	}
 
-    int getPostsCount()
+    int getPostCount()
     {
         return cast(int)m_posts.count(["isPublic": Bson(true)]);
     }
@@ -236,11 +241,28 @@ class DBController {
 		return ret;
 	}
 
+	Comment[] getRecentComments(int limit, bool allow_inactive = false)
+	{
+		Comment[] ret;
+
+        auto recentComments = m_comments.find().sort(["_id": Bson(-1)]).limit(limit);
+        foreach (comment; recentComments)
+        {
+            ret ~= Comment.fromBson(comment);
+        }
+		
+        return ret;
+	}
+
 	long getCommentCount(BsonObjectID post_id)
 	{
 		return m_comments.count(["postId": Bson(post_id), "isPublic": Bson(true)]);
 	}
 
+    int getCommentCount()
+    {
+        return cast(int)m_comments.count(["isPublic": Bson(true)]);
+    }
 
 	void addComment(BsonObjectID post_id, Comment comment)
 	{

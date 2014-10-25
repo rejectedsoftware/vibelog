@@ -4,6 +4,9 @@ block title
 	- auto title = "VibeLog Admin Panel";
 
 block body
+	- import std.datetime;
+	- import vibe.inet.message;
+	
 	#vibelogContent
 		h1= title
 
@@ -15,11 +18,19 @@ block body
 				table(border="1")
 					tr
 						td #{info.posts} Posts
-						td 1 Comments
+						td #{info.comments} Comments
 					tr
-						td 1 Pages
-						td empty
+						td #{info.users} Users
+						td .
 
-			// Recent Comments Section (Last 5)
+			// Recent Comments Section (Last 3)
 			div(class="dashboardWindow")
 				div(class="header") Recent Comments
+				table(border="1")
+					- foreach(comment; info.recentComments)
+						tr
+							td(style="padding: 0 10px; 0 10px")
+								p
+									span= comment.authorName
+									span(style="margin-left:20px")= toRFC822DateString(comment.date)
+								p= comment.content
