@@ -251,9 +251,7 @@ class DBController {
 
 			auto post = Post.fromBson(p);
 
-			parseDietFileCompat!("mail.new_comment.dt",
-				Comment, "comment",
-				Post, "post")(msg, Variant(comment), Variant(post));
+			msg.parseDietFile!("mail.new_comment.dt", comment, post);
 
 			auto mail = new Mail;
 			mail.headers["From"] = comment.authorName ~ " <" ~ comment.authorMail ~ ">";
