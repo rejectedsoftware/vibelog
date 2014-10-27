@@ -179,11 +179,7 @@ class VibeLog {
 	{
 		auto info = getPostListInfo(req);
 
-		//res.render!("vibelog.postlist.dt", req, info);
-		res.renderCompat!("vibelog.postlist.dt",
-			HTTPServerRequest, "req",
-			PostListInfo*, "info")
-			(req, &info);
+		res.render!("vibelog.postlist.dt", req, info);
 	}
 
 	protected void showPost(HTTPServerRequest req, HTTPServerResponse res)
@@ -206,11 +202,7 @@ class VibeLog {
 		info.comments = m_db.getComments(info.post.id);
 		info.recentPosts = getRecentPosts();
 		
-		//res.render!("vibelog.post.dt", req, users, post, textFilters);
-		res.renderCompat!("vibelog.post.dt",
-			HTTPServerRequest, "req",
-			ShowPostInfo*, "info")
-			(req, &info);
+		res.render!("vibelog.post.dt", req, info);
 	}
 
 	protected void postComment(HTTPServerRequest req, HTTPServerResponse res)
@@ -317,11 +309,7 @@ class VibeLog {
 
 	protected void showAdminPanel(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
-		res.renderCompat!("vibelog.admin.home.dt",
-			HTTPServerRequest, "req",
-			User[string], "users",
-			User, "loginUser")
-			(req, users, loginUser);
+		res.render!("vibelog.admin.home.dt", req, users, loginUser);
 	}
 
 	//
@@ -332,11 +320,7 @@ class VibeLog {
 	{
 		enforce(loginUser.isConfigAdmin());
 		Config[] configs = m_db.getAllConfigs();
-		res.renderCompat!("vibelog.admin.editconfiglist.dt",
-			HTTPServerRequest, "req",
-			User, "loginUser",
-			Config[], "configs")
-			(req, loginUser, configs);
+		res.render!("vibelog.admin.editconfiglist.dt", req, loginUser, configs);
 	}
 
 	protected void showConfigEdit(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
@@ -344,12 +328,7 @@ class VibeLog {
 		auto globalConfig = m_db.getConfig("global", true);
 		enforce(loginUser.isConfigAdmin());
 		Config config = m_db.getConfig(req.params["configname"]);
-		res.renderCompat!("vibelog.admin.editconfig.dt",
-			HTTPServerRequest, "req",
-			User, "loginUser",
-			Config, "globalConfig",
-			Config, "config")
-			(req, loginUser, globalConfig, config);
+		res.render!("vibelog.admin.editconfig.dt", req, loginUser, globalConfig, config);
 	}
 
 	protected void putConfig(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
@@ -393,23 +372,14 @@ class VibeLog {
 
 	protected void showUserList(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
-		res.renderCompat!("vibelog.admin.edituserlist.dt",
-			HTTPServerRequest, "req",
-			User, "loginUser",
-			User[string], "users")
-			(req, loginUser, users);
+		res.render!("vibelog.admin.edituserlist.dt", req, loginUser, users);
 	}
 
 	protected void showUserEdit(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
 		auto globalConfig = m_db.getConfig("global", true);
 		User user = m_db.getUser(req.params["username"]);
-		res.renderCompat!("vibelog.admin.edituser.dt",
-			HTTPServerRequest, "req",
-			User, "loginUser",
-			Config, "globalConfig",
-			User, "user")
-			(req, loginUser, globalConfig, user);
+		res.render!("vibelog.admin.edituser.dt", req, loginUser, globalConfig, user);
 	}
 
 	protected void putUser(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
@@ -504,12 +474,7 @@ class VibeLog {
 		});
 		logInfo("Showing %d posts.", posts.length);
 		//parseJadeFile!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
-		res.renderCompat!("vibelog.admin.editpostslist.dt",
-			HTTPServerRequest, "req",
-			User[string], "users",
-			User, "loginUser",
-			Post[], "posts")
-			(req, users, loginUser, posts);
+		res.render!("vibelog.admin.editpostslist.dt", req, users, loginUser, posts);
 	}
 
 	protected void showMakePost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
@@ -517,14 +482,7 @@ class VibeLog {
 		auto globalConfig = m_db.getConfig("global", true);
 		Post post;
 		Comment[] comments;
-		res.renderCompat!("vibelog.admin.editpost.dt",
-			HTTPServerRequest, "req",
-			User[string], "users",
-			User, "loginUser",
-			Config, "globalConfig",
-			Post, "post",
-			Comment[], "comments")
-			(req, users, loginUser, globalConfig, post, comments);
+		res.render!("vibelog.admin.editpost.dt", req, users, loginUser, globalConfig, post, comments);
 	}
 
 	protected void showEditPost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
@@ -532,14 +490,7 @@ class VibeLog {
 		auto globalConfig = m_db.getConfig("global", true);
 		auto post = m_db.getPost(req.params["postname"]);
 		auto comments = m_db.getComments(post.id, true);
-		res.renderCompat!("vibelog.admin.editpost.dt",
-			HTTPServerRequest, "req",
-			User[string], "users",
-			User, "loginUser",
-			Config, "globalConfig",
-			Post, "post",
-			Comment[], "comments")
-			(req, users, loginUser, globalConfig, post, comments);
+		res.render!("vibelog.admin.editpost.dt", req, users, loginUser, globalConfig, post, comments);
 	}
 
 	protected void deletePost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
