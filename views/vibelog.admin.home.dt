@@ -17,10 +17,28 @@ block body
 				div(class="header") Quick Look
 				table(border="1")
 					tr
-						td #{info.posts} Posts
-						td #{info.comments} Comments
+						td
+							div(style="overflow: hidden;margin: 5px;")
+								div(style="float:left;width:36px;padding-top:10px;")
+									img(src="images/posts.png")
+									
+								div(style="float:left;line-height:48px; font-weight:bold;")
+									span #{info.posts} Posts
+						td 
+							div(style="overflow: hidden;margin: 5px;")
+								div(style="float:left;")
+									img(src="images/comments.png")
+									
+								div(style="float:left;line-height:48px; font-weight:bold;")
+									span #{info.comments} Comments
 					tr
-						td #{info.users} Users
+						td
+							div(style="overflow: hidden;margin: 5px;")
+								div(style="float:left;width:36px;padding-top:10px;")
+									img(src="images/users.png")
+									
+								div(style="float:left;line-height:48px; font-weight:bold;")
+									span #{info.users} Users
 						td .
 
 			// Recent Comments Section (Last 3)
