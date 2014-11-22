@@ -12,17 +12,17 @@ html
             div(id="menuContainer")
                 ul(class="headerMenu")
                     li
-                        a(href="../manage") Dashboard
+                        a(href="#{req.rootDir}manage") Dashboard
                     li
-                        a(href="../make_post") New post
+                        a(href="#{req.rootDir}make_post") New post
                     li
-                        a(href="../posts/") Manage posts
+                        a(href="#{req.rootDir}posts/") Manage posts
                     - if( loginUser.isConfigAdmin() )
                         li
-                            a(href="../configs/") Manage configurations
+                            a(href="#{req.rootDir}configs/") Manage configurations
                     - if( loginUser.isUserAdmin() )
                         li
-                            a(href="../users/") Manage users
+                            a(href="#{req.rootDir}users/") Manage users
                     - else
                         li
                             a(href="users/#{loginUser.username}/edit") Manage account

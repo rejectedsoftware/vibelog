@@ -18,6 +18,8 @@ import std.datetime;
 import std.exception;
 import std.string;
 
+enum RECENT_COMMENT_LIMIT = 3;
+
 class VibeLogSettings {
 	string databaseHost = "localhost";
 	ushort databasePort = MongoConnection.defaultPort;
@@ -309,7 +311,20 @@ class VibeLog {
 
 	protected void showAdminPanel(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
 	{
-		res.render!("vibelog.admin.home.dt", req, users, loginUser);
+        struct DashboardInfo {
+            int posts;
+            int comments;
+            int users;
+            Comment[] recentComments;
+        }
+
+        DashboardInfo info;
+        info.posts = m_db.getPostCount();
+        info.comments = m_db.getCommentCount();
+        info.users = m_db.getUserCount();
+        info.recentComments = m_db.getRecentComments(RECENT_COMMENT_LIMIT); 
+
+		res.render!("vibelog.admin.home.dt", req, users, loginUser, info);
 	}
 
 	//

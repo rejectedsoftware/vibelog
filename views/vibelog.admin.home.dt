@@ -2,10 +2,53 @@ extends layout.admin
 
 block title
 	- auto title = "VibeLog Admin Panel";
-	
+
 block body
+	- import std.datetime;
+	- import vibe.inet.message;
+	
 	#vibelogContent
 		h1= title
-		
-		section#actions.vibelogAdminSection
-			h2 Dashboard 
+
+		div(id="dashboard")
+
+			// Quick Look Section
+			div(class="dashboardWindow")
+				div(class="header") Quick Look
+				table(border="1")
+					tr
+						td
+							div(style="overflow: hidden;margin: 5px;")
+								div(style="float:left;width:36px;padding-top:10px;")
+									img(src="images/posts.png")
+									
+								div(style="float:left;line-height:48px; font-weight:bold;")
+									span #{info.posts} Posts
+						td 
+							div(style="overflow: hidden;margin: 5px;")
+								div(style="float:left;")
+									img(src="images/comments.png")
+									
+								div(style="float:left;line-height:48px; font-weight:bold;")
+									span #{info.comments} Comments
+					tr
+						td
+							div(style="overflow: hidden;margin: 5px;")
+								div(style="float:left;width:36px;padding-top:10px;")
+									img(src="images/users.png")
+									
+								div(style="float:left;line-height:48px; font-weight:bold;")
+									span #{info.users} Users
+						td .
+
+			// Recent Comments Section (Last 3)
+			div(class="dashboardWindow")
+				div(class="header") Recent Comments
+				table(border="1")
+					- foreach(comment; info.recentComments)
+						tr
+							td(style="padding: 0 10px; 0 10px")
+								p
+									span= comment.authorName
+									span(style="margin-left:20px")= toRFC822DateString(comment.date)
+								p= comment.content
