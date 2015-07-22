@@ -115,34 +115,36 @@ class VibeLog {
 	}
 
 
-	PostListInfo getPostListInfo(HTTPServerRequest req)
+	PostListInfo getPostListInfo(HTTPServerRequest req, size_t page_size = 0)
 	{
 		PostListInfo info;
 		info.rootDir = m_subPath; // TODO: use relative path
 		info.users = m_db.getAllUsers();
 		info.settings = m_settings;
-		info.pageCount = getPageCount();
+		info.pageCount = getPageCount(page_size);
 		if (auto pp = "page" in req.query) info.pageNumber = to!int(*pp)-1;
-		info.posts = getPostsForPage(info.pageNumber);
+		info.posts = getPostsForPage(info.pageNumber, page_size);
 		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
 		info.recentPosts = getRecentPosts();
 		return info;
 	}	
 
-	int getPageCount()
+	int getPageCount(size_t page_size = 0)
 	{
+		if (page_size == 0) page_size = m_settings.postsPerPage;
 		int cnt = m_db.countPostsForCategory(m_config.categories);
-		return (cnt + m_settings.postsPerPage - 1) / m_settings.postsPerPage;
+		return (cnt + page_size - 1) / page_size;
 	}
 
-	Post[] getPostsForPage(int n)
+	Post[] getPostsForPage(int n, size_t page_size = 0)
 	{
+		if (page_size == 0) page_size = m_settings.postsPerPage;
 		Post[] ret;
 		try {
 			size_t cnt = 0;
-			m_db.getPublicPostsForCategory(m_config.categories, n*m_settings.postsPerPage, (size_t i, Post p){
+			m_db.getPublicPostsForCategory(m_config.categories, n*page_size, (size_t i, Post p){
 				ret ~= p;
-				if( ++cnt >= m_settings.postsPerPage )
+				if( ++cnt >= page_size )
 					return false;
 				return true;
 			});
