@@ -115,7 +115,7 @@ class VibeLog {
 	}
 
 
-	PostListInfo getPostListInfo(HTTPServerRequest req, size_t page_size = 0)
+	PostListInfo getPostListInfo(HTTPServerRequest req, int page_size = 0)
 	{
 		PostListInfo info;
 		info.rootDir = m_subPath; // TODO: use relative path
@@ -129,16 +129,16 @@ class VibeLog {
 		return info;
 	}	
 
-	int getPageCount(size_t page_size = 0)
+	int getPageCount(int page_size = 0)
 	{
-		if (page_size == 0) page_size = m_settings.postsPerPage;
+		if (page_size <= 0) page_size = m_settings.postsPerPage;
 		int cnt = m_db.countPostsForCategory(m_config.categories);
 		return (cnt + page_size - 1) / page_size;
 	}
 
-	Post[] getPostsForPage(int n, size_t page_size = 0)
+	Post[] getPostsForPage(int n, int page_size = 0)
 	{
-		if (page_size == 0) page_size = m_settings.postsPerPage;
+		if (page_size <= 0) page_size = m_settings.postsPerPage;
 		Post[] ret;
 		try {
 			size_t cnt = 0;
