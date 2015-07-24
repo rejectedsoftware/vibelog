@@ -12,6 +12,7 @@ import vibe.http.router;
 import vibe.inet.url;
 import vibe.templ.diet;
 import vibe.textfilter.markdown;
+import vibe.web.web;
 
 import std.conv;
 import std.datetime;
@@ -37,7 +38,18 @@ class VibeLogSettings {
 
 void registerVibeLog(VibeLogSettings settings, URLRouter router)
 {
-	new VibeLog(settings, router);
+	auto sub_path = settings.siteUrl.path.toString();
+	assert(sub_path.endsWith("/"), "Blog site URL must end with '/'.");
+
+	if (sub_path.length > 1) router.get(sub_path[0 .. $-1], staticRedirect(sub_path));
+
+	auto websettings = new WebInterfaceSettings;
+	websettings.urlPrefix = sub_path;
+	router.registerWebInterface(new VibeLog(settings));
+
+	auto fsettings = new HTTPFileServerSettings;
+	fsettings.serverPathPrefix = sub_path;
+	router.get(sub_path ~ "*", serveStaticFiles("public", fsettings));
 }
 
 
@@ -65,126 +77,18 @@ class VibeLog {
 		enforce(m_subPath.startsWith("/") && m_subPath.endsWith("/"), "All local URLs must start with and end with '/'.");
 	}
 
-	this(VibeLogSettings settings, URLRouter router)
-	{
-		this(settings);
-		register(router);
-	}
-
-	void register(URLRouter router)
-	{
-		//
-		// public pages
-		//
-		if( m_subPath.length > 1 ) router.get(m_subPath[0 .. $-1], staticRedirect(m_subPath));
-		router.get(m_subPath, &showPostList);
-		router.get(m_subPath ~ "posts/:postname", &showPost);
-		router.post(m_subPath ~ "posts/:postname/post_comment", &postComment);
-		router.get(m_subPath ~ "feed/rss", &rssFeed);
-		router.post(m_subPath ~ "markup", &markup);
-
-		router.get(m_subPath ~ "sitemap.xml", &sitemap);
-
-		auto fsettings = new HTTPFileServerSettings;
-		fsettings.serverPathPrefix = m_subPath;
-		router.get(m_subPath ~ "*", serveStaticFiles("public", fsettings));
-
-		//
-		// restricted pages
-		//
-		router.get(m_subPath ~ "manage",                      auth(&showAdminPanel));
-
-		router.get(m_subPath ~ "configs/",                    auth(&showConfigList));
-		router.get(m_subPath ~ "configs/:configname/edit",    auth(&showConfigEdit));
-		router.post(m_subPath ~ "configs/:configname/put",    auth(&putConfig));
-		router.post(m_subPath ~ "configs/:configname/delete", auth(&deleteConfig));
-
-		router.get(m_subPath ~ "users/",                      auth(&showUserList));
-		router.get(m_subPath ~ "users/:username/edit",        auth(&showUserEdit));
-		router.post(m_subPath ~ "users/:username/put",        auth(&putUser));
-		router.post(m_subPath ~ "users/:username/delete",     auth(&deleteUser));
-		router.post(m_subPath ~ "add_user",                   auth(&addUser));
-
-		router.get(m_subPath ~ "posts/",                      auth(&showEditPosts));
-		router.get(m_subPath ~ "posts/:postname/edit",        auth(&showEditPost));
-		router.post(m_subPath ~ "posts/:postname/put",        auth(&putPost));
-		router.post(m_subPath ~ "posts/:postname/delete",     auth(&deletePost));
-		router.post(m_subPath ~ "posts/:postname/set_comment_public", auth(&setCommentPublic));
-		router.get(m_subPath ~ "make_post",                   auth(&showMakePost));
-		router.post(m_subPath ~ "make_post",                  auth(&putPost));
-	}
-
-
-	PostListInfo getPostListInfo(HTTPServerRequest req, int page_size = 0)
-	{
-		PostListInfo info;
-		info.rootDir = m_subPath; // TODO: use relative path
-		info.users = m_db.getAllUsers();
-		info.settings = m_settings;
-		info.pageCount = getPageCount(page_size);
-		if (auto pp = "page" in req.query) info.pageNumber = to!int(*pp)-1;
-		info.posts = getPostsForPage(info.pageNumber, page_size);
-		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
-		info.recentPosts = getRecentPosts();
-		return info;
-	}	
-
-	int getPageCount(int page_size = 0)
-	{
-		if (page_size <= 0) page_size = m_settings.postsPerPage;
-		int cnt = m_db.countPostsForCategory(m_config.categories);
-		return (cnt + page_size - 1) / page_size;
-	}
-
-	Post[] getPostsForPage(int n, int page_size = 0)
-	{
-		if (page_size <= 0) page_size = m_settings.postsPerPage;
-		Post[] ret;
-		try {
-			size_t cnt = 0;
-			m_db.getPublicPostsForCategory(m_config.categories, n*page_size, (size_t i, Post p){
-				ret ~= p;
-				if( ++cnt >= page_size )
-					return false;
-				return true;
-			});
-		} catch( Exception e ){
-			auto p = new Post;
-			p.header = "ERROR";
-			p.subHeader = e.msg;
-			ret ~= p;
-		}
-		return ret;
-	}
-
-	Post[] getRecentPosts()
-	{
-		Post[] ret;
-		m_db.getPublicPostsForCategory(m_config.categories, 0, (i, p){
-			if( i > 20 ) return false;
-			ret ~= p;
-			return true;
-		});
-		return ret;
-	}
-
-	string getShowPagePath(int page)
-	{
-		return m_subPath ~ "?page=" ~ to!string(page+1);
-	}
-
 	//
 	// public pages
 	//
 
-	protected void showPostList(HTTPServerRequest req, HTTPServerResponse res)
+	void get(int page = 1)
 	{
-		auto info = getPostListInfo(req);
-
-		res.render!("vibelog.postlist.dt", req, info);
+		auto info = getPostListInfo(page);
+		render!("vibelog.postlist.dt", info);
 	}
 
-	protected void showPost(HTTPServerRequest req, HTTPServerResponse res)
+	@path("posts/:postname")
+	void getPost(string _postname)
 	{
 		struct ShowPostInfo {
 			string rootDir;
@@ -199,35 +103,37 @@ class VibeLog {
 		info.rootDir = m_subPath; // TODO: use relative path
 		info.users = m_db.getAllUsers();
 		info.settings = m_settings;
-		try info.post = m_db.getPost(req.params["postname"]);
+		try info.post = m_db.getPost(_postname);
 		catch(Exception e){ return; } // -> gives 404 error
 		info.comments = m_db.getComments(info.post.id);
 		info.recentPosts = getRecentPosts();
 		
-		res.render!("vibelog.post.dt", req, info);
+		render!("vibelog.post.dt", info);
 	}
 
-	protected void postComment(HTTPServerRequest req, HTTPServerResponse res)
+	@path("/posts/:postname/post_comment")
+	void postComment(string name, string email, string homepage, string message, string _postname, HTTPServerRequest req)
 	{
-		auto post = m_db.getPost(req.params["postname"]);
+		auto post = m_db.getPost(_postname);
 		enforce(post.commentsAllowed, "Posting comments is not allowed for this article.");
 
 		auto c = new Comment;
 		c.isPublic = true;
 		c.date = Clock.currTime().toUTC();
-		c.authorName = req.form["name"];
-		c.authorMail = req.form["email"];
-		c.authorHomepage = req.form["homepage"];
+		c.authorName = name;
+		c.authorMail = email;
+		c.authorHomepage = homepage;
 		c.authorIP = req.peer;
-		if( auto fip = "X-Forwarded-For" in req.headers ) c.authorIP = *fip;
-		if( c.authorHomepage == "http://" ) c.authorHomepage = "";
-		c.content = req.form["message"];
+		if (auto fip = "X-Forwarded-For" in req.headers) c.authorIP = *fip;
+		if (c.authorHomepage == "http://") c.authorHomepage = "";
+		c.content = message;
 		m_db.addComment(post.id, c);
 
-		res.redirect(m_subPath ~ "posts/"~post.name);
+		redirect(m_subPath ~ "posts/" ~ post.name);
 	}
 
-	protected void rssFeed(HTTPServerRequest req, HTTPServerResponse res)
+	@path("feed/rss")
+	protected void getRSSFeed(HTTPServerResponse res)
 	{
 		auto ch = new RssChannel;
 		ch.title = m_config.feedTitle;
@@ -259,14 +165,15 @@ class VibeLog {
 		feed.render(res.bodyWriter);
 	}
 
-	protected void markup(HTTPServerRequest req, HTTPServerResponse res)
+	void postMarkup(string message, HTTPServerResponse res)
 	{
 		auto post = new Post;
-		post.content = req.form["message"];
+		post.content = message;
 		res.writeBody(post.renderContentAsHtml(m_settings), "text/html");
 	}
 
-	protected void sitemap(HTTPServerRequest req, HTTPServerResponse res)
+	@path("/sitemap.xml")
+	void getSitemap(HTTPServerResponse res)
 	{
 		res.contentType = "application/xml";
 		res.bodyWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -291,54 +198,45 @@ class VibeLog {
 		res.bodyWriter.flush();
 	}
 
-	protected HTTPServerRequestDelegate auth(void delegate(HTTPServerRequest, HTTPServerResponse, User[string], User) del)
+	@auth
+	void getManage(AuthInfo _auth)
 	{
-		return (HTTPServerRequest req, HTTPServerResponse res)
-		{
-			User[string] users = m_db.getAllUsers();
-			bool testauth(string user, string password)
-			{
-				auto pu = user in users;
-				if( pu is null ) return false;
-				return testSimplePasswordHash(pu.password, password);
-			}
-			string username = performBasicAuth(req, res, "VibeLog admin area", &testauth);
-			auto pusr = username in users;
-			assert(pusr, "Authorized with unknown username !?");
-			del(req, res, users, *pusr);
-		};
-	}
-
-	protected void showAdminPanel(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
-	{
-		res.render!("vibelog.admin.home.dt", req, users, loginUser);
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
+		render!("vibelog.admin.home.dt", users, loginUser);
 	}
 
 	//
 	// Configs
 	//
 
-	protected void showConfigList(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth
+	void getConfigs(AuthInfo _auth)
 	{
+		auto loginUser = _auth.loginUser;
 		enforce(loginUser.isConfigAdmin());
 		Config[] configs = m_db.getAllConfigs();
-		res.render!("vibelog.admin.editconfiglist.dt", req, loginUser, configs);
+		render!("vibelog.admin.editconfiglist.dt", loginUser, configs);
 	}
 
-	protected void showConfigEdit(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("configs/:configname/edit")
+	void getConfigEdit(string _configname, AuthInfo _auth)
 	{
+		auto loginUser = _auth.loginUser;
 		auto globalConfig = m_db.getConfig("global", true);
 		enforce(loginUser.isConfigAdmin());
-		Config config = m_db.getConfig(req.params["configname"]);
-		res.render!("vibelog.admin.editconfig.dt", req, loginUser, globalConfig, config);
+		Config config = m_db.getConfig(_configname);
+		render!("vibelog.admin.editconfig.dt", loginUser, globalConfig, config);
 	}
 
-	protected void putConfig(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("configs/:configname/put")
+	void postPutConfig(HTTPServerRequest req, string categories, string language, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth)
 	{
+		auto loginUser = _auth.loginUser;
 		enforce(loginUser.isConfigAdmin());
-		Config cfg = m_db.getConfig(req.params["configname"]);
+		Config cfg = m_db.getConfig(_configname);
 		if( cfg.name == "global" )
-			cfg.categories = req.form["categories"].splitLines();
+			cfg.categories = categories.splitLines();
 		else {
 			cfg.categories = null;
 			foreach( k, v; req.form ){
@@ -346,25 +244,27 @@ class VibeLog {
 					cfg.categories ~= k[9 .. $];
 			}
 		}
-		cfg.language = req.form["language"];
-		cfg.copyrightString = req.form["copyrightString"];
-		cfg.feedTitle = req.form["feedTitle"];
-		cfg.feedLink = req.form["feedLink"];
-		cfg.feedDescription = req.form["feedDescription"];
-		cfg.feedImageTitle = req.form["feedImageTitle"];
-		cfg.feedImageUrl = req.form["feedImageUrl"];
+		cfg.language = language;
+		cfg.copyrightString = copyrightString;
+		cfg.feedTitle = feedTitle;
+		cfg.feedLink = feedLink;
+		cfg.feedDescription = feedDescription;
+		cfg.feedImageTitle = feedImageTitle;
+		cfg.feedImageUrl = feedImageUrl;
 	
 		m_db.setConfig(cfg);
 
 		m_config = cfg;
-		res.redirect(m_subPath ~ "configs/");
+		redirect(m_subPath ~ "configs/");
 	}
 
-	protected void deleteConfig(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("configs/:configname/delete")
+	void postDeleteConfig(string _configname, AuthInfo _auth)
 	{
+		auto loginUser = _auth.loginUser;
 		enforce(loginUser.isConfigAdmin());
-		m_db.deleteConfig(req.params["configname"]);
-		res.redirect(m_subPath ~ "configs/");
+		m_db.deleteConfig(_configname);
+		redirect(m_subPath ~ "configs/");
 	}
 
 
@@ -372,42 +272,49 @@ class VibeLog {
 	// Users
 	//
 
-	protected void showUserList(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth
+	void getUsers(AuthInfo _auth)
 	{
-		res.render!("vibelog.admin.edituserlist.dt", req, loginUser, users);
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
+		render!("vibelog.admin.edituserlist.dt", loginUser, users);
 	}
 
-	protected void showUserEdit(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("users/:username/edit")
+	void getUserEdit(string _username, AuthInfo _auth)
 	{
+		auto loginUser = _auth.loginUser;
 		auto globalConfig = m_db.getConfig("global", true);
-		User user = m_db.getUser(req.params["username"]);
-		res.render!("vibelog.admin.edituser.dt", req, loginUser, globalConfig, user);
+		User user = m_db.getUser(_username);
+		render!("vibelog.admin.edituser.dt", loginUser, globalConfig, user);
 	}
 
-	protected void putUser(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("users/:username/put")
+	void postPutUser(string id, string username, string password, string name, string email, string passwordConfirmation, string oldPassword, string _username, HTTPServerRequest req, AuthInfo _auth)
 	{
-		auto id = req.form["id"];
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
 		User usr;
 		if( id.length > 0 ){
-			enforce(loginUser.isUserAdmin() || req.form["username"] == loginUser.username,
+			enforce(loginUser.isUserAdmin() || username == loginUser.username,
 				"You can only change your own account.");
 			usr = m_db.getUser(BsonObjectID.fromHexString(id));
-			enforce(usr.username == req.form["username"], "Cannot change the user name!");
+			enforce(usr.username == username, "Cannot change the user name!");
 		} else {
 			enforce(loginUser.isUserAdmin(), "You are not allowed to add users.");
 			usr = new User;
-			usr.username = req.form["username"];
+			usr.username = username;
 			foreach( u; users )
 				enforce(u.username != usr.username, "A user with the specified user name already exists!");
 		}
-		enforce(req.form["password"] == req.form["passwordConfirmation"], "Passwords do not match!");
+		enforce(password == passwordConfirmation, "Passwords do not match!");
 
-		usr.name = req.form["name"];
-		usr.email = req.form["email"];
+		usr.name = name;
+		usr.email = email;
 
-		if( req.form["password"].length || req.form["passwordConfirmation"].length ){
-			enforce(loginUser.isUserAdmin() || testSimplePasswordHash(req.form["oldPassword"], usr.password), "Old password does not match.");
-			usr.password = generateSimplePasswordHash(req.form["password"]);
+		if (password.length) {
+			enforce(loginUser.isUserAdmin() || testSimplePasswordHash(oldPassword, usr.password), "Old password does not match.");
+			usr.password = generateSimplePasswordHash(password);
 		}
 
 		if( loginUser.isUserAdmin() ){
@@ -430,41 +337,50 @@ class VibeLog {
 			usr._id = m_db.addUser(usr);
 		}
 
-		if( loginUser.isUserAdmin() ) res.redirect(m_subPath~"users/");
-		else res.redirect(m_subPath~"manage");
+		if( loginUser.isUserAdmin() ) redirect(m_subPath~"users/");
+		else redirect(m_subPath~"manage");
 	}
 
-	protected void deleteUser(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("users/:username/delete")
+	void postDeleteUser(string _username, AuthInfo _auth)
 	{
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
 		enforce(loginUser.isUserAdmin(), "You are not authorized to delete users!");
-		enforce(loginUser.username != req.params["username"], "Cannot delete the own user account!");
+		enforce(loginUser.username != _username, "Cannot delete the own user account!");
 		foreach( usr; users )
-			if( usr.username == req.params["username"] ){
+			if (usr.username == _username) {
 				m_db.deleteUser(usr._id);
-				res.redirect(m_subPath ~ "users/");
+				redirect(m_subPath ~ "users/");
 				return;
 			}
-		enforce(false, "Unknown user name.");
+		
+		// fall-through (404)
 	}
 
-	protected void addUser(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth
+	void postAddUser(string username, AuthInfo _auth)
 	{
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
 		enforce(loginUser.isUserAdmin(), "You are not authorized to add users!");
-		string uname = req.form["username"];
-		if( uname !in users ){
+		if (username !in users) {
 			auto u = new User;
-			u.username = uname;
+			u.username = username;
 			m_db.addUser(u);
 		}
-		res.redirect(m_subPath ~ "users/" ~ uname ~ "/edit");
+		redirect(m_subPath ~ "users/" ~ username ~ "/edit");
 	}
 
 	//
 	// Posts
 	//
 
-	protected void showEditPosts(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth
+	void getPosts(AuthInfo _auth)
 	{
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
 		Post[] posts;
 		m_db.getAllPosts(0, (size_t idx, Post post){
 			if( loginUser.isPostAdmin() || post.author == loginUser.username
@@ -475,75 +391,177 @@ class VibeLog {
 			return true;
 		});
 		logInfo("Showing %d posts.", posts.length);
-		//parseJadeFile!("vibelog.postlist.dt", req, posts, pageNumber, pageCount)(res.bodyWriter);
-		res.render!("vibelog.admin.editpostslist.dt", req, users, loginUser, posts);
+		render!("vibelog.admin.editpostslist.dt", users, loginUser, posts);
 	}
 
-	protected void showMakePost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth
+	void getMakePost(AuthInfo _auth)
 	{
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
 		auto globalConfig = m_db.getConfig("global", true);
 		Post post;
 		Comment[] comments;
-		res.render!("vibelog.admin.editpost.dt", req, users, loginUser, globalConfig, post, comments);
+		render!("vibelog.admin.editpost.dt", users, loginUser, globalConfig, post, comments);
 	}
 
-	protected void showEditPost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	alias postMakePost = postPutPost;
+	/*@auth
+	void postMakePost(AuthInfo _auth)
 	{
+		auto loginUser = _auth.loginUser;
+		postPutPost(_users, loginUser);
+	}*/
+
+	@auth @path("posts/:postname/edit")
+	void getEditPost(string _postname, AuthInfo _auth)
+	{
+		auto users = _auth.users;
+		auto loginUser = _auth.loginUser;
 		auto globalConfig = m_db.getConfig("global", true);
-		auto post = m_db.getPost(req.params["postname"]);
+		auto post = m_db.getPost(_postname);
 		auto comments = m_db.getComments(post.id, true);
-		res.render!("vibelog.admin.editpost.dt", req, users, loginUser, globalConfig, post, comments);
+		render!("vibelog.admin.editpost.dt", users, loginUser, globalConfig, post, comments);
 	}
 
-	protected void deletePost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("posts/:postname/delete")
+	void postDeletePost(string id, string _postname, AuthInfo _auth)
 	{
-		auto id = BsonObjectID.fromHexString(req.form["id"]);
-		m_db.deletePost(id);
-		res.redirect(m_subPath ~ "posts/");
+		// FIXME: check permissons!
+		auto bid = BsonObjectID.fromHexString(id);
+		m_db.deletePost(bid);
+		redirect(m_subPath ~ "posts/");
 	}
 
-	protected void setCommentPublic(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("posts/:postname/set_comment_public")
+	void postSetCommentPublic(string id, string _postname, bool public_, AuthInfo _auth)
 	{
-		auto id = BsonObjectID.fromHexString(req.form["id"]);
-		m_db.setCommentPublic(id, to!int(req.form["public"]) != 0);
-		res.redirect(m_subPath ~ "posts/"~req.params["postname"]~"/edit");
+		// FIXME: check permissons!
+		auto bid = BsonObjectID.fromHexString(id);
+		m_db.setCommentPublic(bid, public_);
+		redirect(m_subPath ~ "posts/"~_postname~"/edit");
 	}
 
-	protected void putPost(HTTPServerRequest req, HTTPServerResponse res, User[string] users, User loginUser)
+	@auth @path("posts/:postname/put")
+	void postPutPost(string id, bool isPublic, bool commentsAllowed, string author,
+		string date, string category, string slug, string headerImage, string header, string subHeader,
+		string content, string _postname, AuthInfo _auth)
 	{
-		auto id = req.form["id"];
+		auto loginUser = _auth.loginUser;
 		Post p;
 		if( id.length > 0 ){
 			p = m_db.getPost(BsonObjectID.fromHexString(id));
-			enforce(req.params["postname"] == p.name, "URL does not match the edited post!");
+			enforce(_postname == p.name, "URL does not match the edited post!");
 		} else {
 			p = new Post;
 			p.category = "default";
 			p.date = Clock.currTime().toUTC();
 		}
-		enforce(loginUser.mayPostInCategory(req.form["category"]), "You are now allowed to post in the '"~req.form["category"]~"' category.");
+		enforce(loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
 
-		p.isPublic = ("isPublic" in req.form) !is null;
-		p.commentsAllowed = ("commentsAllowed" in req.form) !is null;
-		p.author = req.form["author"];
-		p.date = SysTime.fromSimpleString(req.form["date"]);
-		p.category = req.form["category"];
-		p.slug = req.form["slug"].length ? req.form["slug"] : makeSlugFromHeader(req.form["header"]);
-		p.headerImage = req.form["headerImage"];
-		p.header = req.form["header"];
-		p.subHeader = req.form["subHeader"];
-		p.content = req.form["content"];
+		p.isPublic = isPublic;
+		p.commentsAllowed = commentsAllowed;
+		p.author = author;
+		p.date = SysTime.fromSimpleString(date);
+		p.category = category;
+		p.slug = slug.length ? slug : makeSlugFromHeader(header);
+		p.headerImage = headerImage;
+		p.header = header;
+		p.subHeader = subHeader;
+		p.content = content;
 
 		enforce(!m_db.hasPost(p.slug) || m_db.getPost(p.slug).id == p.id, "Post slug is already used for another article.");
 
 		if( id.length > 0 ){
 			m_db.modifyPost(p);
-			req.params["postname"] = p.name;
+			_postname = p.name;
 		} else {
 			p.id = m_db.addPost(p);
 		}
-		res.redirect(m_subPath~"posts/");
+		redirect(m_subPath~"posts/");
 	}
+
+	protected PostListInfo getPostListInfo(int page = 0, int page_size = 0)
+	{
+		PostListInfo info;
+		info.rootDir = m_subPath; // TODO: use relative path
+		info.users = m_db.getAllUsers();
+		info.settings = m_settings;
+		info.pageCount = getPageCount(page_size);
+		info.pageNumber = page;
+		info.posts = getPostsForPage(info.pageNumber, page_size);
+		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
+		info.recentPosts = getRecentPosts();
+		return info;
+	}	
+
+	protected int getPageCount(int page_size = 0)
+	{
+		if (page_size <= 0) page_size = m_settings.postsPerPage;
+		int cnt = m_db.countPostsForCategory(m_config.categories);
+		return (cnt + page_size - 1) / page_size;
+	}
+
+	protected Post[] getPostsForPage(int n, int page_size = 0)
+	{
+		if (page_size <= 0) page_size = m_settings.postsPerPage;
+		Post[] ret;
+		try {
+			size_t cnt = 0;
+			m_db.getPublicPostsForCategory(m_config.categories, n*page_size, (size_t i, Post p){
+				ret ~= p;
+				if( ++cnt >= page_size )
+					return false;
+				return true;
+			});
+		} catch( Exception e ){
+			auto p = new Post;
+			p.header = "ERROR";
+			p.subHeader = e.msg;
+			ret ~= p;
+		}
+		return ret;
+	}
+
+	protected Post[] getRecentPosts()
+	{
+		Post[] ret;
+		m_db.getPublicPostsForCategory(m_config.categories, 0, (i, p){
+			if( i > 20 ) return false;
+			ret ~= p;
+			return true;
+		});
+		return ret;
+	}
+
+	protected string getShowPagePath(int page)
+	{
+		return m_subPath ~ "?page=" ~ to!string(page+1);
+	}
+
+	protected enum auth = before!performAuth("_auth");
+
+	protected AuthInfo performAuth(HTTPServerRequest req, HTTPServerResponse res)
+	{
+		User[string] users = m_db.getAllUsers();
+		bool testauth(string user, string password)
+		{
+			auto pu = user in users;
+			if( pu is null ) return false;
+			return testSimplePasswordHash(pu.password, password);
+		}
+		string username = performBasicAuth(req, res, "VibeLog admin area", &testauth);
+		auto pusr = username in users;
+		assert(pusr, "Authorized with unknown username !?");
+		return AuthInfo(*pusr, users);
+	}
+
+	mixin PrivateAccessProxy;
+}
+
+struct AuthInfo {
+	User loginUser;
+	User[string] users;
 }
 
 struct PostListInfo {
