@@ -3,7 +3,6 @@ module vibelog.post;
 import vibelog.settings;
 
 import vibe.data.bson;
-import vibe.inet.url;
 import vibe.textfilter.markdown;
 import vibe.textfilter.html;
 
@@ -12,7 +11,7 @@ import std.conv;
 public import std.datetime;
 
 
-class Post {
+final class Post {
 	BsonObjectID id;
 	bool isPublic;
 	bool commentsAllowed;
@@ -97,7 +96,7 @@ class Post {
 	}
 }
 
-class Comment {
+final class Comment {
 	BsonObjectID id;
 	BsonObjectID postId;
 	bool isPublic;

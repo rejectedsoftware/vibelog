@@ -6,7 +6,7 @@ import vibe.inet.message : toRFC822DateTimeString;
 import std.datetime;
 
 
-class RssFeed {
+final class RssFeed {
 	RssChannel[] channels;
 
 	void render(OutputStream dst)
@@ -20,7 +20,7 @@ class RssFeed {
 	}
 }
 
-class RssChannel {
+final class RssChannel {
 	string title;
 	string link;
 	string description;
@@ -56,7 +56,7 @@ class RssChannel {
 	}
 }
 
-class RssEntry {
+final class RssEntry {
 	string title;
 	string description;
 	string link;

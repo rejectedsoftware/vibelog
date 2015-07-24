@@ -2,7 +2,7 @@ module vibelog.config;
 
 import vibe.data.bson;
 
-class Config {
+final class Config {
 	BsonObjectID id;
 	string name;
 	string[] categories;
