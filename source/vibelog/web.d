@@ -75,7 +75,7 @@ private final class VibeLogWeb {
 
 	void get(int page = 1)
 	{
-		auto info = getPostListInfo(page);
+		auto info = getPostListInfo(page - 1);
 		render!("vibelog.postlist.dt", info);
 	}
 
