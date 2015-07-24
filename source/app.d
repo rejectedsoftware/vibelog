@@ -1,6 +1,9 @@
-import vibe.d;
+import vibe.http.router;
+import vibe.http.server;
 
-import vibelog.vibelog;
+import vibelog.dbcontroller;
+import vibelog.settings;
+import vibelog.web;
 
 shared static this()
 {
@@ -11,7 +14,9 @@ shared static this()
 	auto blogsettings = new VibeLogSettings;
 	blogsettings.configName = "vibelog";
 	blogsettings.siteUrl = URL("http://localhost:8080/");
-	registerVibeLog(blogsettings, router);
+	auto ctrl = new DBController(blogsettings);
+
+	router.registerVibeLogWeb(ctrl, blogsettings);
 	
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;

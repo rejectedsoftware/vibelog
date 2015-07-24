@@ -1,8 +1,9 @@
 module vibelog.post;
 
-import vibelog.vibelog;
+import vibelog.settings;
 
 import vibe.data.bson;
+import vibe.inet.url;
 import vibe.textfilter.markdown;
 import vibe.textfilter.html;
 

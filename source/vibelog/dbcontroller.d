@@ -3,6 +3,7 @@ module vibelog.dbcontroller;
 public import vibelog.config;
 public import vibelog.post;
 public import vibelog.user;
+import vibelog.settings;
 
 import vibe.core.log;
 import vibe.crypto.passwordhash;
@@ -24,8 +25,12 @@ class DBController {
 		MongoCollection m_comments;
 	}
 
-	this(string host, ushort port, string dbname)
+	this(VibeLogSettings settings)
 	{
+		auto host = settings.databaseHost;
+		auto port = settings.databasePort;
+		auto dbname = settings.databaseName;
+
 		auto db = connectMongoDB(host, port).getDatabase(dbname);
 		m_configs = db["configs"];
 		m_users = db["users"];

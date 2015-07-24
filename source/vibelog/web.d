@@ -2,6 +2,7 @@ module vibelog.web;
 
 import vibelog.dbcontroller;
 import vibelog.rss;
+import vibelog.settings;
 
 import vibe.core.log;
 import vibe.crypto.passwordhash;
@@ -19,24 +20,15 @@ import std.datetime;
 import std.exception;
 import std.string;
 
-class VibeLogSettings {
-	string databaseHost = "localhost";
-	ushort databasePort = MongoConnection.defaultPort;
-	string databaseName = "vibelog";
-	string configName = "global";
-	int postsPerPage = 4;
-	URL siteUrl = URL.parse("http://localhost:8080/");
-	string function(string)[] textFilters;
-	MarkdownSettings markdownSettings;
 
-	this()
-	{
-		markdownSettings = new MarkdownSettings;
-		markdownSettings.flags = MarkdownFlags.backtickCodeBlocks;
-	}
+deprecated("Use registerVibeLogWeb instead.")
+void registerVibeLog(VibeLogSettings settings, URLRouter router)
+{
+	auto db = new DBController(settings);
+	registerVibeLogWeb(router, db, settings);
 }
 
-void registerVibeLog(VibeLogSettings settings, URLRouter router)
+void registerVibeLogWeb(URLRouter router, DBController controller, VibeLogSettings settings)
 {
 	auto sub_path = settings.siteUrl.path.toString();
 	assert(sub_path.endsWith("/"), "Blog site URL must end with '/'.");
@@ -45,7 +37,7 @@ void registerVibeLog(VibeLogSettings settings, URLRouter router)
 
 	auto websettings = new WebInterfaceSettings;
 	websettings.urlPrefix = sub_path;
-	router.registerWebInterface(new VibeLog(settings));
+	router.registerWebInterface(new VibeLogWeb(controller, settings));
 
 	auto fsettings = new HTTPFileServerSettings;
 	fsettings.serverPathPrefix = sub_path;
@@ -53,8 +45,7 @@ void registerVibeLog(VibeLogSettings settings, URLRouter router)
 }
 
 
-
-class VibeLog {
+class VibeLogWeb {
 	private {
 		DBController m_db;
 		string m_subPath;
@@ -62,10 +53,11 @@ class VibeLog {
 		Config m_config;
 	}
 
-	this(VibeLogSettings settings)
+	this(DBController controller, VibeLogSettings settings)
 	{
 		m_settings = settings;
-		m_db = new DBController(settings.databaseHost, settings.databasePort, settings.databaseName);
+
+		m_db = controller;
 		try m_config = m_db.getConfig(settings.configName, true);
 		catch( Exception e ){
 			logError("ERR: %s", e);
@@ -559,12 +551,12 @@ class VibeLog {
 	mixin PrivateAccessProxy;
 }
 
-struct AuthInfo {
+private struct AuthInfo {
 	User loginUser;
 	User[string] users;
 }
 
-struct PostListInfo {
+private struct PostListInfo {
 	string rootDir;
 	User[string] users;
 	VibeLogSettings settings;
@@ -575,7 +567,7 @@ struct PostListInfo {
 	Post[] recentPosts;
 }
 
-struct VibelogHeadlineListConfig {
+private struct VibelogHeadlineListConfig {
 	bool showSummaries = true;
 	size_t maxPosts = 10;
 	size_t headerLevel = 2;
