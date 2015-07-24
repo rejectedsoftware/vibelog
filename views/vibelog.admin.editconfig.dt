@@ -10,7 +10,7 @@ block body
 		p
 			a(href="../") Back to config list
 			
-		form(action="put", method="POST")
+		form(action="./", method="POST")
 			- if( config.name == "global" )
 				p
 					label(for="categories") Categories

@@ -7,17 +7,17 @@ block title
 	script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
 	script(type="text/javascript", src="#{req.rootDir}scripts/vibelog-edit.js")
 	script(type="text/javascript").
-		window.rootDir = "../../";
+		window.rootDir = "../../../";
 
 block body
 	#vibelogContent
 		h1= title
 		
 		p
-			a(href='#{post?"../":"manage"}') Cancel
+			a(href='#{post?"../":"./"}') Cancel
 
 		- if( !post || post.author == loginUser.username || loginUser.isPostAdmin() )
-			form(action='#{post?"put":"make_post"}', method="POST")
+			form(action='#{post?"./":"make_post"}', method="POST")
 				input(type="hidden", name="id", value="#{post ? post.id.toString() : null}")
 				table.blind
 					col.caption
@@ -79,6 +79,9 @@ block body
 						td
 							input#headerImage-field(type="text", name="headerImage", value="#{post ? post.headerImage : null}")
 					tr
+						td(colspan=2)
+							hr
+					tr
 						td
 							label(for="header-field") Heading
 						td
@@ -87,7 +90,7 @@ block body
 						td
 							label(for="subHeader") Sub-Heading
 						td
-							input#subHeader(type="text", name="subHeader", value="#{post ? post.subHeader : null}")
+							textarea#subHeader(rows=3, name="subHeader")= post ? post.subHeader : null
 					tr
 						td Article text
 							p

@@ -9,9 +9,9 @@ block body
 	#vibelogContent
 		h1= title
 		p
-			a(href="../manage") Back to admin panel
+			a(href="../") Back to admin panel
 			
-		form(action="../add_user", method="POST")
+		form(action="./", method="POST")
 			p Add user:
 				input(type="text", name="username")
 				input(type="submit", value="create")
@@ -28,12 +28,12 @@ block body
 						td= usr.username
 						td= usr.name
 						td
-							form(action="#{usr.username}/edit", method="GET")
+							form(action="#{usr.username}/", method="GET")
 								input(type="submit", value="edit")
 						td
 							form(action="#{usr.username}/delete", method="POST")
 								input(type="submit", value="delete")
 		- else
 			p Sorry, you are not authorized to edit users. You can, however,
-				a(href="#{loginUser.username}/edit") edit your own account
+				a(href="#{loginUser.username}/") edit your own account
 				|.

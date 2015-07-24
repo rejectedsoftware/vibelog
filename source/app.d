@@ -13,7 +13,7 @@ shared static this()
 	auto router = new URLRouter;
 
 	auto blogsettings = new VibeLogSettings;
-	blogsettings.configName = "vibelog";
+	blogsettings.configName = "example";
 	blogsettings.siteUrl = URL("http://localhost:8080/");
 	auto ctrl = new DBController(blogsettings);
 

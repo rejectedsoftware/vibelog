@@ -43,15 +43,17 @@ private final class VibeLogWebAdmin {
 	// Configs
 	//
 
+	@path("configs/")
 	void getConfigs(AuthInfo _auth)
 	{
 		auto loginUser = _auth.loginUser;
 		enforceAuth(loginUser.isConfigAdmin());
 		Config[] configs = m_ctrl.getAllConfigs();
-		render!("vibelog.admin.editconfiglist.dt", loginUser, configs);
+		auto activeConfig = m_settings.configName;
+		render!("vibelog.admin.editconfiglist.dt", loginUser, configs, activeConfig);
 	}
 
-	@path("configs/:configname/edit")
+	@path("configs/:configname/")
 	void getConfigEdit(string _configname, AuthInfo _auth)
 	{
 		auto loginUser = _auth.loginUser;
@@ -61,8 +63,8 @@ private final class VibeLogWebAdmin {
 		render!("vibelog.admin.editconfig.dt", loginUser, globalConfig, config);
 	}
 
-	@path("configs/:configname/put")
-	void postPutConfig(HTTPServerRequest req, string categories, string language, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth)
+	@path("configs/:configname/")
+	void postPutConfig(HTTPServerRequest req, string language, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth, string categories = null)
 	{
 		import std.string;
 
@@ -105,6 +107,7 @@ private final class VibeLogWebAdmin {
 	// Users
 	//
 
+	@path("users/")
 	void getUsers(AuthInfo _auth)
 	{
 		auto users = _auth.users;
@@ -112,7 +115,7 @@ private final class VibeLogWebAdmin {
 		render!("vibelog.admin.edituserlist.dt", loginUser, users);
 	}
 
-	@path("users/:username/edit")
+	@path("users/:username/")
 	void getUserEdit(string _username, AuthInfo _auth)
 	{
 		auto loginUser = _auth.loginUser;
@@ -121,8 +124,8 @@ private final class VibeLogWebAdmin {
 		render!("vibelog.admin.edituser.dt", loginUser, globalConfig, user);
 	}
 
-	@path("users/:username/put")
-	void postPutUser(string id, string username, string password, string name, string email, string passwordConfirmation, string oldPassword, string _username, HTTPServerRequest req, AuthInfo _auth)
+	@path("users/:username/")
+	void postPutUser(string id, string username, string password, string name, string email, string passwordConfirmation, Nullable!string oldPassword, string _username, HTTPServerRequest req, AuthInfo _auth)
 	{
 		import vibe.crypto.passwordhash;
 		import vibe.data.bson : BsonObjectID;
@@ -193,6 +196,7 @@ private final class VibeLogWebAdmin {
 		// fall-through (404)
 	}
 
+	@path("users/")
 	void postAddUser(string username, AuthInfo _auth)
 	{
 		auto users = _auth.users;
@@ -203,13 +207,14 @@ private final class VibeLogWebAdmin {
 			u.username = username;
 			m_ctrl.addUser(u);
 		}
-		redirect(m_subPath ~ "users/" ~ username ~ "/edit");
+		redirect(m_subPath ~ "users/" ~ username ~ "/");
 	}
 
 	//
 	// Posts
 	//
 
+	@path("posts/")
 	void getPosts(AuthInfo _auth)
 	{
 		auto users = _auth.users;
@@ -236,15 +241,16 @@ private final class VibeLogWebAdmin {
 		render!("vibelog.admin.editpost.dt", users, loginUser, globalConfig, post, comments);
 	}
 
-	alias postMakePost = postPutPost;
-	/*@auth
-	void postMakePost(AuthInfo _auth)
+	@auth
+	void postMakePost(bool isPublic, bool commentsAllowed, string author,
+		string date, string category, string slug, string headerImage, string header, string subHeader,
+		string content, AuthInfo _auth)
 	{
 		auto loginUser = _auth.loginUser;
-		postPutPost(_users, loginUser);
-	}*/
+		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage, header, subHeader, content, null, _auth);
+	}
 
-	@path("posts/:postname/edit")
+	@path("posts/:postname/")
 	void getEditPost(string _postname, AuthInfo _auth)
 	{
 		auto users = _auth.users;
@@ -275,7 +281,7 @@ private final class VibeLogWebAdmin {
 		redirect(m_subPath ~ "posts/"~_postname~"/edit");
 	}
 
-	@path("posts/:postname/put")
+	@path("posts/:postname/")
 	void postPutPost(string id, bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
 		string content, string _postname, AuthInfo _auth)
