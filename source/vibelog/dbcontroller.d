@@ -17,21 +17,23 @@ import std.exception;
 import std.variant;
 
 
-class DBController {
+final class DBController {
 	private {
 		MongoCollection m_configs;
 		MongoCollection m_users;
 		MongoCollection m_posts;
 		MongoCollection m_comments;
+		void delegate()[] m_onConfigChange;
 	}
 
 	this(VibeLogSettings settings)
 	{
-		auto host = settings.databaseHost;
-		auto port = settings.databasePort;
-		auto dbname = settings.databaseName;
+		string database = "vibelog";
+		MongoClientSettings dbsettings;
+		if (parseMongoDBUrl(dbsettings, settings.databaseURL))
+			database = dbsettings.database;
 
-		auto db = connectMongoDB(host, port).getDatabase(dbname);
+		auto db = connectMongoDB(settings.databaseURL).getDatabase(database);
 		m_configs = db["configs"];
 		m_users = db["users"];
 		m_posts = db["posts"];
@@ -64,6 +66,12 @@ class DBController {
 	{
 		Bson update = cfg.toBson();
 		m_configs.update(["name": Bson(cfg.name)], update);
+		foreach (d; m_onConfigChange) d();
+	}
+
+	void invokeOnConfigChange(void delegate() del)
+	{
+		m_onConfigChange ~= del;
 	}
 
 	void deleteConfig(string name)

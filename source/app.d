@@ -4,6 +4,7 @@ import vibe.http.server;
 import vibelog.dbcontroller;
 import vibelog.settings;
 import vibelog.web;
+import vibelog.webadmin;
 
 shared static this()
 {
@@ -17,6 +18,7 @@ shared static this()
 	auto ctrl = new DBController(blogsettings);
 
 	router.registerVibeLogWeb(ctrl, blogsettings);
+	router.registerVibeLogWebAdmin(ctrl, blogsettings);
 	
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;

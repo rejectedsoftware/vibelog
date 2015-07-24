@@ -5,9 +5,7 @@ import vibelog.rss;
 import vibelog.settings;
 
 import vibe.core.log;
-import vibe.crypto.passwordhash;
 import vibe.db.mongo.connection;
-import vibe.http.auth.basic_auth;
 import vibe.http.fileserver;
 import vibe.http.router;
 import vibe.inet.url;
@@ -37,7 +35,7 @@ void registerVibeLogWeb(URLRouter router, DBController controller, VibeLogSettin
 
 	auto websettings = new WebInterfaceSettings;
 	websettings.urlPrefix = sub_path;
-	router.registerWebInterface(new VibeLogWeb(controller, settings));
+	router.registerWebInterface(new VibeLogWeb(controller, settings), websettings);
 
 	auto fsettings = new HTTPFileServerSettings;
 	fsettings.serverPathPrefix = sub_path;
@@ -45,7 +43,7 @@ void registerVibeLogWeb(URLRouter router, DBController controller, VibeLogSettin
 }
 
 
-class VibeLogWeb {
+private final class VibeLogWeb {
 	private {
 		DBController m_db;
 		string m_subPath;
@@ -63,6 +61,8 @@ class VibeLogWeb {
 			logError("ERR: %s", e);
 			throw e;
 		}
+
+		m_db.invokeOnConfigChange({ m_db.getConfig(settings.configName, true); });
 
 		m_subPath = settings.siteUrl.path.toString();
 
@@ -190,288 +190,6 @@ class VibeLogWeb {
 		res.bodyWriter.flush();
 	}
 
-	@auth
-	void getManage(AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		render!("vibelog.admin.home.dt", users, loginUser);
-	}
-
-	//
-	// Configs
-	//
-
-	@auth
-	void getConfigs(AuthInfo _auth)
-	{
-		auto loginUser = _auth.loginUser;
-		enforce(loginUser.isConfigAdmin());
-		Config[] configs = m_db.getAllConfigs();
-		render!("vibelog.admin.editconfiglist.dt", loginUser, configs);
-	}
-
-	@auth @path("configs/:configname/edit")
-	void getConfigEdit(string _configname, AuthInfo _auth)
-	{
-		auto loginUser = _auth.loginUser;
-		auto globalConfig = m_db.getConfig("global", true);
-		enforce(loginUser.isConfigAdmin());
-		Config config = m_db.getConfig(_configname);
-		render!("vibelog.admin.editconfig.dt", loginUser, globalConfig, config);
-	}
-
-	@auth @path("configs/:configname/put")
-	void postPutConfig(HTTPServerRequest req, string categories, string language, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth)
-	{
-		auto loginUser = _auth.loginUser;
-		enforce(loginUser.isConfigAdmin());
-		Config cfg = m_db.getConfig(_configname);
-		if( cfg.name == "global" )
-			cfg.categories = categories.splitLines();
-		else {
-			cfg.categories = null;
-			foreach( k, v; req.form ){
-				if( k.startsWith("category_") )
-					cfg.categories ~= k[9 .. $];
-			}
-		}
-		cfg.language = language;
-		cfg.copyrightString = copyrightString;
-		cfg.feedTitle = feedTitle;
-		cfg.feedLink = feedLink;
-		cfg.feedDescription = feedDescription;
-		cfg.feedImageTitle = feedImageTitle;
-		cfg.feedImageUrl = feedImageUrl;
-	
-		m_db.setConfig(cfg);
-
-		m_config = cfg;
-		redirect(m_subPath ~ "configs/");
-	}
-
-	@auth @path("configs/:configname/delete")
-	void postDeleteConfig(string _configname, AuthInfo _auth)
-	{
-		auto loginUser = _auth.loginUser;
-		enforce(loginUser.isConfigAdmin());
-		m_db.deleteConfig(_configname);
-		redirect(m_subPath ~ "configs/");
-	}
-
-
-	//
-	// Users
-	//
-
-	@auth
-	void getUsers(AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		render!("vibelog.admin.edituserlist.dt", loginUser, users);
-	}
-
-	@auth @path("users/:username/edit")
-	void getUserEdit(string _username, AuthInfo _auth)
-	{
-		auto loginUser = _auth.loginUser;
-		auto globalConfig = m_db.getConfig("global", true);
-		User user = m_db.getUser(_username);
-		render!("vibelog.admin.edituser.dt", loginUser, globalConfig, user);
-	}
-
-	@auth @path("users/:username/put")
-	void postPutUser(string id, string username, string password, string name, string email, string passwordConfirmation, string oldPassword, string _username, HTTPServerRequest req, AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		User usr;
-		if( id.length > 0 ){
-			enforce(loginUser.isUserAdmin() || username == loginUser.username,
-				"You can only change your own account.");
-			usr = m_db.getUser(BsonObjectID.fromHexString(id));
-			enforce(usr.username == username, "Cannot change the user name!");
-		} else {
-			enforce(loginUser.isUserAdmin(), "You are not allowed to add users.");
-			usr = new User;
-			usr.username = username;
-			foreach( u; users )
-				enforce(u.username != usr.username, "A user with the specified user name already exists!");
-		}
-		enforce(password == passwordConfirmation, "Passwords do not match!");
-
-		usr.name = name;
-		usr.email = email;
-
-		if (password.length) {
-			enforce(loginUser.isUserAdmin() || testSimplePasswordHash(oldPassword, usr.password), "Old password does not match.");
-			usr.password = generateSimplePasswordHash(password);
-		}
-
-		if( loginUser.isUserAdmin() ){
-			usr.groups = null;
-			foreach( k, v; req.form ){
-				if( k.startsWith("group_") )
-					usr.groups ~= k[6 .. $];
-			}
-
-			usr.allowedCategories = null;
-			foreach( k, v; req.form ){
-				if( k.startsWith("category_") )
-					usr.allowedCategories ~= k[9 .. $];
-			}
-		}
-
-		if( id.length > 0 ){
-			m_db.modifyUser(usr);
-		} else {
-			usr._id = m_db.addUser(usr);
-		}
-
-		if( loginUser.isUserAdmin() ) redirect(m_subPath~"users/");
-		else redirect(m_subPath~"manage");
-	}
-
-	@auth @path("users/:username/delete")
-	void postDeleteUser(string _username, AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		enforce(loginUser.isUserAdmin(), "You are not authorized to delete users!");
-		enforce(loginUser.username != _username, "Cannot delete the own user account!");
-		foreach( usr; users )
-			if (usr.username == _username) {
-				m_db.deleteUser(usr._id);
-				redirect(m_subPath ~ "users/");
-				return;
-			}
-		
-		// fall-through (404)
-	}
-
-	@auth
-	void postAddUser(string username, AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		enforce(loginUser.isUserAdmin(), "You are not authorized to add users!");
-		if (username !in users) {
-			auto u = new User;
-			u.username = username;
-			m_db.addUser(u);
-		}
-		redirect(m_subPath ~ "users/" ~ username ~ "/edit");
-	}
-
-	//
-	// Posts
-	//
-
-	@auth
-	void getPosts(AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		Post[] posts;
-		m_db.getAllPosts(0, (size_t idx, Post post){
-			if( loginUser.isPostAdmin() || post.author == loginUser.username
-				|| loginUser.mayPostInCategory(post.category) )
-			{
-				posts ~= post;
-			}
-			return true;
-		});
-		logInfo("Showing %d posts.", posts.length);
-		render!("vibelog.admin.editpostslist.dt", users, loginUser, posts);
-	}
-
-	@auth
-	void getMakePost(AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		auto globalConfig = m_db.getConfig("global", true);
-		Post post;
-		Comment[] comments;
-		render!("vibelog.admin.editpost.dt", users, loginUser, globalConfig, post, comments);
-	}
-
-	alias postMakePost = postPutPost;
-	/*@auth
-	void postMakePost(AuthInfo _auth)
-	{
-		auto loginUser = _auth.loginUser;
-		postPutPost(_users, loginUser);
-	}*/
-
-	@auth @path("posts/:postname/edit")
-	void getEditPost(string _postname, AuthInfo _auth)
-	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		auto globalConfig = m_db.getConfig("global", true);
-		auto post = m_db.getPost(_postname);
-		auto comments = m_db.getComments(post.id, true);
-		render!("vibelog.admin.editpost.dt", users, loginUser, globalConfig, post, comments);
-	}
-
-	@auth @path("posts/:postname/delete")
-	void postDeletePost(string id, string _postname, AuthInfo _auth)
-	{
-		// FIXME: check permissons!
-		auto bid = BsonObjectID.fromHexString(id);
-		m_db.deletePost(bid);
-		redirect(m_subPath ~ "posts/");
-	}
-
-	@auth @path("posts/:postname/set_comment_public")
-	void postSetCommentPublic(string id, string _postname, bool public_, AuthInfo _auth)
-	{
-		// FIXME: check permissons!
-		auto bid = BsonObjectID.fromHexString(id);
-		m_db.setCommentPublic(bid, public_);
-		redirect(m_subPath ~ "posts/"~_postname~"/edit");
-	}
-
-	@auth @path("posts/:postname/put")
-	void postPutPost(string id, bool isPublic, bool commentsAllowed, string author,
-		string date, string category, string slug, string headerImage, string header, string subHeader,
-		string content, string _postname, AuthInfo _auth)
-	{
-		auto loginUser = _auth.loginUser;
-		Post p;
-		if( id.length > 0 ){
-			p = m_db.getPost(BsonObjectID.fromHexString(id));
-			enforce(_postname == p.name, "URL does not match the edited post!");
-		} else {
-			p = new Post;
-			p.category = "default";
-			p.date = Clock.currTime().toUTC();
-		}
-		enforce(loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
-
-		p.isPublic = isPublic;
-		p.commentsAllowed = commentsAllowed;
-		p.author = author;
-		p.date = SysTime.fromSimpleString(date);
-		p.category = category;
-		p.slug = slug.length ? slug : makeSlugFromHeader(header);
-		p.headerImage = headerImage;
-		p.header = header;
-		p.subHeader = subHeader;
-		p.content = content;
-
-		enforce(!m_db.hasPost(p.slug) || m_db.getPost(p.slug).id == p.id, "Post slug is already used for another article.");
-
-		if( id.length > 0 ){
-			m_db.modifyPost(p);
-			_postname = p.name;
-		} else {
-			p.id = m_db.addPost(p);
-		}
-		redirect(m_subPath~"posts/");
-	}
 
 	protected PostListInfo getPostListInfo(int page = 0, int page_size = 0)
 	{
@@ -530,30 +248,6 @@ class VibeLogWeb {
 	{
 		return m_subPath ~ "?page=" ~ to!string(page+1);
 	}
-
-	protected enum auth = before!performAuth("_auth");
-
-	protected AuthInfo performAuth(HTTPServerRequest req, HTTPServerResponse res)
-	{
-		User[string] users = m_db.getAllUsers();
-		bool testauth(string user, string password)
-		{
-			auto pu = user in users;
-			if( pu is null ) return false;
-			return testSimplePasswordHash(pu.password, password);
-		}
-		string username = performBasicAuth(req, res, "VibeLog admin area", &testauth);
-		auto pusr = username in users;
-		assert(pusr, "Authorized with unknown username !?");
-		return AuthInfo(*pusr, users);
-	}
-
-	mixin PrivateAccessProxy;
-}
-
-private struct AuthInfo {
-	User loginUser;
-	User[string] users;
 }
 
 private struct PostListInfo {
