@@ -34,9 +34,8 @@ private final class VibeLogWebAdmin {
 
 	void get(AuthInfo _auth)
 	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		render!("vibelog.admin.home.dt", users, loginUser);
+		auto ctx = makeContext(_auth);
+		render!("vibelog.admin.home.dt", ctx);
 	}
 
 	//
@@ -46,21 +45,21 @@ private final class VibeLogWebAdmin {
 	@path("configs/")
 	void getConfigs(AuthInfo _auth)
 	{
-		auto loginUser = _auth.loginUser;
-		enforceAuth(loginUser.isConfigAdmin());
+		enforceAuth(_auth.loginUser.isConfigAdmin());
+		auto ctx = makeContext(_auth);
 		Config[] configs = m_ctrl.getAllConfigs();
 		auto activeConfig = m_settings.configName;
-		render!("vibelog.admin.editconfiglist.dt", loginUser, configs, activeConfig);
+		render!("vibelog.admin.editconfiglist.dt", ctx, configs, activeConfig);
 	}
 
 	@path("configs/:configname/")
 	void getConfigEdit(string _configname, AuthInfo _auth)
 	{
-		auto loginUser = _auth.loginUser;
+		enforceAuth(_auth.loginUser.isConfigAdmin());
+		auto ctx = makeContext(_auth);
 		auto globalConfig = m_ctrl.getConfig("global", true);
-		enforceAuth(loginUser.isConfigAdmin());
 		Config config = m_ctrl.getConfig(_configname);
-		render!("vibelog.admin.editconfig.dt", loginUser, globalConfig, config);
+		render!("vibelog.admin.editconfig.dt", ctx, globalConfig, config);
 	}
 
 	@path("configs/:configname/")
@@ -68,8 +67,7 @@ private final class VibeLogWebAdmin {
 	{
 		import std.string;
 
-		auto loginUser = _auth.loginUser;
-		enforceAuth(loginUser.isConfigAdmin());
+		enforceAuth(_auth.loginUser.isConfigAdmin());
 		Config cfg = m_ctrl.getConfig(_configname);
 		if( cfg.name == "global" )
 			cfg.categories = categories.splitLines();
@@ -96,8 +94,7 @@ private final class VibeLogWebAdmin {
 	@path("configs/:configname/delete")
 	void postDeleteConfig(string _configname, AuthInfo _auth)
 	{
-		auto loginUser = _auth.loginUser;
-		enforceAuth(loginUser.isConfigAdmin());
+		enforceAuth(_auth.loginUser.isConfigAdmin());
 		m_ctrl.deleteConfig(_configname);
 		redirect(m_subPath ~ "configs/");
 	}
@@ -110,18 +107,17 @@ private final class VibeLogWebAdmin {
 	@path("users/")
 	void getUsers(AuthInfo _auth)
 	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		render!("vibelog.admin.edituserlist.dt", loginUser, users);
+		auto ctx = makeContext(_auth);
+		render!("vibelog.admin.edituserlist.dt", ctx);
 	}
 
 	@path("users/:username/")
 	void getUserEdit(string _username, AuthInfo _auth)
 	{
-		auto loginUser = _auth.loginUser;
+		auto ctx = makeContext(_auth);
 		auto globalConfig = m_ctrl.getConfig("global", true);
 		User user = m_ctrl.getUser(_username);
-		render!("vibelog.admin.edituser.dt", loginUser, globalConfig, user);
+		render!("vibelog.admin.edituser.dt", ctx, globalConfig, user);
 	}
 
 	@path("users/:username/")
@@ -130,19 +126,17 @@ private final class VibeLogWebAdmin {
 		import vibe.crypto.passwordhash;
 		import vibe.data.bson : BsonObjectID;
 
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
 		User usr;
 		if( id.length > 0 ){
-			enforce(loginUser.isUserAdmin() || username == loginUser.username,
+			enforce(_auth.loginUser.isUserAdmin() || username == _auth.loginUser.username,
 				"You can only change your own account.");
 			usr = m_ctrl.getUser(BsonObjectID.fromHexString(id));
 			enforce(usr.username == username, "Cannot change the user name!");
 		} else {
-			enforce(loginUser.isUserAdmin(), "You are not allowed to add users.");
+			enforce(_auth.loginUser.isUserAdmin(), "You are not allowed to add users.");
 			usr = new User;
 			usr.username = username;
-			foreach( u; users )
+			foreach (u; _auth.users)
 				enforce(u.username != usr.username, "A user with the specified user name already exists!");
 		}
 		enforce(password == passwordConfirmation, "Passwords do not match!");
@@ -151,11 +145,11 @@ private final class VibeLogWebAdmin {
 		usr.email = email;
 
 		if (password.length) {
-			enforce(loginUser.isUserAdmin() || testSimplePasswordHash(oldPassword, usr.password), "Old password does not match.");
+			enforce(_auth.loginUser.isUserAdmin() || testSimplePasswordHash(oldPassword, usr.password), "Old password does not match.");
 			usr.password = generateSimplePasswordHash(password);
 		}
 
-		if( loginUser.isUserAdmin() ){
+		if (_auth.loginUser.isUserAdmin()) {
 			usr.groups = null;
 			foreach( k, v; req.form ){
 				if( k.startsWith("group_") )
@@ -175,18 +169,16 @@ private final class VibeLogWebAdmin {
 			usr._id = m_ctrl.addUser(usr);
 		}
 
-		if( loginUser.isUserAdmin() ) redirect(m_subPath~"users/");
+		if (_auth.loginUser.isUserAdmin()) redirect(m_subPath~"users/");
 		else redirect(m_subPath);
 	}
 
 	@path("users/:username/delete")
 	void postDeleteUser(string _username, AuthInfo _auth)
 	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		enforceAuth(loginUser.isUserAdmin(), "You are not authorized to delete users!");
-		enforce(loginUser.username != _username, "Cannot delete the own user account!");
-		foreach( usr; users )
+		enforceAuth(_auth.loginUser.isUserAdmin(), "You are not authorized to delete users!");
+		enforce(_auth.loginUser.username != _username, "Cannot delete the own user account!");
+		foreach (usr; _auth.users)
 			if (usr.username == _username) {
 				m_ctrl.deleteUser(usr._id);
 				redirect(m_subPath ~ "users/");
@@ -199,10 +191,8 @@ private final class VibeLogWebAdmin {
 	@path("users/")
 	void postAddUser(string username, AuthInfo _auth)
 	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
-		enforceAuth(loginUser.isUserAdmin(), "You are not authorized to add users!");
-		if (username !in users) {
+		enforceAuth(_auth.loginUser.isUserAdmin(), "You are not authorized to add users!");
+		if (username !in _auth.users) {
 			auto u = new User;
 			u.username = username;
 			m_ctrl.addUser(u);
@@ -217,28 +207,26 @@ private final class VibeLogWebAdmin {
 	@path("posts/")
 	void getPosts(AuthInfo _auth)
 	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
+		auto ctx = makeContext(_auth);
 		Post[] posts;
 		m_ctrl.getAllPosts(0, (size_t idx, Post post){
-			if( loginUser.isPostAdmin() || post.author == loginUser.username
-				|| loginUser.mayPostInCategory(post.category) )
+			if (_auth.loginUser.isPostAdmin() || post.author == _auth.loginUser.username
+				|| _auth.loginUser.mayPostInCategory(post.category))
 			{
 				posts ~= post;
 			}
 			return true;
 		});
-		render!("vibelog.admin.editpostslist.dt", users, loginUser, posts);
+		render!("vibelog.admin.editpostslist.dt", ctx, posts);
 	}
 
 	void getMakePost(AuthInfo _auth)
 	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
+		auto ctx = makeContext(_auth);
 		auto globalConfig = m_ctrl.getConfig("global", true);
 		Post post;
 		Comment[] comments;
-		render!("vibelog.admin.editpost.dt", users, loginUser, globalConfig, post, comments);
+		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments);
 	}
 
 	@auth
@@ -246,19 +234,17 @@ private final class VibeLogWebAdmin {
 		string date, string category, string slug, string headerImage, string header, string subHeader,
 		string content, AuthInfo _auth)
 	{
-		auto loginUser = _auth.loginUser;
 		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage, header, subHeader, content, null, _auth);
 	}
 
 	@path("posts/:postname/")
 	void getEditPost(string _postname, AuthInfo _auth)
 	{
-		auto users = _auth.users;
-		auto loginUser = _auth.loginUser;
+		auto ctx = makeContext(_auth);
 		auto globalConfig = m_ctrl.getConfig("global", true);
 		auto post = m_ctrl.getPost(_postname);
 		auto comments = m_ctrl.getComments(post.id, true);
-		render!("vibelog.admin.editpost.dt", users, loginUser, globalConfig, post, comments);
+		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments);
 	}
 
 	@path("posts/:postname/delete")
@@ -288,7 +274,6 @@ private final class VibeLogWebAdmin {
 	{
 		import vibe.data.bson : BsonObjectID;
 
-		auto loginUser = _auth.loginUser;
 		Post p;
 		if( id.length > 0 ){
 			p = m_ctrl.getPost(BsonObjectID.fromHexString(id));
@@ -298,7 +283,7 @@ private final class VibeLogWebAdmin {
 			p.category = "default";
 			p.date = Clock.currTime().toUTC();
 		}
-		enforce(loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
+		enforce(_auth.loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
 
 		p.isPublic = isPublic;
 		p.commentsAllowed = commentsAllowed;
@@ -322,9 +307,26 @@ private final class VibeLogWebAdmin {
 		redirect(m_subPath~"posts/");
 	}
 
-	protected enum auth = before!performAuth("_auth");
+	private auto makeContext(AuthInfo auth)
+	{
+		static struct S {
+			User loginUser;
+			User[string] users;
+			VibeLogSettings settings;
+			Path rootPath;
+		}
 
-	protected AuthInfo performAuth(HTTPServerRequest req, HTTPServerResponse res)
+		S s;
+		s.loginUser = auth.loginUser;
+		s.users = auth.users;
+		s.settings = m_settings;
+		s.rootPath = m_settings.siteURL.path ~ m_settings.adminPrefix;
+		return s;
+	}
+
+	private enum auth = before!performAuth("_auth");
+
+	private AuthInfo performAuth(HTTPServerRequest req, HTTPServerResponse res)
 	{
 		import vibe.crypto.passwordhash;
 		import vibe.http.auth.basic_auth;

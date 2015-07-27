@@ -9,7 +9,8 @@ html
         header
             h1 VibeLog Admin Panel
             h2 This is the super duper blog
-            - auto root_dir = "./";
+            - auto root_dir = ctx.rootPath.relativeTo(Path(req.path));
+
             div(id="menuContainer")
                 ul(class="headerMenu")
                     li
@@ -18,13 +19,13 @@ html
                         a(href="#{root_dir}make_post") New post
                     li
                         a(href="#{root_dir}posts/") Manage posts
-                    - if( loginUser.isConfigAdmin() )
+                    - if (ctx.loginUser.isConfigAdmin())
                         li
                             a(href="#{root_dir}configs/") Manage configurations
-                    - if( loginUser.isUserAdmin() )
+                    - if (ctx.loginUser.isUserAdmin())
                         li
                             a(href="#{root_dir}users/") Manage users
                     - else
                         li
-                            a(href="#{root_dir}users/#{loginUser.username}/") Manage account
+                            a(href="#{root_dir}users/#{ctx.loginUser.username}/") Manage account
         block body

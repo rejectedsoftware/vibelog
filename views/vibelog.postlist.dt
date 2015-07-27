@@ -2,7 +2,6 @@ extends vibelog.blocks
 
 block title
 	- import vibe.inet.message;
-
 	- auto title = "Blog";
 
 block vibelog-content

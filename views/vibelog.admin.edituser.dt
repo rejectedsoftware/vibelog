@@ -22,7 +22,7 @@ block body
 			p
 				label(for="email") Email
 				input(type="email", name="email", value="#{user.email}")
-			- if( !loginUser.isUserAdmin() )
+			- if (!ctx.loginUser.isUserAdmin())
 				p
 					label(for="oldPassword") Current Password
 					input(type="password", name="oldPassword", value="")
@@ -32,7 +32,7 @@ block body
 			p
 				label(for="passwordConfirmation") Confim new password
 				input(type="password", name="passwordConfirmation", value="")
-			- if( loginUser.isUserAdmin() )
+			- if (ctx.loginUser.isUserAdmin())
 				p Groups:
 				p
 					- foreach( grp; globalConfig.groups )

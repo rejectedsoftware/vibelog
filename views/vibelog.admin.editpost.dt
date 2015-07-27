@@ -7,7 +7,7 @@ block title
 	script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
 	script(type="text/javascript", src="#{req.rootDir}scripts/vibelog-edit.js")
 	script(type="text/javascript").
-		window.rootDir = "../../../";
+		window.rootDir = "#{ctx.settings.siteURL}";
 
 block body
 	#vibelogContent
@@ -16,7 +16,7 @@ block body
 		p
 			a(href='#{post?"../":"./"}') Cancel
 
-		- if( !post || post.author == loginUser.username || loginUser.isPostAdmin() )
+		- if (!post || post.author == ctx.loginUser.username || ctx.loginUser.isPostAdmin())
 			form(action='#{post?"./":"make_post"}', method="POST")
 				input(type="hidden", name="id", value="#{post ? post.id.toString() : null}")
 				table.blind
@@ -38,28 +38,28 @@ block body
 							- else
 								input#commentsAllowed.checkbox(type="checkbox", name="commentsAllowed", value="yes")
 					tr
-						- if( loginUser.isPostAdmin() )
+						- if (ctx.loginUser.isPostAdmin())
 							td
 								label(for="author") Author
 							td
 								select#author(name="author", size="1")
-									- foreach( usr; users )
-										- if( usr.username == (post ? post.author : loginUser.username) )
+									- foreach (usr; ctx.users)
+										- if (usr.username == (post ? post.author : ctx.loginUser.username))
 											option(value="#{usr.username}", selected) #{usr.name} (#{usr.username})
 										- else
 											option(value="#{usr.username}") #{usr.name} (#{usr.username})
 						- else
 							td Author
-							td #{loginUser.name} (#{loginUser.username})
-								input(type="hidden", name="author", value="#{loginUser.username}")
+							td #{ctx.loginUser.name} (#{ctx.loginUser.username})
+								input(type="hidden", name="author", value="#{ctx.loginUser.username}")
 					tr
 						td
 							label(for="category") Category
 						td
 							select#category(name="category", size="1")
-								- foreach( cat; globalConfig.categories )
-									- if( loginUser.isPostAdmin() || loginUser.mayPostInCategory(cat) )
-										- if( post && cat == post.category )
+								- foreach (cat; globalConfig.categories)
+									- if (ctx.loginUser.isPostAdmin() || ctx.loginUser.mayPostInCategory(cat))
+										- if (post && cat == post.category)
 											option(value="#{cat}", selected)= cat
 										- else
 											option(value="#{cat}")= cat
