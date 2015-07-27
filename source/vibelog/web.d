@@ -28,7 +28,7 @@ void registerVibeLog(VibeLogSettings settings, URLRouter router)
 
 void registerVibeLogWeb(URLRouter router, DBController controller, VibeLogSettings settings)
 {
-	auto sub_path = settings.siteUrl.path.toString();
+	auto sub_path = settings.siteURL.path.toString();
 	assert(sub_path.endsWith("/"), "Blog site URL must end with '/'.");
 
 	if (sub_path.length > 1) router.get(sub_path[0 .. $-1], staticRedirect(sub_path));
@@ -64,7 +64,7 @@ private final class VibeLogWeb {
 
 		m_db.invokeOnConfigChange({ m_db.getConfig(settings.configName, true); });
 
-		m_subPath = settings.siteUrl.path.toString();
+		m_subPath = settings.siteURL.path.toString();
 
 		enforce(m_subPath.startsWith("/") && m_subPath.endsWith("/"), "All local URLs must start with and end with '/'.");
 	}
@@ -142,7 +142,7 @@ private final class VibeLogWeb {
 				auto itm = new RssEntry;
 				itm.title = p.header;
 				itm.description = p.subHeader;
-				itm.link = m_settings.siteUrl.toString() ~ "posts/" ~ p.name;
+				itm.link = m_settings.siteURL.toString() ~ "posts/" ~ p.name;
 				itm.author = p.author;
 				itm.guid = "xxyyzz";
 				itm.pubDate = p.date;
@@ -172,7 +172,7 @@ private final class VibeLogWeb {
 		res.bodyWriter.write("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
 		void writeEntry(string[] parts...){
 			res.bodyWriter.write("<url><loc>");
-			res.bodyWriter.write(m_settings.siteUrl.toString());
+			res.bodyWriter.write(m_settings.siteURL.toString());
 			foreach( p; parts )
 				res.bodyWriter.write(p);
 			res.bodyWriter.write("</loc></url>\n");

@@ -14,7 +14,7 @@ shared static this()
 
 	auto blogsettings = new VibeLogSettings;
 	blogsettings.configName = "example";
-	blogsettings.siteUrl = URL("http://localhost:8080/");
+	blogsettings.siteURL = URL("http://localhost:8080/");
 	auto ctrl = new DBController(blogsettings);
 
 	router.registerVibeLogWeb(ctrl, blogsettings);
