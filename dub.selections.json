@@ -3,7 +3,7 @@
 		"libasync": "0.7.5",
 		"memutils": "0.4.1",
 		"openssl": "1.1.4+1.0.1g",
-		"vibe-d": "0.7.24-beta.4+commit.1.gcfb5dcf",
+		"vibe-d": "0.7.24-rc.1",
 		"libevent": "2.0.1+2.0.16",
 		"libev": "5.0.0+4.04"
 	},

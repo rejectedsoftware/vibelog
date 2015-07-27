@@ -6,5 +6,5 @@
 bin/
 *.exe
 *.txt
-vibelog
+/vibelog
 
