@@ -1,4 +1,4 @@
-- import vibelog.vibelog;
+- import vibelog.controller;
 - void insertVibelogHeadlineList(VibelogHeadlineListConfig config)
 	- import vibe.inet.message;
 	- import std.algorithm : max;
