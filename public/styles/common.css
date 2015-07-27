@@ -121,3 +121,11 @@ h1 {
 	font-weight: normal;
 	margin-bottom: 0;
 }
+
+#vibelogContent section.comments {
+	padding: 10pt 20pt;
+}
+
+#vibelogContent .comment {
+	margin-bottom: 10pt;
+}
