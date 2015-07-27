@@ -1,8 +1,7 @@
 import vibe.http.router;
 import vibe.http.server;
 
-import vibelog.dbcontroller;
-import vibelog.settings;
+import vibelog.controller;
 import vibelog.web;
 import vibelog.webadmin;
 
@@ -15,10 +14,10 @@ shared static this()
 	auto blogsettings = new VibeLogSettings;
 	blogsettings.configName = "example";
 	blogsettings.siteURL = URL("http://localhost:8080/");
-	auto ctrl = new DBController(blogsettings);
 
-	router.registerVibeLogWeb(ctrl, blogsettings);
-	router.registerVibeLogWebAdmin(ctrl, blogsettings);
+	auto ctrl = new VibeLogController(blogsettings);
+	router.registerVibeLogWeb(ctrl);
+	router.registerVibeLogWebAdmin(ctrl);
 	
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;

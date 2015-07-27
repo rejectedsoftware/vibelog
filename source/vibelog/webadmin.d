@@ -1,32 +1,36 @@
 module vibelog.webadmin;
 
-import vibelog.dbcontroller;
-import vibelog.settings;
+public import vibelog.controller;
+
+import vibelog.config;
+import vibelog.post;
+import vibelog.user;
 
 import vibe.http.router;
 import vibe.web.web;
 import std.exception : enforce;
 
-void registerVibeLogWebAdmin(URLRouter router, DBController ctrl, VibeLogSettings settings)
+
+void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 {
 	auto websettings = new WebInterfaceSettings;
-	websettings.urlPrefix = (settings.siteURL.path ~ settings.adminPrefix).toString();
-	router.registerWebInterface(new VibeLogWebAdmin(ctrl, settings), websettings);
+	websettings.urlPrefix = (controller.settings.siteURL.path ~ controller.settings.adminPrefix).toString();
+	router.registerWebInterface(new VibeLogWebAdmin(controller), websettings);
 }
 
 private final class VibeLogWebAdmin {
 	private {
-		DBController m_ctrl;
+		VibeLogController m_ctrl;
 		VibeLogSettings m_settings;
 		string m_subPath;
 		string m_config;
 	}
 
-	this(DBController ctrl, VibeLogSettings settings)
+	this(VibeLogController controller)
 	{
-		m_ctrl = ctrl;
-		m_settings = settings;
-		m_subPath = (settings.siteURL.path ~ settings.adminPrefix).toString();
+		m_ctrl = controller;
+		m_settings = controller.settings;
+		m_subPath = (m_settings.siteURL.path ~ m_settings.adminPrefix).toString();
 	}
 
 	// the whole admin interface needs authentication
@@ -47,7 +51,7 @@ private final class VibeLogWebAdmin {
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
 		auto ctx = makeContext(_auth);
-		Config[] configs = m_ctrl.getAllConfigs();
+		Config[] configs = m_ctrl.db.getAllConfigs();
 		auto activeConfig = m_settings.configName;
 		render!("vibelog.admin.editconfiglist.dt", ctx, configs, activeConfig);
 	}
@@ -57,8 +61,8 @@ private final class VibeLogWebAdmin {
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
 		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.getConfig("global", true);
-		Config config = m_ctrl.getConfig(_configname);
+		auto globalConfig = m_ctrl.db.getConfig("global", true);
+		Config config = m_ctrl.db.getConfig(_configname);
 		render!("vibelog.admin.editconfig.dt", ctx, globalConfig, config);
 	}
 
@@ -68,7 +72,7 @@ private final class VibeLogWebAdmin {
 		import std.string;
 
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		Config cfg = m_ctrl.getConfig(_configname);
+		Config cfg = m_ctrl.db.getConfig(_configname);
 		if( cfg.name == "global" )
 			cfg.categories = categories.splitLines();
 		else {
@@ -86,7 +90,7 @@ private final class VibeLogWebAdmin {
 		cfg.feedImageTitle = feedImageTitle;
 		cfg.feedImageUrl = feedImageUrl;
 	
-		m_ctrl.setConfig(cfg);
+		m_ctrl.db.setConfig(cfg);
 
 		redirect(m_subPath ~ "configs/");
 	}
@@ -95,7 +99,7 @@ private final class VibeLogWebAdmin {
 	void postDeleteConfig(string _configname, AuthInfo _auth)
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		m_ctrl.deleteConfig(_configname);
+		m_ctrl.db.deleteConfig(_configname);
 		redirect(m_subPath ~ "configs/");
 	}
 
@@ -115,8 +119,8 @@ private final class VibeLogWebAdmin {
 	void getUserEdit(string _username, AuthInfo _auth)
 	{
 		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.getConfig("global", true);
-		User user = m_ctrl.getUser(_username);
+		auto globalConfig = m_ctrl.db.getConfig("global", true);
+		User user = m_ctrl.db.getUser(_username);
 		render!("vibelog.admin.edituser.dt", ctx, globalConfig, user);
 	}
 
@@ -130,7 +134,7 @@ private final class VibeLogWebAdmin {
 		if( id.length > 0 ){
 			enforce(_auth.loginUser.isUserAdmin() || username == _auth.loginUser.username,
 				"You can only change your own account.");
-			usr = m_ctrl.getUser(BsonObjectID.fromHexString(id));
+			usr = m_ctrl.db.getUser(BsonObjectID.fromHexString(id));
 			enforce(usr.username == username, "Cannot change the user name!");
 		} else {
 			enforce(_auth.loginUser.isUserAdmin(), "You are not allowed to add users.");
@@ -164,9 +168,9 @@ private final class VibeLogWebAdmin {
 		}
 
 		if( id.length > 0 ){
-			m_ctrl.modifyUser(usr);
+			m_ctrl.db.modifyUser(usr);
 		} else {
-			usr._id = m_ctrl.addUser(usr);
+			usr._id = m_ctrl.db.addUser(usr);
 		}
 
 		if (_auth.loginUser.isUserAdmin()) redirect(m_subPath~"users/");
@@ -180,7 +184,7 @@ private final class VibeLogWebAdmin {
 		enforce(_auth.loginUser.username != _username, "Cannot delete the own user account!");
 		foreach (usr; _auth.users)
 			if (usr.username == _username) {
-				m_ctrl.deleteUser(usr._id);
+				m_ctrl.db.deleteUser(usr._id);
 				redirect(m_subPath ~ "users/");
 				return;
 			}
@@ -195,7 +199,7 @@ private final class VibeLogWebAdmin {
 		if (username !in _auth.users) {
 			auto u = new User;
 			u.username = username;
-			m_ctrl.addUser(u);
+			m_ctrl.db.addUser(u);
 		}
 		redirect(m_subPath ~ "users/" ~ username ~ "/");
 	}
@@ -209,7 +213,7 @@ private final class VibeLogWebAdmin {
 	{
 		auto ctx = makeContext(_auth);
 		Post[] posts;
-		m_ctrl.getAllPosts(0, (size_t idx, Post post){
+		m_ctrl.db.getAllPosts(0, (size_t idx, Post post){
 			if (_auth.loginUser.isPostAdmin() || post.author == _auth.loginUser.username
 				|| _auth.loginUser.mayPostInCategory(post.category))
 			{
@@ -223,7 +227,7 @@ private final class VibeLogWebAdmin {
 	void getMakePost(AuthInfo _auth)
 	{
 		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.getConfig("global", true);
+		auto globalConfig = m_ctrl.db.getConfig("global", true);
 		Post post;
 		Comment[] comments;
 		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments);
@@ -241,9 +245,9 @@ private final class VibeLogWebAdmin {
 	void getEditPost(string _postname, AuthInfo _auth)
 	{
 		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.getConfig("global", true);
-		auto post = m_ctrl.getPost(_postname);
-		auto comments = m_ctrl.getComments(post.id, true);
+		auto globalConfig = m_ctrl.db.getConfig("global", true);
+		auto post = m_ctrl.db.getPost(_postname);
+		auto comments = m_ctrl.db.getComments(post.id, true);
 		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments);
 	}
 
@@ -253,7 +257,7 @@ private final class VibeLogWebAdmin {
 		import vibe.data.bson : BsonObjectID;
 		// FIXME: check permissons!
 		auto bid = BsonObjectID.fromHexString(id);
-		m_ctrl.deletePost(bid);
+		m_ctrl.db.deletePost(bid);
 		redirect(m_subPath ~ "posts/");
 	}
 
@@ -263,7 +267,7 @@ private final class VibeLogWebAdmin {
 		import vibe.data.bson : BsonObjectID;
 		// FIXME: check permissons!
 		auto bid = BsonObjectID.fromHexString(id);
-		m_ctrl.setCommentPublic(bid, public_);
+		m_ctrl.db.setCommentPublic(bid, public_);
 		redirect(m_subPath ~ "posts/"~_postname~"/edit");
 	}
 
@@ -276,7 +280,7 @@ private final class VibeLogWebAdmin {
 
 		Post p;
 		if( id.length > 0 ){
-			p = m_ctrl.getPost(BsonObjectID.fromHexString(id));
+			p = m_ctrl.db.getPost(BsonObjectID.fromHexString(id));
 			enforce(_postname == p.name, "URL does not match the edited post!");
 		} else {
 			p = new Post;
@@ -296,13 +300,13 @@ private final class VibeLogWebAdmin {
 		p.subHeader = subHeader;
 		p.content = content;
 
-		enforce(!m_ctrl.hasPost(p.slug) || m_ctrl.getPost(p.slug).id == p.id, "Post slug is already used for another article.");
+		enforce(!m_ctrl.db.hasPost(p.slug) || m_ctrl.db.getPost(p.slug).id == p.id, "Post slug is already used for another article.");
 
 		if( id.length > 0 ){
-			m_ctrl.modifyPost(p);
+			m_ctrl.db.modifyPost(p);
 			_postname = p.name;
 		} else {
-			p.id = m_ctrl.addPost(p);
+			p.id = m_ctrl.db.addPost(p);
 		}
 		redirect(m_subPath~"posts/");
 	}
@@ -331,7 +335,7 @@ private final class VibeLogWebAdmin {
 		import vibe.crypto.passwordhash;
 		import vibe.http.auth.basic_auth;
 
-		User[string] users = m_ctrl.getAllUsers();
+		User[string] users = m_ctrl.db.getAllUsers();
 		bool testauth(string user, string password)
 		{
 			auto pu = user in users;
