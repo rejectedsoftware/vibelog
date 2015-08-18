@@ -114,7 +114,7 @@ private final class VibeLogWeb {
 	}
 
 	@path("feed/rss")
-	protected void getRSSFeed(HTTPServerResponse res)
+	void getRSSFeed(HTTPServerResponse res)
 	{
 		auto cfg = m_ctrl.config;
 
