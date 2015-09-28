@@ -64,7 +64,14 @@ private final class VibeLogWeb {
 
 	void get(int page = 1)
 	{
-		auto info = m_ctrl.getPostListInfo(page - 1);
+		struct Info {
+			PostListInfo pli;
+			alias pli this;
+			string refPath;
+		}
+		Info info;
+		info.pli = m_ctrl.getPostListInfo(page - 1);
+		info.refPath = "/";
 		render!("vibelog.postlist.dt", info);
 	}
 
@@ -78,6 +85,7 @@ private final class VibeLogWeb {
 			Post post;
 			Comment[] comments;
 			Post[] recentPosts;
+			string refPath;
 		}
 
 		ShowPostInfo info;
@@ -88,6 +96,7 @@ private final class VibeLogWeb {
 		catch(Exception e){ return; } // -> gives 404 error
 		info.comments = m_ctrl.db.getComments(info.post.id);
 		info.recentPosts = m_ctrl.getRecentPosts();
+		info.refPath = "/posts/"~_postname;
 		
 		render!("vibelog.post.dt", info);
 	}

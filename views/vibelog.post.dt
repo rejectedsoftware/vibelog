@@ -18,7 +18,7 @@ block vibelog-content
 							span.blogPostDate= toRFC822DateString(info.post.date)
 							|#{info.post.subHeader}
 				section.blogPostContent(class='#{info.post.headerImage.length ? "with-image" : "without-image"}')
-					!= info.post.renderContentAsHtml(info.settings, req.path, 1)
+					!= info.post.renderContentAsHtml(info.settings, info.refPath, 1)
 
 				footer
 					p Posted at #{toRFC822TimeString(info.post.date)} by #{info.post.author in info.users ? info.users[info.post.author].name : info.post.author}
