@@ -4,6 +4,7 @@ public import vibelog.config;
 public import vibelog.post;
 public import vibelog.user;
 import vibelog.settings;
+import vibe.core.stream;
 import vibe.data.bson;
 
 
@@ -39,6 +40,10 @@ interface DBController {
 	BsonObjectID addPost(Post post);
 	void modifyPost(Post post);
 	void deletePost(BsonObjectID id);
+	void addFile(string post_name, string file_name, InputStream contents);
+	string[] getFiles(string post_name);
+	InputStream getFile(string post_name, string file_name);
+	void removeFile(string post_name, string file_name);
 
 	Comment[] getComments(BsonObjectID post_id, bool allow_inactive = false);
 	long getCommentCount(BsonObjectID post_id);

@@ -92,6 +92,17 @@ private final class VibeLogWeb {
 		render!("vibelog.post.dt", info);
 	}
 
+	@path("posts/:postname/:filename")
+	void getPostFile(string _postname, string _filename, HTTPServerResponse res)
+	{
+		import vibe.inet.mimetypes;
+		auto f = m_ctrl.db.getFile(_postname, _filename);
+		if (f) {
+			res.contentType = getMimeTypeForFile(_filename);
+			res.bodyWriter.write(f);
+		}
+	}
+
 	@path("/posts/:postname/post_comment")
 	void postComment(string name, string email, string homepage, string message, string _postname, HTTPServerRequest req)
 	{
@@ -148,11 +159,11 @@ private final class VibeLogWeb {
 		feed.render(res.bodyWriter);
 	}
 
-	void postMarkup(string message, HTTPServerResponse res)
+	void postMarkup(string message, HTTPServerRequest req, HTTPServerResponse res)
 	{
 		auto post = new Post;
 		post.content = message;
-		res.writeBody(post.renderContentAsHtml(m_settings), "text/html");
+		res.writeBody(post.renderContentAsHtml(m_settings, req.path), "text/html");
 	}
 
 	@path("/sitemap.xml")

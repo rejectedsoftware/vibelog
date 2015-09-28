@@ -102,6 +102,27 @@ block body
 								#message-preview(style="display: none;")
 				input(type="submit", value='#{post?"Apply changes":"Create post!"}')
 
+			- if (post)
+				h2 Files
+
+				- if (files.length)
+					table
+						tr
+							th Name
+							th Action
+						- foreach (f; files)
+							tr
+								td= f
+								td
+									form(action="files/#{f}/delete", method="POST")
+										button(type="submit") Delete
+				- else
+					p No files uploaded for this post.
+
+				h3 Upload files
+				form(action="files/", method="POST", enctype="multipart/form-data")
+					input(type="file", name="files", multiple)
+					button(type="submit") Upload
 
 			- if( comments.length )
 				h2 Comments

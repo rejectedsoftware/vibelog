@@ -224,16 +224,18 @@ private final class VibeLogWebAdmin {
 		render!("vibelog.admin.editpostslist.dt", ctx, posts);
 	}
 
-	void getMakePost(AuthInfo _auth)
+	void getMakePost(AuthInfo _auth, string _error = null)
 	{
 		auto ctx = makeContext(_auth);
 		auto globalConfig = m_ctrl.db.getConfig("global", true);
 		Post post;
 		Comment[] comments;
-		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments);
+		string[] files;
+		string error = _error;
+		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments, files, error);
 	}
 
-	@auth
+	@auth @errorDisplay!getMakePost
 	void postMakePost(bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
 		string content, AuthInfo _auth)
@@ -242,13 +244,15 @@ private final class VibeLogWebAdmin {
 	}
 
 	@path("posts/:postname/")
-	void getEditPost(string _postname, AuthInfo _auth)
+	void getEditPost(string _postname, AuthInfo _auth, string _error = null)
 	{
 		auto ctx = makeContext(_auth);
 		auto globalConfig = m_ctrl.db.getConfig("global", true);
 		auto post = m_ctrl.db.getPost(_postname);
 		auto comments = m_ctrl.db.getComments(post.id, true);
-		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments);
+		auto files = m_ctrl.db.getFiles(_postname);
+		auto error = _error;
+		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments, files, error);
 	}
 
 	@path("posts/:postname/delete")
@@ -261,17 +265,17 @@ private final class VibeLogWebAdmin {
 		redirect(m_subPath ~ "posts/");
 	}
 
-	@path("posts/:postname/set_comment_public")
+	@path("posts/:postname/set_comment_public") @errorDisplay!getEditPost
 	void postSetCommentPublic(string id, string _postname, bool public_, AuthInfo _auth)
 	{
 		import vibe.data.bson : BsonObjectID;
 		// FIXME: check permissons!
 		auto bid = BsonObjectID.fromHexString(id);
 		m_ctrl.db.setCommentPublic(bid, public_);
-		redirect(m_subPath ~ "posts/"~_postname~"/edit");
+		redirect(m_subPath ~ "posts/"~_postname~"/");
 	}
 
-	@path("posts/:postname/")
+	@path("posts/:postname/") @errorDisplay!getEditPost
 	void postPutPost(string id, bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
 		string content, string _postname, AuthInfo _auth)
@@ -309,6 +313,29 @@ private final class VibeLogWebAdmin {
 			p.id = m_ctrl.db.addPost(p);
 		}
 		redirect(m_subPath~"posts/");
+	}
+
+	@path("posts/:postname/files/:filename/delete") @errorDisplay!getEditPost
+	void postDeleteFile(string _postname, string _filename, AuthInfo _auth)
+	{
+		m_ctrl.db.removeFile(_postname, _filename);
+		redirect("../../");
+	}
+
+	@path("posts/:postname/files/") @errorDisplay!getEditPost
+	void postUploadFile(string _postname, HTTPServerRequest req, AuthInfo _auth)
+	{
+		import vibe.core.file;
+
+import vibe.core.log;
+logInfo("FILES %s %s", req.files.length, req.files.getAll("files"));
+		foreach (f; req.files) {
+logInfo("FILE %s", f.filename);
+			auto fil = openFile(f.tempPath, FileMode.read);
+			scope (exit) fil.close();
+			m_ctrl.db.addFile(_postname, f.filename.toString(), fil);
+		}
+		redirect("../");
 	}
 
 	private auto makeContext(AuthInfo auth)

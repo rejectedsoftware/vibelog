@@ -3,6 +3,7 @@ module vibelog.db.mongo;
 import vibelog.db.dbcontroller;
 
 import vibe.core.log;
+import vibe.core.stream;
 import vibe.crypto.passwordhash;
 import vibe.data.bson;
 import vibe.db.mongo.mongo;
@@ -19,6 +20,7 @@ final class MongoDBController : DBController {
 		MongoCollection m_configs;
 		MongoCollection m_users;
 		MongoCollection m_posts;
+		MongoCollection m_postFiles;
 		MongoCollection m_comments;
 		void delegate()[] m_onConfigChange;
 	}
@@ -34,6 +36,7 @@ final class MongoDBController : DBController {
 		m_configs = db["configs"];
 		m_users = db["users"];
 		m_posts = db["posts"];
+		m_postFiles = db["postFiles"];
 		m_comments = db["comments"];
 
 		// Upgrade post contained comments to their collection
@@ -232,6 +235,33 @@ final class MongoDBController : DBController {
 		m_posts.remove(["_id": Bson(id)]);
 	}
 
+	void addFile(string post_name, string file_name, InputStream contents)
+	{
+		import vibe.stream.operations : readAll;
+		struct I {
+			string postName;
+			string fileName;
+		}
+		m_postFiles.insert(PostFile(post_name, file_name, contents.readAll()));
+	}
+
+	string[] getFiles(string post_name)
+	{
+		return m_postFiles.find(["postName": post_name], ["fileName": true]).map!(p => p.fileName.get!string).array;
+	}
+
+	InputStream getFile(string post_name, string file_name)
+	{
+		auto f = m_postFiles.findOne!PostFile(["postName": post_name, "fileName": file_name]);
+		if (f.isNull) return null;
+		return new MemoryStream(f.contents);
+	}
+
+	void removeFile(string post_name, string file_name)
+	{
+		m_postFiles.remove(["postName": post_name, "fileName": file_name]);
+	}
+
 	Comment[] getComments(BsonObjectID post_id, bool allow_inactive = false)
 	{
 		Comment[] ret;
@@ -287,4 +317,10 @@ final class MongoDBController : DBController {
 	{
 		m_posts.remove(["postId": Bson(post_id), "isPublic": Bson(false)]);
 	}
+}
+
+struct PostFile {
+	string postName;
+	string fileName;
+	ubyte[] contents;
 }
