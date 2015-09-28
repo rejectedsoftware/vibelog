@@ -80,7 +80,7 @@ class VibeLogController {
 	{
 		Post[] ret;
 		m_db.getPublicPostsForCategory(m_config.categories, 0, (i, p){
-			if( i > 20 ) return false;
+			if (i >= m_settings.maxRecentPosts) return false;
 			ret ~= p;
 			return true;
 		});
