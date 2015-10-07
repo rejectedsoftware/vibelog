@@ -3,7 +3,7 @@ extends vibelog.admin.layout
 block title
 	- auto title = "VibeLog Admin Panel";
 	
-block body
+block vibelog-content
 	#vibelogContent
 		h1= title
 		

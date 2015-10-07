@@ -3,7 +3,7 @@ extends vibelog.admin.layout
 block title
 	- auto title = "Post overview";
 
-block body
+block vibelog-content
 	- import std.datetime;
 
 	#vibelogContent

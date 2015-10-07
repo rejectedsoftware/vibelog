@@ -4,7 +4,7 @@ block title
 	- import std.array;
 	- auto title = "Edit configuration '"~config.name~"'";
 
-block body
+block vibelog-content
 	#vibelogContent
 		h1= title
 		p

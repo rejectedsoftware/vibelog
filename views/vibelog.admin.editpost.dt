@@ -9,7 +9,7 @@ block title
 	script(type="text/javascript").
 		window.rootDir = "#{ctx.settings.siteURL}";
 
-block body
+block vibelog-content
 	#vibelogContent
 		h1= title
 		

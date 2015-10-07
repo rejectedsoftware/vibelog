@@ -3,7 +3,7 @@ extends vibelog.admin.layout
 block title
 	- auto title = "Edit user '"~user.username~"'";
 
-block body
+block vibelog-content
 	- import std.datetime;
 	
 	#vibelogContent

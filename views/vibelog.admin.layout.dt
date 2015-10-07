@@ -1,1 +1,4 @@
 extends layout.admin
+
+block body 
+	block vibelog-content
