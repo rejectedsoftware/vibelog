@@ -1,4 +1,4 @@
-extends layout.admin
+extends vibelog.admin.layout
 
 block title
 	- auto title = "VibeLog Admin Panel";
