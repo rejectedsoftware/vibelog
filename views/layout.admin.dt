@@ -6,26 +6,4 @@ html
         link(rel="stylesheet", type="text/css", href="#{req.rootDir}styles/menu.css")
         title #{title} - VibeLog
     body
-        header
-            h1 VibeLog Admin Panel
-            h2 This is the super duper blog
-            - auto root_dir = ctx.rootPath.relativeTo(Path(req.path));
-
-            div(id="menuContainer")
-                ul(class="headerMenu")
-                    li
-                        a(href=root_dir) Dashboard
-                    li
-                        a(href="#{root_dir}make_post") New post
-                    li
-                        a(href="#{root_dir}posts/") Manage posts
-                    - if (ctx.loginUser.isConfigAdmin())
-                        li
-                            a(href="#{root_dir}configs/") Manage configurations
-                    - if (ctx.loginUser.isUserAdmin())
-                        li
-                            a(href="#{root_dir}users/") Manage users
-                    - else
-                        li
-                            a(href="#{root_dir}users/#{ctx.loginUser.username}/") Manage account
         block body

@@ -1,4 +1,13 @@
 extends layout.admin
 
-block body 
-	block vibelog-content
+block body
+	header
+		h1= title
+		h2 This is the super duper blog
+
+		div#menuContainer
+			include vibelog.admin.inc.nav
+
+	#vibelogContent
+		block vibelog-localnav
+		block vibelog-content

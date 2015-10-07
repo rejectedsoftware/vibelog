@@ -3,41 +3,41 @@ extends vibelog.admin.layout
 block title
 	- auto title = "Post overview";
 
+block vibelog-localnav
+	ul.admin-local-nav
+		li
+			a(href="../") Back to admin panel
+		li
+			a(href="../make_post") Make new post
+
 block vibelog-content
 	- import std.datetime;
 
-	#vibelogContent
-		h1= title
-		p
-			a(href="../") Back to admin panel
-			
-		p
-			a(href="../make_post") Make new post
-		table(width="100%")
-			tr
-				th Date
-				th Pub
-				th Header
-				th Author
-				th Category
-				th View
-				th Edit
-				th Delete
-			- foreach (post; posts)
-				- if (ctx.loginUser.isPostAdmin() || ctx.loginUser.username == post.author)
-					tr
-						td= (cast(Date)post.date).toSimpleString()
-						td= post.isPublic ? "yes" : ""
-						td= post.header
-						td= post.author
-						td= post.category
-						td
-							form(action="#{ctx.settings.siteURL}posts/#{post.name}", method="GET")
-								input(type="submit", value="view")
-						td
-							form(action="#{post.name}/", method="GET")
-								input(type="submit", value="edit")
-						td
-							form(action="#{post.name}/delete", method="POST")
-								input(type="hidden", name="id", value="#{post.id.toString()}")
-								input(type="submit", value="delete")
+	table(width="100%")
+		tr
+			th Date
+			th Pub
+			th Header
+			th Author
+			th Category
+			th View
+			th Edit
+			th Delete
+		- foreach (post; posts)
+			- if (ctx.loginUser.isPostAdmin() || ctx.loginUser.username == post.author)
+				tr
+					td= (cast(Date)post.date).toSimpleString()
+					td= post.isPublic ? "yes" : ""
+					td= post.header
+					td= post.author
+					td= post.category
+					td
+						form(action="#{ctx.settings.siteURL}posts/#{post.name}", method="GET")
+							input(type="submit", value="view")
+					td
+						form(action="#{post.name}/", method="GET")
+							input(type="submit", value="edit")
+					td
+						form(action="#{post.name}/delete", method="POST")
+							input(type="hidden", name="id", value="#{post.id.toString()}")
+							input(type="submit", value="delete")

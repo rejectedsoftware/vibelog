@@ -4,8 +4,5 @@ block title
 	- auto title = "VibeLog Admin Panel";
 	
 block vibelog-content
-	#vibelogContent
-		h1= title
-		
-		section#actions.vibelogAdminSection
-			h2 Dashboard 
+	section#actions.vibelogAdminSection
+		h2 Dashboard 

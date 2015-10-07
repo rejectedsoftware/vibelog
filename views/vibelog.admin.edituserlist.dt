@@ -3,37 +3,37 @@ extends vibelog.admin.layout
 block title
 	- auto title = "User overview";
 
+block vibelog-localnav
+	ul.admin-local-nav
+		li
+			a(href="../") Back to admin panel
+
 block vibelog-content
 	- import std.datetime;
 	
-	#vibelogContent
-		h1= title
-		p
-			a(href="../") Back to admin panel
-			
-		form(action="./", method="POST")
-			p Add user:
-				input(type="text", name="username")
-				input(type="submit", value="create")
+	form(action="./", method="POST")
+		p Add user:
+			input(type="text", name="username")
+			input(type="submit", value="create")
 
-		- if (ctx.loginUser.isUserAdmin())
-			table(width="100%")
+	- if (ctx.loginUser.isUserAdmin())
+		table(width="100%")
+			tr
+				th Username
+				th Full name
+				th Edit
+				th Delete
+			- foreach (usr; ctx.users)
 				tr
-					th Username
-					th Full name
-					th Edit
-					th Delete
-				- foreach (usr; ctx.users)
-					tr
-						td= usr.username
-						td= usr.name
-						td
-							form(action="#{usr.username}/", method="GET")
-								input(type="submit", value="edit")
-						td
-							form(action="#{usr.username}/delete", method="POST")
-								input(type="submit", value="delete")
-		- else
-			p Sorry, you are not authorized to edit users. You can, however,
-				a(href="#{ctx.loginUser.username}/") edit your own account
-				|.
+					td= usr.username
+					td= usr.name
+					td
+						form(action="#{usr.username}/", method="GET")
+							input(type="submit", value="edit")
+					td
+						form(action="#{usr.username}/delete", method="POST")
+							input(type="submit", value="delete")
+	- else
+		p Sorry, you are not authorized to edit users. You can, however,
+			a(href="#{ctx.loginUser.username}/") edit your own account
+			|.
