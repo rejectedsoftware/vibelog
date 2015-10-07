@@ -1,11 +1,12 @@
 {
+	"fileVersion": 1,
 	"versions": {
-		"libasync": "0.7.5",
-		"memutils": "0.4.1",
-		"openssl": "1.1.4+1.0.1g",
-		"vibe-d": "0.7.24-rc.1",
 		"libevent": "2.0.1+2.0.16",
-		"libev": "5.0.0+4.04"
-	},
-	"fileVersion": 1
+		"libev": "5.0.0+4.04",
+		"openssl": "1.1.4+1.0.1g",
+		"botan": "1.12.0+commit.23.g4c3802e",
+		"memutils": "0.4.1",
+		"vibe-d": "0.7.26-alpha.2+commit.23.ge67c277",
+		"libasync": "0.7.5"
+	}
 }

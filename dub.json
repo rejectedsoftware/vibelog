@@ -7,7 +7,7 @@
 		"Sönke Ludwig"
 	],
 	"dependencies": {
-		"vibe-d": "~>0.7.23"
+		"vibe-d": "~>0.7.26-alpha.2"
 	},
 	"versions": ["VibeDefaultMain"]
 }

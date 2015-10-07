@@ -89,13 +89,13 @@ final class Post {
 		scope ms = new MarkdownSettings;
 		ms.flags = settings.markdownSettings.flags;
 		ms.headingBaseLevel = settings.markdownSettings.headingBaseLevel + header_level_nesting;
-		ms.linkFilter = (lnk) {
+		ms.urlFilter = (lnk, is_image) {
 			if (lnk.startsWith("http://") || lnk.startsWith("https://"))
 				return lnk;
 			auto pp = Path(page_path);
 			if (!pp.endsWithSlash)
 				pp = pp[0 .. $-1];
-			return Path("/posts/"~slug~"/"~lnk).relativeTo(pp).toString();
+			return (settings.siteURL.path~("posts/"~slug~"/"~lnk)).relativeTo(pp).toString();
 		};
 
 		auto html = filterMarkdown(content, ms);
