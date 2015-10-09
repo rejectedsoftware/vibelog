@@ -9,5 +9,16 @@
 	"dependencies": {
 		"vibe-d": "~>0.7.26-alpha.2"
 	},
-	"versions": ["VibeDefaultMain"]
+	"configurations": [
+		{
+			"name": "library",
+			"targetType": "library",
+			"excludedSourceFiles": ["source/app.d"]
+		},
+		{
+			"name": "standalone",
+			"targetType": "executable",
+			"versions": ["VibeDefaultMain"]
+		}
+	]
 }
