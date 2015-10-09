@@ -11,14 +11,14 @@
 	},
 	"configurations": [
 		{
-			"name": "library",
-			"targetType": "library",
-			"excludedSourceFiles": ["source/app.d"]
-		},
-		{
 			"name": "standalone",
 			"targetType": "executable",
 			"versions": ["VibeDefaultMain"]
+		},
+		{
+			"name": "library",
+			"targetType": "library",
+			"excludedSourceFiles": ["source/app.d"]
 		}
 	]
 }
