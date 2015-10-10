@@ -10,8 +10,9 @@ body > header {
 	padding: 1px;
 	color: white;
 	text-align: center;
-	background-color: #222;
-	border-bottom: 1px solid #000;
+	background-color: #841;
+	background: linear-gradient(#952, #841);
+	border-bottom: 1px solid #420;
 	box-shadow: 0 10px 40px #aaa;
 }
 
@@ -65,14 +66,16 @@ h1 {
 	margin-bottom: 50pt;
 	padding: 5pt;
 	color: white;
-	background-color: #222;
+	background-color: #841;
+	background: linear-gradient(#952, #841);
 	text-align: center;
 }
 
 #vibelogContent .blogPost header {
-	padding: 10pt 20pt;
-	background-color: #eee;
-	border-bottom: 1px solid #ddd;
+	padding: 10pt 20pt 20pt 20pt;
+	background-color: #fff4ee;
+	background: linear-gradient(#fffaf8, #f4f0ee);
+	border-bottom: 1px solid #e0e0e0;
 }
 
 #vibelogContent .blogPostContent {
@@ -85,6 +88,10 @@ h1 {
 	color: #bbb;
 	background-color: #222;
 	border-top: 1px solid #000;
+}
+
+#vibelogContent .blogPost footer p {
+	margin: 0;
 }
 
 #vibelogContent .blogPost footer a {
@@ -128,4 +135,23 @@ h1 {
 
 #vibelogContent .comment {
 	margin-bottom: 10pt;
+	background-color: #eee;
+}
+
+#vibelogContent .comment .commentHeader {
+	background-color: #888;
+	color: white;
+	padding: 2.5pt 5pt;
+	border: 1px solid #777;
+}
+
+#vibelogContent .comment .commentHeader a {
+	color: white;
+}
+
+#vibelogContent .comment .commentContent {
+	border-left: 1px solid #ddd;
+	border-right: 1px solid #ddd;
+	border-bottom: 1px solid #ddd;
+	padding: 5pt 5pt;
 }
