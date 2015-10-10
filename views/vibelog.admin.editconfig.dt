@@ -2,7 +2,7 @@ extends vibelog.admin.layout
 
 block title
 	- import std.array;
-	- auto title = "Edit configuration '"~config.name~"'";
+	- title = "Edit configuration '"~config.name~"'";
 
 block vibelog-localnav
 	ul.admin-local-nav

@@ -1,7 +1,7 @@
 extends vibelog.blocks
 
 block title
-	- auto title = info.post.header;
+	- title = info.post.header;
 
 block vibelog-content
 	- import std.datetime;

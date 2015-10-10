@@ -1,6 +1,7 @@
 !!! 5
 html
     head
+        - string title;
         block title
         link(rel="stylesheet", type="text/css", href="#{req.rootDir}styles/common.css")
         link(rel="stylesheet", type="text/css", href="#{req.rootDir}styles/menu.css")

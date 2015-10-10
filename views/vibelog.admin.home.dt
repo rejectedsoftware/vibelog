@@ -1,7 +1,7 @@
 extends vibelog.admin.layout
 
 block title
-	- auto title = "VibeLog Admin Panel";
+	- title = "VibeLog Admin Panel";
 	
 block vibelog-content
 	section#actions.vibelogAdminSection

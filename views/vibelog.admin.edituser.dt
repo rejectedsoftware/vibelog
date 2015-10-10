@@ -1,7 +1,7 @@
 extends vibelog.admin.layout
 
 block title
-	- auto title = "Edit user '"~user.username~"'";
+	- title = "Edit user '"~user.username~"'";
 
 block vibelog-localnav
 	ul.admin-local-nav

@@ -1,10 +1,10 @@
 extends vibelog.blocks
 
 block title
-	- import vibe.inet.message;
-	- auto title = "Blog";
+	- title = "Blog";
 
 block vibelog-content
+	- import vibe.inet.message;
 	#vibelogContent
 		#vibelogPostList
 			- foreach( i, post; info.posts )
