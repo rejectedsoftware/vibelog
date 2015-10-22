@@ -8,7 +8,10 @@ import vibe.textfilter.html;
 
 import std.array;
 import std.conv;
+import std.string : strip;
 public import std.datetime;
+
+import stringex.unidecode;
 
 
 final class Post {
@@ -33,7 +36,7 @@ final class Post {
 	}
 
 	@property string name() const { return slug.length ? slug : id.toString(); }
-	
+
 	static Post fromBson(Bson bson)
 	{
 		auto ret = new Post;
@@ -52,7 +55,7 @@ final class Post {
 			ret.tags ~= cast(string)t;
 		return ret;
 	}
-	
+
 	Bson toBson()
 	const {
 		Bson[] btags;
@@ -134,7 +137,7 @@ final class Comment {
 		ret.content = cast(string)bson["content"];
 		return ret;
 	}
-	
+
 	Bson toBson()
 	const {
 		Bson[string] ret;
@@ -160,10 +163,13 @@ final class Comment {
 	}
 }
 
+UniDecoder unidecoder;
+
 string makeSlugFromHeader(string header)
 {
 	Appender!string ret;
-	foreach( dchar ch; header ){
+	auto decoded_header = getDecoder().decode(header);
+	foreach( dchar ch; strip(decoded_header) ){
 		switch( ch ){
 			default:
 				ret.put('-');
@@ -180,4 +186,11 @@ string makeSlugFromHeader(string header)
 		}
 	}
 	return ret.data;
+}
+
+UniDecoder getDecoder() {
+	if (unidecoder is null) {
+		unidecoder = new UniDecoder();
+	}
+	return unidecoder;
 }
