@@ -174,7 +174,7 @@ string makeSlugFromHeader(string header)
 			default:
 				ret.put('-');
 				break;
-			case '"', '\'', '´', '`', '.', ',', ';', '!', '?':
+			case '"', '\'', '´', '`', '.', ',', ';', '!', '?', '¿', '¡':
 				break;
 			case 'A': .. case 'Z'+1:
 				ret.put(cast(dchar)(ch - 'A' + 'a'));
@@ -188,7 +188,20 @@ string makeSlugFromHeader(string header)
 	return ret.data;
 }
 
-UniDecoder getDecoder() {
+unittest {
+	assert(makeSlugFromHeader("sample title") == "sample-title");
+	assert(makeSlugFromHeader("Sample Title") == "sample-title");
+	assert(makeSlugFromHeader("  Sample Title2  ") == "sample-title2");
+	assert(makeSlugFromHeader("反清復明") == "fan-qing-fu-ming");
+	assert(makeSlugFromHeader("φύλλο") == "phullo");
+	assert(makeSlugFromHeader("ខេមរភាសា") == "khemrbhaasaa");
+	assert(makeSlugFromHeader("zweitgrößte der Europäischen Union") == "zweitgrosste-der-europaischen-union");
+	assert(makeSlugFromHeader("østlige og vestlige del udviklede sig uafhængigt ") == "ostlige-og-vestlige-del-udviklede-sig-uafhaengigt");
+	assert(makeSlugFromHeader("¿pchnąć w tę łódź jeża lub ośm skrzyń fig?") == "pchnac-w-te-lodz-jeza-lub-osm-skrzyn-fig");
+	assert(makeSlugFromHeader("¼ €") == "1-4-eu");
+}
+
+private UniDecoder getDecoder() {
 	if (unidecoder is null) {
 		unidecoder = new UniDecoder();
 	}
