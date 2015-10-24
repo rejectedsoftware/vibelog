@@ -8,7 +8,7 @@
 	],
 	"dependencies": {
 		"vibe-d": "~>0.7.26-alpha.2",
-		"stringex": "~>0.0.1"
+		"stringex": "~>0.0.2"
 	},
 	"configurations": [
 		{
