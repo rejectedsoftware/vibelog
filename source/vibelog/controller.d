@@ -91,6 +91,17 @@ class VibeLogController {
 	{
 		return m_subPath ~ "?page=" ~ to!string(page+1);
 	}
+	
+	HeaderInfo getHeaderInfo()
+	{
+		return HeaderInfo(m_config.blogName, m_config.blogDescription);
+	}
+}
+
+struct HeaderInfo
+{
+	string blogName;
+	string blogDescription;
 }
 
 struct PostListInfo {

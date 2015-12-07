@@ -1,12 +1,12 @@
 !!! 5
 html
 	head
+		- string sep = " - ";
 		block title
+		title= title ~ sep ~ info.header.blogName
 		link(rel="stylesheet", type="text/css", href="#{req.rootDir}styles/common.css")
-		title #{title} - VibeLog
+		block layout.head
 	body
 		header
-			h1 VibeLog
-			h2 This is the super duper blog!
-
-		block body
+			block layout.header
+		block layout.content

@@ -1,8 +1,7 @@
 extends vibelog.blocks
 
 block title
-	- import vibe.inet.message;
-	- auto title = "Blog";
+	- auto title = "All posts";
 
 block vibelog-content
 	#vibelogContent
@@ -17,12 +16,14 @@ block vibelog-content
 								- if( post.headerImage.length )
 									img.headerImage(alt="Header image", src="#{post.headerImage}")
 								.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
+									- import vibe.inet.message : toRFC822DateString;
 									span.blogPostDate= toRFC822DateString(post.date)
 									|#{post.subHeader}
 						- if (info.settings.showFullPostsInPostList)
 							.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 								!= post.renderContentAsHtml(info.settings, info.refPath, 2)
 							footer
+								- import vibe.inet.message : toRFC822TimeString;
 								| Posted at #{toRFC822TimeString(post.date)} by #{post.author in info.users ? info.users[post.author].name : post.author}
 								a(href="posts/#{post.name}#comments") #{info.commentCount[i]} comments
 								- if( post.trackbacks.length > 0 )

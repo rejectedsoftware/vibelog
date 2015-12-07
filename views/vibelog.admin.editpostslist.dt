@@ -23,8 +23,8 @@ block vibelog-content
 			th View
 			th Edit
 			th Delete
-		- foreach (post; posts)
-			- if (ctx.loginUser.isPostAdmin() || ctx.loginUser.username == post.author)
+		- foreach (post; info.posts)
+			- if (info.ctx.loginUser.isPostAdmin() || info.ctx.loginUser.username == post.author)
 				tr
 					td= (cast(Date)post.date).toSimpleString()
 					td= post.isPublic ? "yes" : ""
@@ -32,7 +32,7 @@ block vibelog-content
 					td= post.author
 					td= post.category
 					td
-						form(action="#{ctx.settings.siteURL}posts/#{post.name}", method="GET")
+						form(action="#{info.ctx.settings.siteURL}posts/#{post.name}", method="GET")
 							input(type="submit", value="view")
 					td
 						form(action="#{post.name}/", method="GET")

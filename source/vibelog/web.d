@@ -65,11 +65,13 @@ private final class VibeLogWeb {
 	void get(int page = 1)
 	{
 		struct Info {
+			HeaderInfo header;
 			PostListInfo pli;
 			alias pli this;
 			string refPath;
 		}
 		Info info;
+		info.header = m_ctrl.getHeaderInfo();
 		info.pli = m_ctrl.getPostListInfo(page - 1);
 		info.refPath = "/";
 		render!("vibelog.postlist.dt", info);
@@ -79,6 +81,7 @@ private final class VibeLogWeb {
 	void getPost(string _postname)
 	{
 		struct ShowPostInfo {
+			HeaderInfo header;
 			string rootDir;
 			User[string] users;
 			VibeLogSettings settings;
@@ -89,6 +92,7 @@ private final class VibeLogWeb {
 		}
 
 		ShowPostInfo info;
+		info.header = m_ctrl.getHeaderInfo();
 		info.rootDir = m_subPath; // TODO: use relative path
 		info.users = m_ctrl.db.getAllUsers();
 		info.settings = m_settings;
@@ -97,7 +101,7 @@ private final class VibeLogWeb {
 		info.comments = m_ctrl.db.getComments(info.post.id);
 		info.recentPosts = m_ctrl.getRecentPosts();
 		info.refPath = "/posts/"~_postname;
-		
+
 		render!("vibelog.post.dt", info);
 	}
 
@@ -112,25 +116,26 @@ private final class VibeLogWeb {
 		}
 	}
 
-	@path("/posts/:postname/post_comment")
-	void postComment(string name, string email, string homepage, string message, string _postname, HTTPServerRequest req)
+	@path("posts/:slug/post_comment")
+	void postComment(string name, string email, string homepage, string message, string _slug, HTTPServerRequest req)
 	{
-		auto post = m_ctrl.db.getPost(_postname);
-		enforce(post.commentsAllowed, "Posting comments is not allowed for this article.");
+		auto post = m_ctrl.db.getPost(_slug);
 
-		auto c = new Comment;
-		c.isPublic = true;
-		c.date = Clock.currTime().toUTC();
-		c.authorName = name;
-		c.authorMail = email;
-		c.authorHomepage = homepage;
-		c.authorIP = req.peer;
-		if (auto fip = "X-Forwarded-For" in req.headers) c.authorIP = *fip;
-		if (c.authorHomepage == "http://") c.authorHomepage = "";
-		c.content = message;
-		m_ctrl.db.addComment(post.id, c);
-
-		redirect(m_subPath ~ "posts/" ~ post.name);
+		if( post.commentsAllowed )
+		{
+			auto c = new Comment;
+			c.isPublic = true;
+			c.date = Clock.currTime().toUTC();
+			c.authorName = name;
+			c.authorMail = email;
+			c.authorHomepage = homepage;
+			c.authorIP = req.peer;
+			if (auto fip = "X-Forwarded-For" in req.headers) c.authorIP = *fip;
+			if (c.authorHomepage == "http://") c.authorHomepage = "";
+			c.content = message;
+			m_ctrl.db.addComment(post.id, c);
+			redirect(m_subPath ~ "posts/" ~ post.name);
+		}
 	}
 
 	@path("feed/rss")
@@ -168,11 +173,14 @@ private final class VibeLogWeb {
 		feed.render(res.bodyWriter);
 	}
 
-	void postMarkup(string message, HTTPServerRequest req, HTTPServerResponse res)
+	@path("/filter")
+	void getFilter(string message, string filters, HTTPServerResponse res)
 	{
-		auto post = new Post;
-		post.content = message;
-		res.writeBody(post.renderContentAsHtml(m_settings, req.path), "text/html");
+		auto p = new Post;
+		p.content = message;
+		import std.array : split;
+		p.filters = filters.split();
+		res.writeBody(p.renderContentAsHtml(m_settings));
 	}
 
 	@path("/sitemap.xml")
@@ -196,7 +204,7 @@ private final class VibeLogWeb {
 				if( p.isPublic ) writeEntry("posts/", p.name);
 				return true;
 			});
-		
+
 		res.bodyWriter.write("</urlset>\n");
 		res.bodyWriter.flush();
 	}

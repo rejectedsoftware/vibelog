@@ -16,10 +16,10 @@ block vibelog-content
 			th Name
 			th Edit
 			th Delete
-		- foreach (cfg; configs)
+		- foreach (cfg; info.configs)
 			tr
 				td= cfg.name
-					- if (cfg.name == activeConfig)
+					- if (cfg.name == info.activeConfig)
 						| (active)
 				td
 					form(action="#{cfg.name}/", method="GET")

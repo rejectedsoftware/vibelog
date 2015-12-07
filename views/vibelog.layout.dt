@@ -1,1 +1,8 @@
 extends layout
+block layout.head
+	block vibelog.layout.head
+block layout.header
+	include vibelog.inc.header
+	block vibelog.layout.header
+block layout.content
+	block vibelog.layout.content

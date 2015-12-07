@@ -38,8 +38,16 @@ private final class VibeLogWebAdmin {
 
 	void get(AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		render!("vibelog.admin.home.dt", ctx);
+		struct AdminInfo
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+		}
+		AdminInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
+
+		render!("vibelog.admin.home.dt", info);
 	}
 
 	//
@@ -50,24 +58,44 @@ private final class VibeLogWebAdmin {
 	void getConfigs(AuthInfo _auth)
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		auto ctx = makeContext(_auth);
-		Config[] configs = m_ctrl.db.getAllConfigs();
-		auto activeConfig = m_settings.configName;
-		render!("vibelog.admin.editconfiglist.dt", ctx, configs, activeConfig);
+		struct ConfigsInfo
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+			Config[] configs;
+			typeof(m_settings.configName) activeConfig;
+		}
+		ConfigsInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
+		info.configs = m_ctrl.db.getAllConfigs();
+		info.activeConfig = m_settings.configName;
+
+		render!("vibelog.admin.editconfiglist.dt", info);
 	}
 
 	@path("configs/:configname/")
 	void getConfigEdit(string _configname, AuthInfo _auth)
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		Config config = m_ctrl.db.getConfig(_configname);
-		render!("vibelog.admin.editconfig.dt", ctx, globalConfig, config);
+		struct ConfigEditInfo
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+			Config globalConfig;
+			Config config;
+		}
+		ConfigEditInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+		info.config = m_ctrl.db.getConfig(_configname);
+
+		render!("vibelog.admin.editconfig.dt", info);
 	}
 
 	@path("configs/:configname/")
-	void postPutConfig(HTTPServerRequest req, string language, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth, string categories = null)
+	void postPutConfig(HTTPServerRequest req, string language, string blogName, string blogDescription, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth, string categories = null)
 	{
 		import std.string;
 
@@ -83,13 +111,15 @@ private final class VibeLogWebAdmin {
 			}
 		}
 		cfg.language = language;
+		cfg.blogName = blogName;
+		cfg.blogDescription = blogDescription;
 		cfg.copyrightString = copyrightString;
 		cfg.feedTitle = feedTitle;
 		cfg.feedLink = feedLink;
 		cfg.feedDescription = feedDescription;
 		cfg.feedImageTitle = feedImageTitle;
 		cfg.feedImageUrl = feedImageUrl;
-	
+
 		m_ctrl.db.setConfig(cfg);
 
 		redirect(m_subPath ~ "configs/");
@@ -111,17 +141,35 @@ private final class VibeLogWebAdmin {
 	@path("users/")
 	void getUsers(AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		render!("vibelog.admin.edituserlist.dt", ctx);
+		struct AdminInfo
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+		}
+		AdminInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
+
+		render!("vibelog.admin.edituserlist.dt", info);
 	}
 
 	@path("users/:username/")
 	void getUserEdit(string _username, AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		User user = m_ctrl.db.getUser(_username);
-		render!("vibelog.admin.edituser.dt", ctx, globalConfig, user);
+		struct UserEditInfo
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+			Config globalConfig;
+			User user;
+		}
+		UserEditInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+		info.user = m_ctrl.db.getUser(_username);
+
+		render!("vibelog.admin.edituser.dt", info);
 	}
 
 	@path("users/:username/")
@@ -188,7 +236,7 @@ private final class VibeLogWebAdmin {
 				redirect(m_subPath ~ "users/");
 				return;
 			}
-		
+
 		// fall-through (404)
 	}
 
@@ -211,48 +259,77 @@ private final class VibeLogWebAdmin {
 	@path("posts/")
 	void getPosts(AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		Post[] posts;
+		struct PostsInfo
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+			Post[] posts;
+		}
+		PostsInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
 		m_ctrl.db.getAllPosts(0, (size_t idx, Post post){
 			if (_auth.loginUser.isPostAdmin() || post.author == _auth.loginUser.username
 				|| _auth.loginUser.mayPostInCategory(post.category))
 			{
-				posts ~= post;
+				info.posts ~= post;
 			}
 			return true;
 		});
-		render!("vibelog.admin.editpostslist.dt", ctx, posts);
+		render!("vibelog.admin.editpostslist.dt", info);
 	}
 
+	@path("make_post")
 	void getMakePost(AuthInfo _auth, string _error = null)
 	{
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		Post post;
-		Comment[] comments;
-		string[] files;
-		string error = _error;
-		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments, files, error);
+		struct PostEditInfo
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+			Config globalConfig;
+			Post post;
+			Comment[] comments;
+			string[] files;
+			string error;
+		}
+		PostEditInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+		info.error = _error;
+		render!("vibelog.admin.editpost.dt", info);
 	}
 
 	@auth @errorDisplay!getMakePost
 	void postMakePost(bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
-		string content, AuthInfo _auth)
+		string content, string filters, AuthInfo _auth)
 	{
-		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage, header, subHeader, content, null, _auth);
+		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage, header, subHeader, content, filters, null, _auth);
 	}
 
 	@path("posts/:postname/")
 	void getEditPost(string _postname, AuthInfo _auth, string _error = null)
 	{
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		auto post = m_ctrl.db.getPost(_postname);
-		auto comments = m_ctrl.db.getComments(post.id, true);
-		auto files = m_ctrl.db.getFiles(_postname);
-		auto error = _error;
-		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments, files, error);
+		struct PostEditInfo // Duplicate from getMakePost
+		{
+			HeaderInfo header;
+			typeof(makeContext(_auth)) ctx;
+			Config globalConfig;
+			Post post;
+			Comment[] comments;
+			string[] files;
+			string error;
+		}
+		PostEditInfo info;
+		info.header = m_ctrl.getHeaderInfo();
+		info.ctx = makeContext(_auth);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+		info.post = m_ctrl.db.getPost(_postname);
+		info.comments = m_ctrl.db.getComments(info.post.id, true);
+		info.files = m_ctrl.db.getFiles(_postname);
+		info.error = _error;
+		render!("vibelog.admin.editpost.dt", info);
 	}
 
 	@path("posts/:postname/delete")
@@ -278,7 +355,7 @@ private final class VibeLogWebAdmin {
 	@path("posts/:postname/") @errorDisplay!getEditPost
 	void postPutPost(string id, bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
-		string content, string _postname, AuthInfo _auth)
+		string content, string filters, string _postname, AuthInfo _auth)
 	{
 		import vibe.data.bson : BsonObjectID;
 
@@ -288,28 +365,34 @@ private final class VibeLogWebAdmin {
 			enforce(_postname == p.name, "URL does not match the edited post!");
 		} else {
 			p = new Post;
-			p.category = "default";
+			p.category = "meta";
 			p.date = Clock.currTime().toUTC();
 		}
 		enforce(_auth.loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
 
+		// Put a switch here?
 		p.isPublic = isPublic;
 		p.commentsAllowed = commentsAllowed;
 		p.author = author;
 		p.date = SysTime.fromSimpleString(date);
 		p.category = category;
-		p.slug = slug.length ? slug : makeSlugFromHeader(header);
+		p.slug = slug.length ? slug : header.length ? makeSlugFromHeader(header) : id;
 		p.headerImage = headerImage;
 		p.header = header;
 		p.subHeader = subHeader;
 		p.content = content;
+		import std.array : split;
+		p.filters = filters.split();
 
 		enforce(!m_ctrl.db.hasPost(p.slug) || m_ctrl.db.getPost(p.slug).id == p.id, "Post slug is already used for another article.");
 
-		if( id.length > 0 ){
+		if( id.length > 0 )
+		{
 			m_ctrl.db.modifyPost(p);
 			_postname = p.name;
-		} else {
+		}
+		else
+		{
 			p.id = m_ctrl.db.addPost(p);
 		}
 		redirect(m_subPath~"posts/");

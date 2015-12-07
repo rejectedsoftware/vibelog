@@ -6,6 +6,9 @@ final class Config {
 	BsonObjectID id;
 	string name;
 	string[] categories;
+	// Maybe blogName and blogDescription should be merged with feedTitle and feedDescription
+	string blogName = "VibeLog";
+	string blogDescription = "Publishing software utilizing the vibe.d framework";
 	string language = "en-us";
 	string copyrightString;
 	string mailServer;
@@ -36,7 +39,9 @@ final class Config {
 		ret.name = bson["name"].opt!string();
 		foreach( grp; cast(Bson[])bson["categories"] )
 			ret.categories ~= grp.opt!string();
-		ret.language = bson["language"].opt!string("en-us");
+		ret.blogName = bson["blogName"].opt!string(blogName.init);
+		ret.blogDescription = bson["blogDescription"].opt!string(blogDescription.init);
+		ret.language = bson["language"].opt!string(language.init);
 		ret.copyrightString = bson["copyrightString"].opt!string();
 		ret.mailServer = bson["mailServer"].opt!string();
 		ret.feedTitle = bson["feedTitle"].opt!string();
@@ -52,11 +57,20 @@ final class Config {
 		Bson[] bcategories;
 		foreach( grp; categories )
 			bcategories ~= Bson(grp);
+		
+		// Create a default category if none is specified
+		if(bcategories.length < 1)
+		{
+			bcategories ~= Bson("meta");
+		}
 
+		// Could use a switch here
 		Bson[string] ret;
 		ret["_id"] = Bson(id);
 		ret["name"] = Bson(name);
 		ret["categories"] = Bson(bcategories);
+		ret["blogName"] = Bson(blogName);
+		ret["blogDescription"] = Bson(blogDescription);
 		ret["language"] = Bson(language);
 		ret["copyrightString"] = Bson(copyrightString);
 		ret["mailServer"] = Bson(mailServer);

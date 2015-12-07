@@ -16,14 +16,14 @@ block vibelog-content
 			input(type="text", name="username")
 			input(type="submit", value="create")
 
-	- if (ctx.loginUser.isUserAdmin())
+	- if (info.ctx.loginUser.isUserAdmin())
 		table(width="100%")
 			tr
 				th Username
 				th Full name
 				th Edit
 				th Delete
-			- foreach (usr; ctx.users)
+			- foreach (usr; info.ctx.users)
 				tr
 					td= usr.username
 					td= usr.name
@@ -35,5 +35,5 @@ block vibelog-content
 							input(type="submit", value="delete")
 	- else
 		p Sorry, you are not authorized to edit users. You can, however,
-			a(href="#{ctx.loginUser.username}/") edit your own account
+			a(href="#{info.ctx.loginUser.username}/") edit your own account
 			|.

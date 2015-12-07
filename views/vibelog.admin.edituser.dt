@@ -1,7 +1,7 @@
 extends vibelog.admin.layout
 
 block title
-	- auto title = "Edit user '"~user.username~"'";
+	- auto title = "Edit user '"~info.user.username~"'";
 
 block vibelog-localnav
 	ul.admin-local-nav
@@ -12,17 +12,17 @@ block vibelog-content
 	- import std.datetime;
 	
 	form(action="./", method="POST")
-		input(type="hidden", name="id", value="#{user._id.toString()}")
+		input(type="hidden", name="id", value="#{info.user._id.toString()}")
 		p
 			label(for="username") Username
-			input(type="text", name="username", value="#{user.username}")
+			input(type="text", name="username", value="#{info.user.username}")
 		p
 			label(for="name") Full name
-			input(type="text", name="name", value="#{user.name}")
+			input(type="text", name="name", value="#{info.user.name}")
 		p
 			label(for="email") Email
-			input(type="email", name="email", value="#{user.email}")
-		- if (!ctx.loginUser.isUserAdmin())
+			input(type="email", name="email", value="#{info.user.email}")
+		- if (!info.ctx.loginUser.isUserAdmin())
 			p
 				label(for="oldPassword") Current Password
 				input(type="password", name="oldPassword", value="")
@@ -32,11 +32,11 @@ block vibelog-content
 		p
 			label(for="passwordConfirmation") Confim new password
 			input(type="password", name="passwordConfirmation", value="")
-		- if (ctx.loginUser.isUserAdmin())
+		- if (info.ctx.loginUser.isUserAdmin())
 			p Groups:
 			p
-				- foreach( grp; globalConfig.groups )
-					- if( user.inGroup(grp) )
+				- foreach( grp; info.globalConfig.groups )
+					- if( info.user.inGroup(grp) )
 						input.checkbox(type="checkbox", name="group_#{grp}", value="1", checked)
 					- else
 						input.checkbox(type="checkbox", name="group_#{grp}", value="1")
@@ -44,8 +44,8 @@ block vibelog-content
 					br
 			p Allowed categories:
 			p
-				- foreach( grp; globalConfig.categories )
-					- if( user.mayPostInCategory(grp) )
+				- foreach( grp; info.globalConfig.categories )
+					- if( info.user.mayPostInCategory(grp) )
 						input.checkbox(type="checkbox", name="category_#{grp}", value="1", checked)
 					- else
 						input.checkbox(type="checkbox", name="category_#{grp}", value="1")

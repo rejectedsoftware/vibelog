@@ -65,7 +65,7 @@ Embedding VibeLog into your own application
 		registerVibeLog(blogsettings, router);
 
 		router.get("*", serveStaticFiles("./public"));
-		
+
 		auto settings = new HttpServerSettings;
 		settings.port = 8080;
 		listenHttp(settings, router);
@@ -90,6 +90,14 @@ Setting everything up
 
 3. Open the configuration management page and edit the `global` configuration. You should add at least one category here. Each line in the text field represents one configuration and must not contain spaces.
 
-4. Now edit the blog's configuration (e.g. `vibelog`) and check all categories that should be listed on the blog.
+4. Now edit the active configuration (`example`) and check all categories that should be listed on the blog.
 
-5. Start posting new articles by choosing `New post` from the management page.
+
+Posting articles
+----------------
+
+1. Click on `New post` on the management page.
+
+2. Fill out the information, including any text filters (currently there's only Markdown, enabled by default).
+
+4. Click on `Create post` to post or the `Preview` checkbox to see what your post would look like.
