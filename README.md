@@ -88,9 +88,9 @@ Setting everything up
 
 2. Open the user management page and create a new user. Be sure to make the new user an administrator. The `admin` user will be disabled afterwards.
 
-3. Open the configuration management page and edit the `global` configuration. You should add at least one category here. Each line in the text field represents one configuration and must not contain spaces.
+3. Open the configuration management page and edit the `global` configuration. You can add categories by entering them into the first field, line by line. Category names must not contain spaces.
 
-4. Now edit the active configuration (`example`) and check all categories that should be listed on the blog.
+4. Now you may edit the active configuration (`example`) and check the categories that should be included on the blog or change the blog name and description.
 
 
 Posting articles
