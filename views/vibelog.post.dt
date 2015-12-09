@@ -26,7 +26,7 @@ block vibelog-content
 			section.comments
 				- if( info.post.commentsAllowed )
 					h2 Post a comment
-					form(action="#{info.post.name}/post_comment", method="POST")
+					form(action="#{info.refPath}/post_comment", method="POST")
 						table.blind.comment-form
 							col.caption
 							tr
@@ -49,6 +49,8 @@ block vibelog-content
 									input(type="submit", value="Post")
 				- else
 					p.error Commenting is currently disabled for this article.
+				- if( info.error.length > 0 )
+					p.error= info.error
 
 				- if( info.comments.length )
 					h2#comments Comments

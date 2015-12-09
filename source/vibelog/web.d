@@ -77,8 +77,9 @@ private final class VibeLogWeb {
 		render!("vibelog.postlist.dt", info);
 	}
 
+	@errorDisplay!getPost
 	@path("posts/:postname")
-	void getPost(string _postname)
+	void getPost(string _postname, string _error)
 	{
 		struct ShowPostInfo {
 			HeaderInfo header;
@@ -89,6 +90,7 @@ private final class VibeLogWeb {
 			Comment[] comments;
 			Post[] recentPosts;
 			string refPath;
+			string error;
 		}
 
 		ShowPostInfo info;
@@ -101,6 +103,7 @@ private final class VibeLogWeb {
 		info.comments = m_ctrl.db.getComments(info.post.id);
 		info.recentPosts = m_ctrl.getRecentPosts();
 		info.refPath = "/posts/"~_postname;
+		info.error = _error;
 
 		render!("vibelog.post.dt", info);
 	}
@@ -116,26 +119,26 @@ private final class VibeLogWeb {
 		}
 	}
 
-	@path("posts/:slug/post_comment")
-	void postComment(string name, string email, string homepage, string message, string _slug, HTTPServerRequest req)
+	@errorDisplay!getPost
+	@path("posts/:postname/post_comment")
+	void postComment(string name, string email, string homepage, string message, string _postname, HTTPServerRequest req)
 	{
-		auto post = m_ctrl.db.getPost(_slug);
+		auto post = m_ctrl.db.getPost(_postname);
+		enforce(post.commentsAllowed, "Posting comments is not allowed for this article.");
 
-		if( post.commentsAllowed )
-		{
-			auto c = new Comment;
-			c.isPublic = true;
-			c.date = Clock.currTime().toUTC();
-			c.authorName = name;
-			c.authorMail = email;
-			c.authorHomepage = homepage;
-			c.authorIP = req.peer;
-			if (auto fip = "X-Forwarded-For" in req.headers) c.authorIP = *fip;
-			if (c.authorHomepage == "http://") c.authorHomepage = "";
-			c.content = message;
-			m_ctrl.db.addComment(post.id, c);
-			redirect(m_subPath ~ "posts/" ~ post.name);
-		}
+		auto c = new Comment;
+		c.isPublic = true;
+		c.date = Clock.currTime().toUTC();
+		c.authorName = name;
+		c.authorMail = email;
+		c.authorHomepage = homepage;
+		c.authorIP = req.peer;
+		if (auto fip = "X-Forwarded-For" in req.headers) c.authorIP = *fip;
+		if (c.authorHomepage == "http://") c.authorHomepage = "";
+		c.content = message;
+		m_ctrl.db.addComment(post.id, c);
+
+		redirect(m_subPath ~ "posts/" ~ post.name);
 	}
 
 	@path("feed/rss")

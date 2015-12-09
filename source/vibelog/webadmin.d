@@ -365,7 +365,7 @@ private final class VibeLogWebAdmin {
 			enforce(_postname == p.name, "URL does not match the edited post!");
 		} else {
 			p = new Post;
-			p.category = "meta";
+			p.category = "general";
 			p.date = Clock.currTime().toUTC();
 		}
 		enforce(_auth.loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
