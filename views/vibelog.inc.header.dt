@@ -1,2 +1,2 @@
-h1= info.header.blogName
-h2= info.header.blogDescription
+h1= info.settings.blogName
+h2= info.settings.blogDescription

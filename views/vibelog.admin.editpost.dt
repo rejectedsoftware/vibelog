@@ -4,10 +4,10 @@ block title
 	- import std.datetime;
 
 	- auto title = (info.post ? "Modify" : "Add new") ~ " blog post";
-	script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
-	script(type="text/javascript", src="#{req.rootDir}scripts/vibelog-edit.js")
+	script(type="text/javascript", src="#{info.settings.rootDir}scripts/jquery.js")
+	script(type="text/javascript", src="#{info.settings.rootDir}scripts/vibelog-edit.js")
 	script(type="text/javascript").
-		window.rootDir = "#{info.ctx.settings.siteURL}";
+		window.rootDir = "#{info.settings.rootDir}";
 
 block vibelog-localnav
 	ul.admin-local-nav

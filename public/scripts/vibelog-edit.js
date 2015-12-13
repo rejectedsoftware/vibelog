@@ -9,7 +9,7 @@ function previewUpdate()
 
 		if (filters != "")
 		{
-			$.get('/filter', {message: message.val(), filters: filters}, function(data){ preview.html(data) });
+			$.get(window.rootDir + 'filter', {message: message.val(), filters: filters}, function(data){ preview.html(data) });
 		}
 		else
 		{

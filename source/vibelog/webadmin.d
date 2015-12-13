@@ -38,14 +38,7 @@ private final class VibeLogWebAdmin {
 
 	void get(AuthInfo _auth)
 	{
-		struct AdminInfo
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-		}
-		AdminInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
+		auto info = new AdminView(_auth, m_settings);
 
 		render!("vibelog.admin.home.dt", info);
 	}
@@ -58,18 +51,10 @@ private final class VibeLogWebAdmin {
 	void getConfigs(AuthInfo _auth)
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		struct ConfigsInfo
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-			Config[] configs;
-			typeof(m_settings.configName) activeConfig;
-		}
-		ConfigsInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
-		info.configs = m_ctrl.db.getAllConfigs();
-		info.activeConfig = m_settings.configName;
+
+		auto info = new ConfigsView(_auth, m_settings);
+		info.configs =  m_ctrl.db.getAllConfigs();
+		info.activeConfigName = m_settings.configName;
 
 		render!("vibelog.admin.editconfiglist.dt", info);
 	}
@@ -78,24 +63,16 @@ private final class VibeLogWebAdmin {
 	void getConfigEdit(string _configname, AuthInfo _auth)
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		struct ConfigEditInfo
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-			Config globalConfig;
-			Config config;
-		}
-		ConfigEditInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
-		info.globalConfig = m_ctrl.db.getConfig("global", true);
+
+		auto info = new ConfigEditView(_auth, m_settings);
 		info.config = m_ctrl.db.getConfig(_configname);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
 
 		render!("vibelog.admin.editconfig.dt", info);
 	}
 
 	@path("configs/:configname/")
-	void postPutConfig(HTTPServerRequest req, string language, string blogName, string blogDescription, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth, string categories = null)
+	void postPutConfig(HTTPServerRequest req, string language, string copyrightString, string feedTitle, string feedLink, string feedDescription, string feedImageTitle, string feedImageUrl, string _configname, AuthInfo _auth, string categories = null)
 	{
 		import std.string;
 
@@ -111,8 +88,6 @@ private final class VibeLogWebAdmin {
 			}
 		}
 		cfg.language = language;
-		cfg.blogName = blogName;
-		cfg.blogDescription = blogDescription;
 		cfg.copyrightString = copyrightString;
 		cfg.feedTitle = feedTitle;
 		cfg.feedLink = feedLink;
@@ -133,7 +108,6 @@ private final class VibeLogWebAdmin {
 		redirect(m_subPath ~ "configs/");
 	}
 
-
 	//
 	// Users
 	//
@@ -141,14 +115,7 @@ private final class VibeLogWebAdmin {
 	@path("users/")
 	void getUsers(AuthInfo _auth)
 	{
-		struct AdminInfo
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-		}
-		AdminInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
+		auto info = new AdminView(_auth, m_settings);
 
 		render!("vibelog.admin.edituserlist.dt", info);
 	}
@@ -156,16 +123,8 @@ private final class VibeLogWebAdmin {
 	@path("users/:username/")
 	void getUserEdit(string _username, AuthInfo _auth)
 	{
-		struct UserEditInfo
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-			Config globalConfig;
-			User user;
-		}
-		UserEditInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
+		auto info = new UserEditView(_auth, m_settings);
+
 		info.globalConfig = m_ctrl.db.getConfig("global", true);
 		info.user = m_ctrl.db.getUser(_username);
 
@@ -259,15 +218,8 @@ private final class VibeLogWebAdmin {
 	@path("posts/")
 	void getPosts(AuthInfo _auth)
 	{
-		struct PostsInfo
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-			Post[] posts;
-		}
-		PostsInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
+
+		auto info = new PostsView(_auth, m_settings);
 		m_ctrl.db.getAllPosts(0, (size_t idx, Post post){
 			if (_auth.loginUser.isPostAdmin() || post.author == _auth.loginUser.username
 				|| _auth.loginUser.mayPostInCategory(post.category))
@@ -276,27 +228,17 @@ private final class VibeLogWebAdmin {
 			}
 			return true;
 		});
+
 		render!("vibelog.admin.editpostslist.dt", info);
 	}
 
 	@path("make_post")
 	void getMakePost(AuthInfo _auth, string _error = null)
 	{
-		struct PostEditInfo
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-			Config globalConfig;
-			Post post;
-			Comment[] comments;
-			string[] files;
-			string error;
-		}
-		PostEditInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
+		auto info = new PostEditView(_auth, m_settings);
 		info.globalConfig = m_ctrl.db.getConfig("global", true);
 		info.error = _error;
+
 		render!("vibelog.admin.editpost.dt", info);
 	}
 
@@ -311,19 +253,7 @@ private final class VibeLogWebAdmin {
 	@path("posts/:postname/")
 	void getEditPost(string _postname, AuthInfo _auth, string _error = null)
 	{
-		struct PostEditInfo // Duplicate from getMakePost
-		{
-			HeaderInfo header;
-			typeof(makeContext(_auth)) ctx;
-			Config globalConfig;
-			Post post;
-			Comment[] comments;
-			string[] files;
-			string error;
-		}
-		PostEditInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.ctx = makeContext(_auth);
+		auto info = new PostEditView(_auth, m_settings);
 		info.globalConfig = m_ctrl.db.getConfig("global", true);
 		info.post = m_ctrl.db.getPost(_postname);
 		info.comments = m_ctrl.db.getComments(info.post.id, true);
@@ -370,7 +300,6 @@ private final class VibeLogWebAdmin {
 		}
 		enforce(_auth.loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
 
-		// Put a switch here?
 		p.isPublic = isPublic;
 		p.commentsAllowed = commentsAllowed;
 		p.author = author;
@@ -459,6 +388,116 @@ logInfo("FILE %s", f.filename);
 	}
 
 	mixin PrivateAccessProxy;
+}
+
+private struct Context
+{
+	User loginUser;
+	User[string] users;
+	VibeLogSettings settings;
+	Path rootPath;
+}
+
+import vibelog.view : VibeLogView;
+class AdminView : VibeLogView
+{
+	Context ctx;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		super(settings);
+		ctx.loginUser = auth.loginUser;
+		ctx.users = auth.users;
+		ctx.settings = settings;
+		ctx.rootPath = settings.siteURL.path ~ settings.adminPrefix;
+	}
+}
+
+final class PostEditView : AdminView
+{
+	import vibelog.config : Config;
+	Config globalConfig;
+
+	import vibelog.post : Post;
+	Post post;
+
+	import vibelog.post : Comment;
+	Comment[] comments;
+
+	string[] files;
+	string error;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		super(auth, settings);
+	}
+}
+
+final class ConfigEditView : AdminView
+{
+	Config config;
+	Config globalConfig;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings, Config config, Config globalConfig)
+	{
+		this(auth, settings);
+		this.config = config;
+		this.globalConfig = globalConfig;
+	}
+
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		super(auth, settings);
+	}
+}
+
+final class ConfigsView : AdminView
+{
+	import vibelog.config : Config;
+	Config[] configs;
+	string activeConfigName;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings, Config[] configs, string activeConfigName)
+	{
+		this(auth, settings);
+		this.configs = configs;
+		this.activeConfigName = activeConfigName;
+	}
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		super(auth, settings);
+	}
+}
+
+final class UserEditView : AdminView
+{
+	import vibelog.config : Config;
+	Config globalConfig;
+
+	import vibelog.user : User;
+	User user;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		super(auth, settings);
+	}
+}
+
+final class PostsView : AdminView
+{
+	import vibelog.post : Post;
+	Post[] posts;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		super(auth, settings);
+	}
 }
 
 private struct AuthInfo {

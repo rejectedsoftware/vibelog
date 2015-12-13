@@ -1,6 +1,6 @@
 extends vibelog.layout
 block vibelog.layout.head
-	link(rel="stylesheet", type="text/css", href="#{req.rootDir}styles/menu.css")
+	link(rel="stylesheet", type="text/css", href="#{info.settings.rootDir}styles/menu.css")
 	block vibelog.admin.layout.head
 block vibelog.layout.header
 	div#menuContainer

@@ -28,14 +28,6 @@ block vibelog-content
 					br
 
 		p
-			label(for="blogName") Blog name
-			input(type="text", name="blogName", value="#{info.config.blogName}")
-
-		p
-			label(for="blogDescription") Blog description
-			input(type="text", name="blogDescription", value="#{info.config.blogDescription}")
-		
-		p
 			label(for="language") Language
 			input(type="text", name="language", value="#{info.config.language}")
 

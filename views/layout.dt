@@ -3,8 +3,8 @@ html
 	head
 		- string sep = " - ";
 		block title
-		title= title ~ sep ~ info.header.blogName
-		link(rel="stylesheet", type="text/css", href="#{req.rootDir}styles/common.css")
+		title= title ~ sep ~ info.settings.blogName
+		link(rel="stylesheet", type="text/css", href="#{info.settings.rootDir}styles/common.css")
 		block layout.head
 	body
 		header

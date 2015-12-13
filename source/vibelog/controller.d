@@ -11,7 +11,6 @@ class VibeLogController {
 	private {
 		DBController m_db;
 		VibeLogSettings m_settings;
-		string m_subPath;
 		Config m_config;
 	}
 
@@ -20,7 +19,7 @@ class VibeLogController {
 		m_settings = settings;
 		m_db = createDBController(settings);
 		m_subPath = settings.siteURL.path.toString();
-	
+
 		try m_config = m_db.getConfig(settings.configName, true);
 		catch( Exception e ){
 			import vibe.core.log;
@@ -37,7 +36,6 @@ class VibeLogController {
 	PostListInfo getPostListInfo(int page = 0, int page_size = 0)
 	{
 		PostListInfo info;
-		info.rootDir = m_subPath; // TODO: use relative path
 		info.users = m_db.getAllUsers();
 		info.settings = m_settings;
 		info.pageCount = getPageCount(page_size);
@@ -46,7 +44,7 @@ class VibeLogController {
 		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
 		info.recentPosts = getRecentPosts();
 		return info;
-	}	
+	}
 
 	int getPageCount(int page_size = 0)
 	{
@@ -89,23 +87,11 @@ class VibeLogController {
 
 	string getShowPagePath(int page)
 	{
-		return m_subPath ~ "?page=" ~ to!string(page+1);
+		return m_settings.rootDir ~ "?page=" ~ to!string(page+1);
 	}
-	
-	HeaderInfo getHeaderInfo()
-	{
-		return HeaderInfo(m_config.blogName, m_config.blogDescription);
-	}
-}
-
-struct HeaderInfo
-{
-	string blogName;
-	string blogDescription;
 }
 
 struct PostListInfo {
-	string rootDir;
 	User[string] users;
 	VibeLogSettings settings;
 	int pageNumber = 0;

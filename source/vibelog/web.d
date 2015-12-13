@@ -45,7 +45,6 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 private final class VibeLogWeb {
 	private {
 		VibeLogController m_ctrl;
-		string m_subPath;
 		VibeLogSettings m_settings;
 	}
 
@@ -53,9 +52,8 @@ private final class VibeLogWeb {
 	{
 		m_settings = controller.settings;
 		m_ctrl = controller;
-		m_subPath = controller.settings.siteURL.path.toString();
 
-		enforce(m_subPath.startsWith("/") && m_subPath.endsWith("/"), "All local URLs must start with and end with '/'.");
+		enforce(m_settings.rootDir.startsWith("/") && m_settings.rootDir.endsWith("/"), "All local URLs must start with and end with '/'.");
 	}
 
 	//
@@ -64,16 +62,9 @@ private final class VibeLogWeb {
 
 	void get(int page = 1)
 	{
-		struct Info {
-			HeaderInfo header;
-			PostListInfo pli;
-			alias pli this;
-			string refPath;
-		}
-		Info info;
-		info.header = m_ctrl.getHeaderInfo();
+		auto info = new PageView(m_settings);
 		info.pli = m_ctrl.getPostListInfo(page - 1);
-		info.refPath = "/";
+		info.refPath = m_settings.rootDir;
 		render!("vibelog.postlist.dt", info);
 	}
 
@@ -81,23 +72,8 @@ private final class VibeLogWeb {
 	@path("posts/:postname")
 	void getPost(string _postname, string _error)
 	{
-		struct ShowPostInfo {
-			HeaderInfo header;
-			string rootDir;
-			User[string] users;
-			VibeLogSettings settings;
-			Post post;
-			Comment[] comments;
-			Post[] recentPosts;
-			string refPath;
-			string error;
-		}
-
-		ShowPostInfo info;
-		info.header = m_ctrl.getHeaderInfo();
-		info.rootDir = m_subPath; // TODO: use relative path
+		auto info = new PostView(m_settings);
 		info.users = m_ctrl.db.getAllUsers();
-		info.settings = m_settings;
 		try info.post = m_ctrl.db.getPost(_postname);
 		catch(Exception e){ return; } // -> gives 404 error
 		info.comments = m_ctrl.db.getComments(info.post.id);
@@ -138,7 +114,7 @@ private final class VibeLogWeb {
 		c.content = message;
 		m_ctrl.db.addComment(post.id, c);
 
-		redirect(m_subPath ~ "posts/" ~ post.name);
+		redirect(m_settings.rootDir ~ "posts/" ~ post.name);
 	}
 
 	@path("feed/rss")
@@ -210,5 +186,45 @@ private final class VibeLogWeb {
 
 		res.bodyWriter.write("</urlset>\n");
 		res.bodyWriter.flush();
+	}
+}
+
+import vibelog.view : VibeLogView;
+final class PageView : VibeLogView
+{
+	import vibelog.controller : PostListInfo;
+	PostListInfo pli;
+	alias pli this;
+	string refPath;
+
+	import vibelog.settings : VibeLogSettings;
+	this(VibeLogSettings settings)
+	{
+		super(settings);
+	}
+}
+
+final class PostView : VibeLogView
+{
+	import vibelog.user : User;
+	User[string] users;
+
+	import vibelog.settings : VibeLogSettings;
+	VibeLogSettings settings;
+
+	import vibelog.post : Post;
+	Post post;
+
+	import vibelog.post : Comment;
+	Comment[] comments;
+
+	Post[] recentPosts;
+	string refPath;
+	string error;
+
+	this(VibeLogSettings settings)
+	{
+		super(settings);
+		this.settings = settings;
 	}
 }
