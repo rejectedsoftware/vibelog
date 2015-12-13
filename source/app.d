@@ -13,7 +13,7 @@ shared static this()
 
 	auto blogSettings = new VibeLogSettings;
 	blogSettings.configName = "example";
-	blogSettings.siteURL = URL("http://localhost:8080/blog/sub/");
+	blogSettings.siteURL = URL("http://localhost:8080/blog/");
 	blogSettings.blogName = "VibeLog";
 	blogSettings.blogDescription = "Publishing software utilizing the vibe.d framework";
 
@@ -24,4 +24,7 @@ shared static this()
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;
 	listenHTTP(settings, router);
+
+	import vibe.core.log : logInfo;
+	logInfo("VibeLog is live at '" ~ blogSettings.rootDir ~ "'.");
 }
