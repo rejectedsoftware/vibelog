@@ -18,7 +18,6 @@ class VibeLogController {
 	{
 		m_settings = settings;
 		m_db = createDBController(settings);
-		m_subPath = settings.siteURL.path.toString();
 
 		try m_config = m_db.getConfig(settings.configName, true);
 		catch( Exception e ){

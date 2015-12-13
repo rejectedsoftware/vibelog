@@ -25,7 +25,7 @@ import std.string;
 
 void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 {
-	auto sub_path = controller.settings.siteURL.path.toString();
+	string sub_path = controller.settings.rootDir;
 	assert(sub_path.endsWith("/"), "Blog site URL must end with '/'.");
 
 	if (sub_path.length > 1) router.get(sub_path[0 .. $-1], staticRedirect(sub_path));
@@ -78,7 +78,7 @@ private final class VibeLogWeb {
 		catch(Exception e){ return; } // -> gives 404 error
 		info.comments = m_ctrl.db.getComments(info.post.id);
 		info.recentPosts = m_ctrl.getRecentPosts();
-		info.refPath = "/posts/"~_postname;
+		info.refPath = m_settings.rootDir~"posts/"~_postname;
 		info.error = _error;
 
 		render!("vibelog.post.dt", info);
