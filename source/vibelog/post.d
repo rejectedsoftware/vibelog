@@ -53,9 +53,11 @@ final class Post {
 		ret.subHeader = cast(string)bson["subHeader"];
 		ret.content = cast(string)bson["content"];
 
+		if( !bson["filters"].isNull )
 		foreach( f; cast(Bson[])bson["filters"] )
 			ret.filters ~= cast(string)f;
 
+		if( !bson["tags"].isNull )
 		foreach( t; cast(Bson[])bson["tags"] )
 			ret.tags ~= cast(string)t;
 
