@@ -23,4 +23,12 @@ final class VibeLogSettings {
 		markdownSettings = new MarkdownSettings;
 		markdownSettings.flags = MarkdownFlags.backtickCodeBlocks;
 	}
+
+	@property
+	{
+		string rootDir()
+		{
+			return siteURL.path.toString();
+		}
+	}
 }

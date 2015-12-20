@@ -11,7 +11,6 @@ class VibeLogController {
 	private {
 		DBController m_db;
 		VibeLogSettings m_settings;
-		string m_subPath;
 		Config m_config;
 	}
 
@@ -19,8 +18,7 @@ class VibeLogController {
 	{
 		m_settings = settings;
 		m_db = createDBController(settings);
-		m_subPath = settings.siteURL.path.toString();
-	
+
 		try m_config = m_db.getConfig(settings.configName, true);
 		catch( Exception e ){
 			import vibe.core.log;
@@ -36,17 +34,15 @@ class VibeLogController {
 
 	PostListInfo getPostListInfo(int page = 0, int page_size = 0)
 	{
-		PostListInfo info;
-		info.rootDir = m_subPath; // TODO: use relative path
+		auto info = PostListInfo(m_settings);
 		info.users = m_db.getAllUsers();
-		info.settings = m_settings;
 		info.pageCount = getPageCount(page_size);
 		info.pageNumber = page;
 		info.posts = getPostsForPage(info.pageNumber, page_size);
 		foreach( p; info.posts ) info.commentCount ~= m_db.getCommentCount(p.id);
 		info.recentPosts = getRecentPosts();
 		return info;
-	}	
+	}
 
 	int getPageCount(int page_size = 0)
 	{
@@ -89,22 +85,32 @@ class VibeLogController {
 
 	string getShowPagePath(int page)
 	{
-		return m_subPath ~ "?page=" ~ to!string(page+1);
+		return m_settings.rootDir ~ "?page=" ~ to!string(page+1);
 	}
 }
 
-struct PostListInfo {
-	string rootDir;
+struct PostListInfo
+{
+	import vibelog.info : VibeLogInfo;
+	VibeLogInfo vli;
+	alias vli this;
+
 	User[string] users;
-	VibeLogSettings settings;
 	int pageNumber = 0;
 	int pageCount;
 	Post[] posts;
 	long[] commentCount;
 	Post[] recentPosts;
+
+	import vibelog.settings : VibeLogSettings;
+	this(VibeLogSettings settings)
+	{
+		vli = VibeLogInfo(settings);
+	}
 }
 
-struct VibelogHeadlineListConfig {
+struct VibelogHeadlineListConfig
+{
 	bool showSummaries = true;
 	size_t maxPosts = 10;
 	size_t headerLevel = 2;

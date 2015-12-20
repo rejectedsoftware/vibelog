@@ -2,29 +2,28 @@ extends vibelog.admin.layout
 
 block title
 	- import std.datetime;
-
-	- title = (post ? "Modify" : "Add new") ~ " blog post";
-	script(type="text/javascript", src="#{req.rootDir}scripts/jquery.js")
-	script(type="text/javascript", src="#{req.rootDir}scripts/vibelog-edit.js")
+	- title = (info.post ? "Modify" : "Add new") ~ " blog post";
+	script(type="text/javascript", src="#{info.settings.rootDir}scripts/jquery.js")
+	script(type="text/javascript", src="#{info.settings.rootDir}scripts/vibelog-edit.js")
 	script(type="text/javascript").
-		window.rootDir = "#{req.rootDir ~ ctx.settings.siteURL.pathString[1 .. $]}";
+		window.rootDir = "#{info.settings.rootDir}";
 
 block vibelog-localnav
 	ul.admin-local-nav
 		li
-			a(href='#{post?"../":"./"}') Cancel
+			a(href='#{info.post ? "../" : "./"}') Cancel
 
 block vibelog-content
-	- if (!post || post.author == ctx.loginUser.username || ctx.loginUser.isPostAdmin())
-		form(action='#{post?"./":"make_post"}', method="POST")
-			input(type="hidden", name="id", value="#{post ? post.id.toString() : null}")
+	- if (!info.post || info.post.author == info.loginUser.username || info.loginUser.isPostAdmin())
+		form(action='#{info.post ? "./" : "make_post"}', method="POST")
+			input(type="hidden", name="id", value="#{info.post ? info.post.id.toString() : null}")
 			table.blind
 				col.caption
 				tr
 					td
 						label(for="isPublic") Public
 					td
-						- if( post && post.isPublic )
+						- if( info.post && info.post.isPublic )
 							input#isPublic.checkbox(type="checkbox", name="isPublic", value="yes", checked)
 						- else
 							input#isPublic.checkbox(type="checkbox", name="isPublic", value="yes")
@@ -32,33 +31,33 @@ block vibelog-content
 					td
 						label(for="commentsAllowed") Comments allowed
 					td
-						- if( !post || post.commentsAllowed )
+						- if( !info.post || info.post.commentsAllowed )
 							input#commentsAllowed.checkbox(type="checkbox", name="commentsAllowed", value="yes", checked)
 						- else
 							input#commentsAllowed.checkbox(type="checkbox", name="commentsAllowed", value="yes")
 				tr
-					- if (ctx.loginUser.isPostAdmin())
+					- if (info.loginUser.isPostAdmin())
 						td
 							label(for="author") Author
 						td
 							select#author(name="author", size="1")
-								- foreach (usr; ctx.users)
-									- if (usr.username == (post ? post.author : ctx.loginUser.username))
+								- foreach (usr; info.users)
+									- if (usr.username == (info.post ? info.post.author : info.loginUser.username))
 										option(value="#{usr.username}", selected) #{usr.name} (#{usr.username})
 									- else
 										option(value="#{usr.username}") #{usr.name} (#{usr.username})
 					- else
 						td Author
-						td #{ctx.loginUser.name} (#{ctx.loginUser.username})
-							input(type="hidden", name="author", value="#{ctx.loginUser.username}")
+						td #{info.loginUser.name} (#{info.loginUser.username})
+							input(type="hidden", name="author", value="#{info.loginUser.username}")
 				tr
 					td
 						label(for="category") Category
 					td
 						select#category(name="category", size="1")
-							- foreach (cat; globalConfig.categories)
-								- if (ctx.loginUser.isPostAdmin() || ctx.loginUser.mayPostInCategory(cat))
-									- if (post && cat == post.category)
+							- foreach (cat; info.globalConfig.categories)
+								- if (info.loginUser.isPostAdmin() || info.loginUser.mayPostInCategory(cat))
+									- if (info.post && cat == info.post.category)
 										option(value="#{cat}", selected)= cat
 									- else
 										option(value="#{cat}")= cat
@@ -66,17 +65,17 @@ block vibelog-content
 					td
 						label(for="date") Date
 					td
-						input#date(type="text", name="date", value="#{post ? post.date.toSimpleString() : Clock.currTime().toSimpleString()}")
+						input#date(type="text", name="date", value="#{info.post ? info.post.date.toSimpleString() : Clock.currTime().toSimpleString()}")
 				tr
 					td
 						label(for="slug") Post slug
 					td
-						input#slug(type="text", name="slug", value="#{post ? post.slug : null}")
+						input#slug(type="text", name="slug", value="#{info.post ? info.post.slug : null}")
 				tr
 					td
 						label(for="headerImage-field") Header image
 					td
-						input#headerImage-field(type="text", name="headerImage", value="#{post ? post.headerImage : null}")
+						input#headerImage-field(type="text", name="headerImage", value="#{info.post ? info.post.headerImage : null}")
 				tr
 					td(colspan=2)
 						hr
@@ -84,32 +83,32 @@ block vibelog-content
 					td
 						label(for="header-field") Heading
 					td
-						input#header-field(type="text", name="header", value="#{post ? post.header : null}")
+						input#header-field(type="text", name="header", value="#{info.post ? info.post.header : null}")
 				tr
 					td
 						label(for="subHeader") Sub-Heading
 					td
-						textarea#subHeader(rows=3, name="subHeader")= post ? post.subHeader : null
+						textarea#subHeader(rows=3, name="subHeader")= info.post ? info.post.subHeader : null
 				tr
 					td Article text
 						p
-							input#preview-checkbox.checkbox(type="checkbox", onchange="previewToggle()", style="width: auto;")
+							input#preview-checkbox.checkbox(type="checkbox", onchange="previewUpdate();", style="width: auto;", autocomplete="off")
 							label(for="preview-checkbox") Preview
 					td
 						#message-area
-							textarea#message(name="content", rows="18")= post ? post.content : null
+							textarea#message(name="content", rows="18")= info.post ? info.post.content : null
 							#message-preview(style="display: none;")
-			input(type="submit", value='#{post?"Apply changes":"Create post!"}')
+			input(type="submit", value='#{info.post ? "Apply changes" : "Create post!"}')
 
-		- if (post)
+		- if (info.post)
 			h2 Files
 
-			- if (files.length)
+			- if (info.files.length)
 				table
 					tr
 						th Name
 						th Action
-					- foreach (f; files)
+					- foreach (f; info.files)
 						tr
 							td= f
 							td
@@ -123,7 +122,7 @@ block vibelog-content
 				input(type="file", name="files", multiple)
 				button(type="submit") Upload
 
-		- if( comments.length )
+		- if( info.comments.length )
 			h2 Comments
 
 			table
@@ -135,7 +134,7 @@ block vibelog-content
 					th Content
 					th IP
 					th Action
-				- foreach( c; comments )
+				- foreach( c; info.comments )
 					tr(class='#{c.isPublic ? "" : "inactive"}')
 						- auto d = c.date; d.fracSec = FracSec.from!"usecs"(0);
 						td= d.toSimpleString()
@@ -146,15 +145,15 @@ block vibelog-content
 						td= c.authorIP
 						td
 							form(action="set_comment_public", method="POST")
-								input(type="hidden", name="public", value="#{c.isPublic ? 0 : 1}")
+								input(type="hidden", name="public_", value='#{c.isPublic ? false : true}')
 								input(type="hidden", name="id", value="#{c.id}")
 								button(type="submit")= c.isPublic ? "Hide" : "Show"
 	- else
-		p.error You are not the author of this post and are not authorized to change it.
-		
-		p Public: #{post.isPublic ? "yes" : "no"}
-		p Author: #{post.author}
-		p Heading: #{post.header}
-		p Sub-Heading: #{post.subHeader}
+		p.error You are not the author of this post and/or are not authorized to change it.
+
+		p Public: #{info.post.isPublic ? "yes" : "no"}
+		p Author: #{info.post.author}
+		p Heading: #{info.post.header}
+		p Sub-Heading: #{info.post.subHeader}
 		p Content:
-		pre= post.content
+		pre= info.post.content

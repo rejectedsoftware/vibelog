@@ -10,7 +10,7 @@
 					.blogPostDate= toRFC822DateString(post.date)
 				- auto hlvl = config.headerLevel;
 				- if (config.headerLinks)
-					|<h#{hlvl}><a href="#{info.rootDir}posts/#{post.name}">#{post.header}</a></h#{hlvl}>
+					|<h#{hlvl}><a href="#{info.settings.rootDir}posts/#{post.name}">#{post.header}</a></h#{hlvl}>
 				- else
 					|<h#{hlvl}>#{post.header}</h#{hlvl}>
 				- if (!config.dateFirst)
@@ -22,4 +22,4 @@
 						.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 							|#{post.subHeader}
 				- if (config.footerLinks)
-					a(href="#{info.rootDir}posts/#{post.name}")& Read more&hellip;
+					a(href="#{info.settings.rootDir}posts/#{post.name}")& Read more&hellip;

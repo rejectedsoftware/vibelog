@@ -38,8 +38,9 @@ private final class VibeLogWebAdmin {
 
 	void get(AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		render!("vibelog.admin.home.dt", ctx);
+		auto info = AdminInfo(_auth, m_settings);
+
+		render!("vibelog.admin.home.dt", info);
 	}
 
 	//
@@ -50,20 +51,24 @@ private final class VibeLogWebAdmin {
 	void getConfigs(AuthInfo _auth)
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		auto ctx = makeContext(_auth);
-		Config[] configs = m_ctrl.db.getAllConfigs();
-		auto activeConfig = m_settings.configName;
-		render!("vibelog.admin.editconfiglist.dt", ctx, configs, activeConfig);
+
+		auto info = ConfigsInfo(_auth, m_settings);
+		info.configs =  m_ctrl.db.getAllConfigs();
+		info.activeConfigName = m_settings.configName;
+
+		render!("vibelog.admin.editconfiglist.dt", info);
 	}
 
 	@path("configs/:configname/")
 	void getConfigEdit(string _configname, AuthInfo _auth)
 	{
 		enforceAuth(_auth.loginUser.isConfigAdmin());
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		Config config = m_ctrl.db.getConfig(_configname);
-		render!("vibelog.admin.editconfig.dt", ctx, globalConfig, config);
+
+		auto info = ConfigEditInfo(_auth, m_settings);
+		info.config = m_ctrl.db.getConfig(_configname);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+
+		render!("vibelog.admin.editconfig.dt", info);
 	}
 
 	@path("configs/:configname/")
@@ -111,17 +116,20 @@ private final class VibeLogWebAdmin {
 	@path("users/")
 	void getUsers(AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		render!("vibelog.admin.edituserlist.dt", ctx);
+		auto info = AdminInfo(_auth, m_settings);
+
+		render!("vibelog.admin.edituserlist.dt", info);
 	}
 
 	@path("users/:username/")
 	void getUserEdit(string _username, AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		User user = m_ctrl.db.getUser(_username);
-		render!("vibelog.admin.edituser.dt", ctx, globalConfig, user);
+		auto info = UserEditInfo(_auth, m_settings);
+
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+		info.user = m_ctrl.db.getUser(_username);
+
+		render!("vibelog.admin.edituser.dt", info);
 	}
 
 	@path("users/:username/")
@@ -211,28 +219,27 @@ private final class VibeLogWebAdmin {
 	@path("posts/")
 	void getPosts(AuthInfo _auth)
 	{
-		auto ctx = makeContext(_auth);
-		Post[] posts;
+		auto info = PostsInfo(_auth, m_settings);
 		m_ctrl.db.getAllPosts(0, (size_t idx, Post post){
 			if (_auth.loginUser.isPostAdmin() || post.author == _auth.loginUser.username
 				|| _auth.loginUser.mayPostInCategory(post.category))
 			{
-				posts ~= post;
+				info.posts ~= post;
 			}
 			return true;
 		});
-		render!("vibelog.admin.editpostslist.dt", ctx, posts);
+
+		render!("vibelog.admin.editpostslist.dt", info);
 	}
 
+	@path("make_post")
 	void getMakePost(AuthInfo _auth, string _error = null)
 	{
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		Post post;
-		Comment[] comments;
-		string[] files;
-		string error = _error;
-		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments, files, error);
+		auto info = PostEditInfo(_auth, m_settings);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+		info.error = _error;
+
+		render!("vibelog.admin.editpost.dt", info);
 	}
 
 	@auth @errorDisplay!getMakePost
@@ -246,13 +253,13 @@ private final class VibeLogWebAdmin {
 	@path("posts/:postname/")
 	void getEditPost(string _postname, AuthInfo _auth, string _error = null)
 	{
-		auto ctx = makeContext(_auth);
-		auto globalConfig = m_ctrl.db.getConfig("global", true);
-		auto post = m_ctrl.db.getPost(_postname);
-		auto comments = m_ctrl.db.getComments(post.id, true);
-		auto files = m_ctrl.db.getFiles(_postname);
-		auto error = _error;
-		render!("vibelog.admin.editpost.dt", ctx, globalConfig, post, comments, files, error);
+		auto info = PostEditInfo(_auth, m_settings);
+		info.globalConfig = m_ctrl.db.getConfig("global", true);
+		info.post = m_ctrl.db.getPost(_postname);
+		info.comments = m_ctrl.db.getComments(info.post.id, true);
+		info.files = m_ctrl.db.getFiles(_postname);
+		info.error = _error;
+		render!("vibelog.admin.editpost.dt", info);
 	}
 
 	@path("posts/:postname/delete")
@@ -338,23 +345,6 @@ logInfo("FILE %s", f.filename);
 		redirect("../");
 	}
 
-	private auto makeContext(AuthInfo auth)
-	{
-		static struct S {
-			User loginUser;
-			User[string] users;
-			VibeLogSettings settings;
-			Path rootPath;
-		}
-
-		S s;
-		s.loginUser = auth.loginUser;
-		s.users = auth.users;
-		s.settings = m_settings;
-		s.rootPath = m_settings.siteURL.path ~ m_settings.adminPrefix;
-		return s;
-	}
-
 	private enum auth = before!performAuth("_auth");
 
 	private AuthInfo performAuth(HTTPServerRequest req, HTTPServerResponse res)
@@ -376,6 +366,126 @@ logInfo("FILE %s", f.filename);
 	}
 
 	mixin PrivateAccessProxy;
+}
+
+struct AdminInfo
+{
+	import vibelog.info : VibeLogInfo;
+	VibeLogInfo vli;
+	alias vli this;
+
+	User loginUser;
+	User[string] users;
+	Path rootPath;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		vli = VibeLogInfo(settings);
+		loginUser = auth.loginUser;
+		users = auth.users;
+		this.settings = settings;
+		rootPath = settings.siteURL.path ~ settings.adminPrefix;
+	}
+}
+
+enum string mixAdminInfo = q{AdminInfo ai; alias ai this;};
+enum string mixInitAdminInfo = q{ai = AdminInfo(auth, settings);};
+
+struct PostEditInfo
+{
+	mixin(mixAdminInfo);
+
+	import vibelog.config : Config;
+	Config globalConfig;
+
+	import vibelog.post : Post;
+	Post post;
+
+	import vibelog.post : Comment;
+	Comment[] comments;
+
+	string[] files;
+	string error;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		mixin(mixInitAdminInfo);
+	}
+}
+
+struct ConfigEditInfo
+{
+	mixin(mixAdminInfo);
+
+	Config config;
+	Config globalConfig;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings, Config config, Config globalConfig)
+	{
+		this(auth, settings);
+		this.config = config;
+		this.globalConfig = globalConfig;
+	}
+
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		mixin(mixInitAdminInfo);
+	}
+}
+
+struct ConfigsInfo
+{
+	mixin(mixAdminInfo);
+
+	import vibelog.config : Config;
+	Config[] configs;
+	string activeConfigName;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings, Config[] configs, string activeConfigName)
+	{
+		this(auth, settings);
+		this.configs = configs;
+		this.activeConfigName = activeConfigName;
+	}
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		mixin(mixInitAdminInfo);
+	}
+}
+
+struct UserEditInfo
+{
+	mixin(mixAdminInfo);
+
+	import vibelog.config : Config;
+	Config globalConfig;
+
+	import vibelog.user : User;
+	User user;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		mixin(mixInitAdminInfo);
+	}
+}
+
+struct PostsInfo
+{
+	mixin(mixAdminInfo);
+
+	import vibelog.post : Post;
+	Post[] posts;
+
+	import vibelog.settings : VibeLogSettings;
+	this(AuthInfo auth, VibeLogSettings settings)
+	{
+		mixin(mixInitAdminInfo);
+	}
 }
 
 private struct AuthInfo {

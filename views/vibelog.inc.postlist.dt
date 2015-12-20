@@ -19,4 +19,4 @@
 				ul
 					- foreach( p; yr )
 						li
-							a(href="#{info.rootDir}posts/#{p.name}")= p.header
+							a(href="#{info.settings.rootDir}posts/#{p.name}")= p.header

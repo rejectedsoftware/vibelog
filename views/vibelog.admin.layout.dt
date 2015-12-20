@@ -1,13 +1,13 @@
-extends layout.admin
-
-block body
-	header
-		h1= title
-		h2 This is the super duper blog
-
-		div#menuContainer
-			include vibelog.admin.inc.nav
-
+extends vibelog.layout
+block vibelog.layout.head
+	link(rel="stylesheet", type="text/css", href="#{info.settings.rootDir}styles/menu.css")
+	block vibelog.admin.layout.head
+block vibelog.layout.header
+	div#menuContainer
+		include vibelog.admin.inc.nav
+	block vibelog.admin.layout.header
+block vibelog.layout.content
 	#vibelogContent
 		block vibelog-localnav
 		block vibelog-content
+	block vibelog.admin.layout.content
