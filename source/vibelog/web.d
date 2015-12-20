@@ -151,11 +151,14 @@ private final class VibeLogWeb {
 		feed.render(res.bodyWriter);
 	}
 
-	void postMarkup(string message, HTTPServerRequest req, HTTPServerResponse res)
+	@path("/filter")
+	void getFilter(string message, string filters, HTTPServerResponse res)
 	{
-		auto post = new Post;
-		post.content = message;
-		res.writeBody(post.renderContentAsHtml(m_settings, req.path), "text/html");
+		auto p = new Post;
+		p.content = message;
+		import std.array : split;
+		p.filters = filters.split();
+		res.writeBody(p.renderContentAsHtml(m_settings));
 	}
 
 	@path("/sitemap.xml")

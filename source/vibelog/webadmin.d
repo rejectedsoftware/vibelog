@@ -245,9 +245,9 @@ private final class VibeLogWebAdmin {
 	@auth @errorDisplay!getMakePost
 	void postMakePost(bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
-		string content, AuthInfo _auth)
+		string content, string filters, AuthInfo _auth)
 	{
-		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage, header, subHeader, content, null, _auth);
+		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage, header, subHeader, content, filters, null, _auth);
 	}
 
 	@path("posts/:postname/")
@@ -285,7 +285,7 @@ private final class VibeLogWebAdmin {
 	@path("posts/:postname/") @errorDisplay!getEditPost
 	void postPutPost(string id, bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
-		string content, string _postname, AuthInfo _auth)
+		string content, string filters, string _postname, AuthInfo _auth)
 	{
 		import vibe.data.bson : BsonObjectID;
 
@@ -295,7 +295,7 @@ private final class VibeLogWebAdmin {
 			enforce(_postname == p.name, "URL does not match the edited post!");
 		} else {
 			p = new Post;
-			p.category = "default";
+			p.category = "general";
 			p.date = Clock.currTime().toUTC();
 		}
 		enforce(_auth.loginUser.mayPostInCategory(category), "You are now allowed to post in the '"~category~"' category.");
@@ -305,18 +305,23 @@ private final class VibeLogWebAdmin {
 		p.author = author;
 		p.date = SysTime.fromSimpleString(date);
 		p.category = category;
-		p.slug = slug.length ? slug : makeSlugFromHeader(header);
+		p.slug = slug.length ? slug : header.length ? makeSlugFromHeader(header) : id;
 		p.headerImage = headerImage;
 		p.header = header;
 		p.subHeader = subHeader;
 		p.content = content;
+		import std.array : split;
+		p.filters = filters.split();
 
 		enforce(!m_ctrl.db.hasPost(p.slug) || m_ctrl.db.getPost(p.slug).id == p.id, "Post slug is already used for another article.");
 
-		if( id.length > 0 ){
+		if( id.length > 0 )
+		{
 			m_ctrl.db.modifyPost(p);
 			_postname = p.name;
-		} else {
+		}
+		else
+		{
 			p.id = m_ctrl.db.addPost(p);
 		}
 		redirect(m_subPath~"posts/");

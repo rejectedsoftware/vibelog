@@ -94,6 +94,9 @@ block vibelog-content
 						p
 							input#preview-checkbox.checkbox(type="checkbox", onchange="previewUpdate();", style="width: auto;", autocomplete="off")
 							label(for="preview-checkbox") Preview
+						p
+							label(for="filters-field") Filters
+							input#filters-field(type="text", name="filters", onchange="previewUpdate();", style="width: auto;", autocomplete="off", value='#{info.post ? info.post.filters.join(" ") : "markdown"}')
 					td
 						#message-area
 							textarea#message(name="content", rows="18")= info.post ? info.post.content : null

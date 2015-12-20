@@ -15,7 +15,7 @@ final class VibeLogSettings {
 	URL siteURL = URL.parse("http://localhost:8080/");
 	deprecated("Use siteURL instead.") alias siteUrl = siteURL;
 	string adminPrefix = "manage/";
-	string function(string)[] textFilters;
+	string delegate(string) @safe [] textFilters;
 	MarkdownSettings markdownSettings;
 
 	this()
