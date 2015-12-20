@@ -7,6 +7,8 @@ import vibe.textfilter.markdown;
 final class VibeLogSettings {
 	string databaseURL = "mongodb://localhost/vibelog";
 	string configName = "global";
+	string blogName = "VibeLog";
+	string blogDescription = "Publishing software utilizing the vibe.d framework";
 	int postsPerPage = 4;
 	int maxRecentPosts = 20;
 	bool showFullPostsInPostList = true;
