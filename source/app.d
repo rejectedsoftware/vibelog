@@ -14,11 +14,13 @@ shared static this()
 	auto blogsettings = new VibeLogSettings;
 	blogsettings.configName = "example";
 	blogsettings.siteURL = URL("http://localhost:8080/");
+	blogsettings.blogName = "VibeLog";
+	blogsettings.blogDescription = "Publishing software utilizing the vibe.d framework";
 
 	auto ctrl = new VibeLogController(blogsettings);
 	router.registerVibeLogWeb(ctrl);
 	router.registerVibeLogWebAdmin(ctrl);
-	
+
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;
 	listenHTTP(settings, router);

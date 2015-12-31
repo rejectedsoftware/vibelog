@@ -23,9 +23,10 @@ final class Post {
 	string category; // can be hierarchical using dotted.syntax.format
 	SysTime date;
 	string header;
+	string headerImage;
 	string subHeader;
 	string content;
-	string headerImage;
+	string[] filters;
 	string[] tags;
 	string[] trackbacks;
 
@@ -47,20 +48,24 @@ final class Post {
 		ret.author = cast(string)bson["author"];
 		ret.category = cast(string)bson["category"];
 		ret.date = SysTime.fromISOExtString(cast(string)bson["date"]);
+		ret.headerImage = cast(string)bson["headerImage"];
 		ret.header = cast(string)bson["header"];
 		ret.subHeader = cast(string)bson["subHeader"];
-		ret.headerImage = cast(string)bson["headerImage"];
 		ret.content = cast(string)bson["content"];
+
+		if( !bson["filters"].isNull )
+		foreach( f; cast(Bson[])bson["filters"] )
+			ret.filters ~= cast(string)f;
+
+		if( !bson["tags"].isNull )
 		foreach( t; cast(Bson[])bson["tags"] )
 			ret.tags ~= cast(string)t;
+
 		return ret;
 	}
 
 	Bson toBson()
 	const {
-		Bson[] btags;
-		foreach( t; tags )
-			btags ~= Bson(t);
 
 		Bson[string] ret;
 		ret["_id"] = Bson(id);
@@ -70,38 +75,58 @@ final class Post {
 		ret["author"] = Bson(author);
 		ret["category"] = Bson(category);
 		ret["date"] = Bson(date.toISOExtString());
+		ret["headerImage"] = Bson(headerImage);
 		ret["header"] = Bson(header);
 		ret["subHeader"] = Bson(subHeader);
-		ret["headerImage"] = Bson(headerImage);
 		ret["content"] = Bson(content);
-		ret["tags"] = Bson(btags);
+
+		import std.algorithm : map;
+		import std.array : array;
+		ret["filters"] = Bson(filters.map!Bson.array);
+		ret["tags"] = Bson(tags.map!Bson.array);
 
 		return Bson(ret);
 	}
 
 	string renderSubHeaderAsHtml(VibeLogSettings settings)
 	const {
-		auto ret = appender!string();
-		filterMarkdown(ret, subHeader, settings.markdownSettings);
-		return ret.data;
+		import std.algorithm : canFind;
+		if (filters.canFind("markdown"))
+		{
+			auto ret = appender!string();
+			filterMarkdown(ret, subHeader, settings.markdownSettings);
+			return ret.data;
+		}
+		else
+		{
+			return subHeader;
+		}
 	}
 
-	string renderContentAsHtml(VibeLogSettings settings, string page_path, int header_level_nesting = 0)
+	string renderContentAsHtml(VibeLogSettings settings, string page_path = "", int header_level_nesting = 0)
 	const {
-		import std.algorithm : startsWith;
-		scope ms = new MarkdownSettings;
-		ms.flags = settings.markdownSettings.flags;
-		ms.headingBaseLevel = settings.markdownSettings.headingBaseLevel + header_level_nesting;
-		ms.urlFilter = (lnk, is_image) {
-			if (lnk.startsWith("http://") || lnk.startsWith("https://"))
-				return lnk;
-			auto pp = Path(page_path);
-			if (!pp.endsWithSlash)
-				pp = pp[0 .. $-1];
-			return (settings.siteURL.path~("posts/"~slug~"/"~lnk)).relativeTo(pp).toString();
-		};
 
-		auto html = filterMarkdown(content, ms);
+		import std.algorithm : canFind;
+		if (filters.canFind("markdown"))
+		{
+			scope ms = new MarkdownSettings;
+			ms.flags = settings.markdownSettings.flags;
+			ms.headingBaseLevel = settings.markdownSettings.headingBaseLevel + header_level_nesting;
+			if (page_path != "")
+			{
+				ms.urlFilter = (lnk, is_image) {
+					import std.algorithm : startsWith;
+					if (lnk.startsWith("http://") || lnk.startsWith("https://"))
+						return lnk;
+					auto pp = Path(page_path);
+					if (!pp.endsWithSlash)
+						pp = pp[0 .. $-1];
+					return (settings.siteURL.path~("posts/"~slug~"/"~lnk)).relativeTo(pp).toString();
+				};
+			}
+			settings.textFilters ~= (string content) { return filterMarkdown(content, ms); };
+		}
+		string html = content;
 		foreach (flt; settings.textFilters)
 			html = flt(html);
 		return html;

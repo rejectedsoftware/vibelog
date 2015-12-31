@@ -25,7 +25,7 @@ import std.string;
 
 void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 {
-	auto sub_path = controller.settings.siteURL.path.toString();
+	string sub_path = controller.settings.rootDir;
 	assert(sub_path.endsWith("/"), "Blog site URL must end with '/'.");
 
 	if (sub_path.length > 1) router.get(sub_path[0 .. $-1], staticRedirect(sub_path));
@@ -45,7 +45,6 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 private final class VibeLogWeb {
 	private {
 		VibeLogController m_ctrl;
-		string m_subPath;
 		VibeLogSettings m_settings;
 	}
 
@@ -53,9 +52,8 @@ private final class VibeLogWeb {
 	{
 		m_settings = controller.settings;
 		m_ctrl = controller;
-		m_subPath = controller.settings.siteURL.path.toString();
 
-		enforce(m_subPath.startsWith("/") && m_subPath.endsWith("/"), "All local URLs must start with and end with '/'.");
+		enforce(m_settings.rootDir.startsWith("/") && m_settings.rootDir.endsWith("/"), "All local URLs must start with and end with '/'.");
 	}
 
 	//
@@ -64,40 +62,24 @@ private final class VibeLogWeb {
 
 	void get(int page = 1)
 	{
-		struct Info {
-			PostListInfo pli;
-			alias pli this;
-			string refPath;
-		}
-		Info info;
-		info.pli = m_ctrl.getPostListInfo(page - 1);
-		info.refPath = "/";
+		auto info = PageInfo(m_settings, m_ctrl.getPostListInfo(page - 1));
+		info.refPath = m_settings.rootDir;
 		render!("vibelog.postlist.dt", info);
 	}
 
+	@errorDisplay!getPost
 	@path("posts/:postname")
-	void getPost(string _postname)
+	void getPost(string _postname, string _error)
 	{
-		struct ShowPostInfo {
-			string rootDir;
-			User[string] users;
-			VibeLogSettings settings;
-			Post post;
-			Comment[] comments;
-			Post[] recentPosts;
-			string refPath;
-		}
-
-		ShowPostInfo info;
-		info.rootDir = m_subPath; // TODO: use relative path
+		auto info = PostInfo(m_settings);
 		info.users = m_ctrl.db.getAllUsers();
-		info.settings = m_settings;
 		try info.post = m_ctrl.db.getPost(_postname);
 		catch(Exception e){ return; } // -> gives 404 error
 		info.comments = m_ctrl.db.getComments(info.post.id);
 		info.recentPosts = m_ctrl.getRecentPosts();
-		info.refPath = "/posts/"~_postname;
-		
+		info.refPath = m_settings.rootDir~"posts/"~_postname;
+		info.error = _error;
+
 		render!("vibelog.post.dt", info);
 	}
 
@@ -112,7 +94,8 @@ private final class VibeLogWeb {
 		}
 	}
 
-	@path("/posts/:postname/post_comment")
+	@errorDisplay!getPost
+	@path("posts/:postname/post_comment")
 	void postComment(string name, string email, string homepage, string message, string _postname, HTTPServerRequest req)
 	{
 		auto post = m_ctrl.db.getPost(_postname);
@@ -130,7 +113,7 @@ private final class VibeLogWeb {
 		c.content = message;
 		m_ctrl.db.addComment(post.id, c);
 
-		redirect(m_subPath ~ "posts/" ~ post.name);
+		redirect(m_settings.rootDir ~ "posts/" ~ post.name);
 	}
 
 	@path("feed/rss")
@@ -168,11 +151,14 @@ private final class VibeLogWeb {
 		feed.render(res.bodyWriter);
 	}
 
-	void postMarkup(string message, HTTPServerRequest req, HTTPServerResponse res)
+	@path("/filter")
+	void getFilter(string message, string filters, HTTPServerResponse res)
 	{
-		auto post = new Post;
-		post.content = message;
-		res.writeBody(post.renderContentAsHtml(m_settings, req.path), "text/html");
+		auto p = new Post;
+		p.content = message;
+		import std.array : split;
+		p.filters = filters.split();
+		res.writeBody(p.renderContentAsHtml(m_settings));
 	}
 
 	@path("/sitemap.xml")
@@ -199,5 +185,49 @@ private final class VibeLogWeb {
 		
 		res.bodyWriter.write("</urlset>\n");
 		res.bodyWriter.flush();
+	}
+}
+
+import vibelog.info : VibeLogInfo;
+struct PageInfo
+{
+	import vibelog.controller : PostListInfo;
+	PostListInfo pli;
+	alias pli this;
+	string refPath;
+
+	import vibelog.settings : VibeLogSettings;
+	this(VibeLogSettings settings, PostListInfo pli)
+	{
+		this.pli = pli;
+	}
+}
+
+struct PostInfo
+{
+	import vibelog.info : VibeLogInfo;
+	VibeLogInfo vli;
+	alias vli this;
+
+	import vibelog.user : User;
+	User[string] users;
+
+	import vibelog.settings : VibeLogSettings;
+	VibeLogSettings settings;
+
+	import vibelog.post : Post;
+	Post post;
+
+	import vibelog.post : Comment;
+	Comment[] comments;
+
+	Post[] recentPosts;
+	string refPath;
+	string error;
+
+	this(VibeLogSettings settings)
+	{
+		vli = VibeLogInfo(settings);
+		this.settings = settings;
 	}
 }

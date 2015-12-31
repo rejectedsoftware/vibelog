@@ -36,7 +36,7 @@ final class Config {
 		ret.name = bson["name"].opt!string();
 		foreach( grp; cast(Bson[])bson["categories"] )
 			ret.categories ~= grp.opt!string();
-		ret.language = bson["language"].opt!string("en-us");
+		ret.language = bson["language"].opt!string(language.init);
 		ret.copyrightString = bson["copyrightString"].opt!string();
 		ret.mailServer = bson["mailServer"].opt!string();
 		ret.feedTitle = bson["feedTitle"].opt!string();
@@ -46,13 +46,20 @@ final class Config {
 		ret.feedImageUrl = bson["feedImageUrl"].opt!string();
 		return ret;
 	}
-	
+
 	Bson toBson()
 	const {
 		Bson[] bcategories;
 		foreach( grp; categories )
 			bcategories ~= Bson(grp);
 
+		// Create a default category if none is specified
+		if(bcategories.length < 1)
+		{
+			bcategories ~= Bson("general");
+		}
+
+		// Could use a switch here
 		Bson[string] ret;
 		ret["_id"] = Bson(id);
 		ret["name"] = Bson(name);

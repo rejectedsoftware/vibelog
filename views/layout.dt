@@ -2,12 +2,12 @@
 html
 	head
 		- string title;
+		- string sep = " - ";
 		block title
-		link(rel="stylesheet", type="text/css", href="#{req.rootDir}styles/common.css")
-		title #{title} - VibeLog
+		title= title ~ sep ~ info.settings.blogName
+		link(rel="stylesheet", type="text/css", href="#{info.settings.rootDir}styles/common.css")
+		block layout.head
 	body
 		header
-			h1 VibeLog
-			h2 This is the super duper blog!
-
-		block body
+			block layout.header
+		block layout.content

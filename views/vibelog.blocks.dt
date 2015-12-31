@@ -1,6 +1,6 @@
 extends vibelog.layout
 
-block body
+block vibelog.layout.content
 	#vibelogRecentList
 		block vibelog-recent-list
 

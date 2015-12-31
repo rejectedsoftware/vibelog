@@ -1,6 +1,6 @@
 - auto tmp = Path(req.path);
 - if (!tmp.endsWithSlash) tmp = tmp[0 .. $-1];
-- tmp = ctx.rootPath.relativeTo(tmp);
+- tmp = info.rootPath.relativeTo(tmp);
 - auto root_dir = tmp.toString();
 - if (!root_dir.length) root_dir = "./";
 
@@ -11,12 +11,12 @@ ul.headerMenu.admin-global-nav
         a(href="#{root_dir}make_post") New post
     li
         a(href="#{root_dir}posts/") Manage posts
-    - if (ctx.loginUser.isConfigAdmin())
+    - if (info.loginUser.isConfigAdmin())
         li
             a(href="#{root_dir}configs/") Manage configurations
-    - if (ctx.loginUser.isUserAdmin())
+    - if (info.loginUser.isUserAdmin())
         li
             a(href="#{root_dir}users/") Manage users
     - else
         li
-            a(href="#{root_dir}users/#{ctx.loginUser.username}/") Manage account
+            a(href="#{root_dir}users/#{info.loginUser.username}/") Manage account
