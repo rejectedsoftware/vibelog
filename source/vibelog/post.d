@@ -107,6 +107,7 @@ final class Post {
 	const {
 
 		import std.algorithm : canFind;
+		string html = content;
 		if (filters.canFind("markdown"))
 		{
 			scope ms = new MarkdownSettings;
@@ -124,9 +125,8 @@ final class Post {
 					return (settings.siteURL.path~("posts/"~slug~"/"~lnk)).relativeTo(pp).toString();
 				};
 			}
-			settings.textFilters ~= (string content) { return filterMarkdown(content, ms); };
+			html = filterMarkdown(html, ms);
 		}
-		string html = content;
 		foreach (flt; settings.textFilters)
 			html = flt(html);
 		return html;
