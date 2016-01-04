@@ -163,7 +163,7 @@ final class MongoDBController : DBController {
 		auto cats = new Bson[categories.length];
 		foreach( i; 0 .. categories.length ) cats[i] = Bson(categories[i]);
 		Bson category = Bson(["$in" : Bson(cats)]);
-		Bson[string] query = ["query" : Bson(["category" : category]), "orderby" : Bson(["_id" : Bson(-1)])];
+		Bson[string] query = ["query" : Bson(["category" : category]), "orderby" : Bson(["date" : Bson(-1)])];
 		foreach( idx, post; m_posts.find(query, null, QueryFlags.None, nskip) ){
 			if( !del(idx, Post.fromBson(post)) )
 				break;
@@ -175,7 +175,7 @@ final class MongoDBController : DBController {
 		auto cats = new Bson[categories.length];
 		foreach( i; 0 .. categories.length ) cats[i] = Bson(categories[i]);
 		Bson category = Bson(["$in" : Bson(cats)]);
-		Bson[string] query = ["query" : Bson(["category" : category, "isPublic": Bson(true)]), "orderby" : Bson(["_id" : Bson(-1)])];
+		Bson[string] query = ["query" : Bson(["category" : category, "isPublic": Bson(true)]), "orderby" : Bson(["date" : Bson(-1)])];
 		foreach( idx, post; m_posts.find(query, null, QueryFlags.None, nskip) ){
 			if( !del(idx, Post.fromBson(post)) )
 				break;
@@ -185,7 +185,7 @@ final class MongoDBController : DBController {
 	void getAllPosts(int nskip, bool delegate(size_t idx, Post post) del)
 	{
 		Bson[string] query;
-		Bson[string] extquery = ["query" : Bson(query), "orderby" : Bson(["_id" : Bson(-1)])];
+		Bson[string] extquery = ["query" : Bson(query), "orderby" : Bson(["date" : Bson(-1)])];
 		foreach( idx, post; m_posts.find(extquery, null, QueryFlags.None, nskip) ){
 			if( !del(idx, Post.fromBson(post)) )
 				break;
