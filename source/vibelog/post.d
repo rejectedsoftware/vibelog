@@ -186,7 +186,7 @@ final class Comment {
 	const {
 		auto ret = appender!string();
 		// filter with GitHub-like features, but without unsafe inline-HTML
-		filterMarkdown(ret, htmlEscape(content), MarkdownFlags.forumDefault);
+		filterMarkdown(ret, content, MarkdownFlags.forumDefault);
 		return ret.data;
 	}
 }
