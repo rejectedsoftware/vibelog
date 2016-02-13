@@ -291,7 +291,7 @@ final class MongoDBController : DBController {
 
 			auto post = Post.fromBson(p);
 
-			msg.parseDietFile!("mail.new_comment.dt", comment, post);
+			msg.compileDietFile!("mail.new_comment.dt", comment, post);
 
 			auto mail = new Mail;
 			mail.headers["From"] = comment.authorName ~ " <" ~ comment.authorMail ~ ">";
