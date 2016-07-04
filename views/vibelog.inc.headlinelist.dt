@@ -1,7 +1,7 @@
 - import vibelog.controller;
 - void insertVibelogHeadlineList(VibelogHeadlineListConfig config)
 	- import vibe.inet.message;
-	- import std.algorithm : max;
+	- import std.algorithm : max, min;
 
 	.blogHeadlineList
 		- foreach (i, post; info.posts[0 .. min($, config.maxPosts)])
