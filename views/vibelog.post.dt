@@ -58,7 +58,7 @@ block vibelog-content
 							tr
 								td Homepage:
 								td
-									input(type="url", name="homepage", value="http://")
+									input(type="url", name="homepage")
 							tr
 								td(colspan="2")
 									textarea(name="message", rows="6")
