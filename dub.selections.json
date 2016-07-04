@@ -1,15 +1,15 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"libevent": "2.0.1+2.0.16",
+		"botan": "1.12.0+commit.23.g4c3802e",
+		"dyaml": "0.5.3",
+		"libasync": "0.7.9",
 		"libev": "5.0.0+4.04",
-		"tinyendian": "0.1.2",
-		"dyaml": "0.5.2",
+		"libevent": "2.0.1+2.0.16",
+		"memutils": "0.4.6",
 		"openssl": "1.1.4+1.0.1g",
 		"stringex": "0.0.2",
-		"botan": "1.12.0+commit.23.g4c3802e",
-		"memutils": "0.4.3",
-		"vibe-d": "0.7.27-alpha.3+commit.3.ga16c54e",
-		"libasync": "0.7.5"
+		"tinyendian": "0.1.2",
+		"vibe-d": "0.7.29"
 	}
 }

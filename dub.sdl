@@ -1,0 +1,18 @@
+name "vibelog"
+description "A light-weight embeddable blog implementation"
+homepage "https://github.com/rejectedsoftware/vibelog"
+authors "Sönke Ludwig"
+license "AGPL-3.0"
+
+dependency "vibe-d" version="~>0.7.29"
+dependency "stringex" version="~>0.0.2"
+
+configuration "standalone" {
+	targetType "executable"
+	versions "VibeDefaultMain"
+}
+
+configuration "library" {
+	targetType "library"
+	excludedSourceFiles "source/app.d"
+}
