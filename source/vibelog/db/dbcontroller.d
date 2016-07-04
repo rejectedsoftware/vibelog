@@ -10,8 +10,10 @@ import vibe.data.bson;
 
 DBController createDBController(VibeLogSettings settings)
 {
-	import vibelog.db.mongo;
-	import std.string;
+	import vibelog.db.mongo : MongoDBController;
+	import std.exception : enforce;
+	import std.string : startsWith;
+
 	enforce(settings.databaseURL.startsWith("mongodb:"), "Only mongodb: database URLs supported.");
 	return new MongoDBController(settings.databaseURL);
 }

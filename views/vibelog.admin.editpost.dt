@@ -1,7 +1,8 @@
 extends vibelog.admin.layout
 
 block title
-	- import std.datetime;
+	- import std.datetime : Clock;
+	- import core.time : usecs;
 	- title = (info.post ? "Modify" : "Add new") ~ " blog post";
 	script(type="text/javascript", src="#{info.settings.rootDir}scripts/jquery.js")
 	script(type="text/javascript", src="#{info.settings.rootDir}scripts/vibelog-edit.js")
@@ -139,7 +140,7 @@ block vibelog-content
 					th Action
 				- foreach( c; info.comments )
 					tr(class='#{c.isPublic ? "" : "inactive"}')
-						- auto d = c.date; d.fracSec = FracSec.from!"usecs"(0);
+						- auto d = c.date; d.fracSecs = 0.usecs;
 						td= d.toSimpleString()
 						td= c.authorName
 						td= c.authorMail

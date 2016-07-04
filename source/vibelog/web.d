@@ -42,7 +42,8 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 }
 
 
-private final class VibeLogWeb {
+/// private
+/*private*/ final class VibeLogWeb {
 	private {
 		VibeLogController m_ctrl;
 		VibeLogSettings m_settings;
@@ -98,8 +99,14 @@ private final class VibeLogWeb {
 	@path("posts/:postname/post_comment")
 	void postComment(string name, string email, string homepage, string message, string _postname, HTTPServerRequest req)
 	{
+		import std.range : walkLength;
+		import std.uni : byGrapheme;
+
 		auto post = m_ctrl.db.getPost(_postname);
 		enforce(post.commentsAllowed, "Posting comments is not allowed for this article.");
+
+		enforce(message.byGrapheme.walkLength >= 2, "The comment must contain at least two characters.");
+		enforce(message.length < 1000, "The comment has a maximum length of 1000 bytes.");
 
 		auto c = new Comment;
 		c.isPublic = true;

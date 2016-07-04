@@ -41,12 +41,12 @@ final class MongoDBController : DBController {
 
 		// Upgrade post contained comments to their collection
 		foreach( p; m_posts.find(["comments": ["$exists": true]], ["comments": 1]) ){
-			foreach( c; p.comments ){
+			foreach( c; p["comments"] ){
 				c["_id"] = BsonObjectID.generate();
-				c["postId"] = p._id;
+				c["postId"] = p["_id"];
 				m_comments.insert(c);
 			}
-			m_posts.update(["_id": p._id], ["$unset": ["comments": 1]]);
+			m_posts.update(["_id": p["_id"]], ["$unset": ["comments": 1]]);
 		}
 	}
 
@@ -247,7 +247,9 @@ final class MongoDBController : DBController {
 
 	string[] getFiles(string post_name)
 	{
-		return m_postFiles.find(["postName": post_name], ["fileName": true]).map!(p => p.fileName.get!string).array;
+		import std.algorithm.iteration : map;
+		import std.array : array;
+		return m_postFiles.find(["postName": post_name], ["fileName": true]).map!(p => p["fileName"].get!string).array;
 	}
 
 	InputStream getFile(string post_name, string file_name)
@@ -266,7 +268,7 @@ final class MongoDBController : DBController {
 	{
 		Comment[] ret;
 		foreach( c; m_comments.find(["postId": post_id]) )
-			if( allow_inactive || c.isPublic.get!bool )
+			if( allow_inactive || c["isPublic"].get!bool )
 				ret ~= Comment.fromBson(c);
 		return ret;
 	}
@@ -286,7 +288,7 @@ final class MongoDBController : DBController {
 
 		try {
 			auto p = m_posts.findOne(["_id": post_id]);
-			auto u = m_users.findOne(["username": p.author]);
+			auto u = m_users.findOne(["username": p["author"]]);
 			auto msg = new MemoryOutputStream;
 
 			auto post = Post.fromBson(p);
@@ -295,7 +297,7 @@ final class MongoDBController : DBController {
 
 			auto mail = new Mail;
 			mail.headers["From"] = comment.authorName ~ " <" ~ comment.authorMail ~ ">";
-			mail.headers["To"] = u.email.get!string;
+			mail.headers["To"] = u["email"].get!string;
 			mail.headers["Subject"] = "[VibeLog] New comment";
 			mail.headers["Content-Type"] = "text/html";
 			mail.bodyText = cast(string)msg.data();

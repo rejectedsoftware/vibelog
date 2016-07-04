@@ -9,6 +9,7 @@ import vibelog.user;
 import vibe.http.router;
 import vibe.web.web;
 import std.exception : enforce;
+import std.typecons : Nullable;
 
 
 void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
@@ -18,7 +19,8 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 	router.registerWebInterface(new VibeLogWebAdmin(controller), websettings);
 }
 
-private final class VibeLogWebAdmin {
+/// private
+/*private*/ final class VibeLogWebAdmin {
 	private {
 		VibeLogController m_ctrl;
 		VibeLogSettings m_settings;
@@ -137,6 +139,7 @@ private final class VibeLogWebAdmin {
 	{
 		import vibe.crypto.passwordhash;
 		import vibe.data.bson : BsonObjectID;
+		import std.algorithm.searching : startsWith;
 
 		User usr;
 		if( id.length > 0 ){
