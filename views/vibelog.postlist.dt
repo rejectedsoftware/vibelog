@@ -19,7 +19,7 @@ block vibelog-content
 								.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 									- import vibe.inet.message : toRFC822DateString;
 									span.blogPostDate= toRFC822DateString(post.date)
-									|#{post.subHeader}
+									| #{post.subHeader}
 						- if (info.settings.showFullPostsInPostList)
 							.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 								!= post.renderContentAsHtml(info.settings, info.refPath, 2)
