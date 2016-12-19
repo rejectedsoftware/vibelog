@@ -2,12 +2,13 @@
 	"fileVersion": 1,
 	"versions": {
 		"dyaml": "0.5.3",
-		"libasync": "0.7.9",
-		"libevent": "2.0.1+2.0.16",
-		"memutils": "0.4.6",
-		"openssl": "1.1.4+1.0.1g",
-		"stringex": "0.0.2",
+		"dyaml-dlang-tour": "0.5.5",
+		"libasync": "0.8.2",
+		"libevent": "2.0.2+2.0.16",
+		"memutils": "0.4.8",
+		"openssl": "1.1.5+1.0.1g",
+		"stringex": "0.0.3",
 		"tinyendian": "0.1.2",
-		"vibe-d": "0.7.29"
+		"vibe-d": "0.7.30+commit.55.g6a95a5f"
 	}
 }

@@ -1,3 +1,4 @@
+- import vibe.inet.path : Path, relativeTo;
 - auto tmp = Path(req.path);
 - if (!tmp.endsWithSlash) tmp = tmp[0 .. $-1];
 - tmp = info.rootPath.relativeTo(tmp);
