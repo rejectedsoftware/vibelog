@@ -97,6 +97,7 @@ block vibelog-content
 							label(for="preview-checkbox") Preview
 						p
 							label(for="filters-field") Filters
+							- import std.array;
 							input#filters-field(type="text", name="filters", onchange="previewUpdate();", style="width: auto;", autocomplete="off", value='#{info.post ? info.post.filters.join(" ") : "markdown"}')
 					td
 						#message-area

@@ -10,6 +10,7 @@ block vibelog-localnav
 
 block vibelog-content
 	form(action="./", method="POST")
+		- import std.array;
 		- if( info.config.name == "global" )
 			p
 				label(for="categories") Categories
