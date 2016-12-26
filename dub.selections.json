@@ -3,7 +3,7 @@
 	"versions": {
 		"dyaml": "0.5.3",
 		"dyaml-dlang-tour": "0.5.5",
-		"libasync": "0.8.2",
+		"libasync": "0.7.9",
 		"libevent": "2.0.2+2.0.16",
 		"memutils": "0.4.8",
 		"openssl": "1.1.5+1.0.1g",
