@@ -201,6 +201,7 @@ struct PageInfo
 	import vibelog.controller : PostListInfo;
 	PostListInfo pli;
 	alias pli this;
+	string rootPath;
 	string refPath;
 	string loginError;
 
@@ -208,6 +209,7 @@ struct PageInfo
 	this(VibeLogSettings settings, PostListInfo pli)
 	{
 		this.pli = pli;
+		this.rootPath = settings.siteURL.path.toString();
 	}
 }
 
@@ -231,6 +233,7 @@ struct PostInfo
 	DiskutoWeb diskuto;
 
 	Post[] recentPosts;
+	string rootPath;
 	string refPath;
 	string error;
 
@@ -238,5 +241,6 @@ struct PostInfo
 	{
 		vli = VibeLogInfo(settings);
 		this.settings = settings;
+		this.rootPath = settings.siteURL.path.toString;
 	}
 }

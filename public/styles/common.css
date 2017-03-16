@@ -37,7 +37,7 @@ h1 {
 	font-size: 24pt;
 }
 
-.login-form {
+.login-form, .user-area {
 	display: flex;
 	max-width: 300pt;
 	justify-content: flex-end;
@@ -45,6 +45,10 @@ h1 {
 	position: absolute;
 	right: 0;
 }
+
+.user-area { display: block; }
+.user-area p { margin: 0.5em; }
+.user-area a { color: #da8; text-decoration: none; }
 
 .login-form input {
 	background-color: rgba(255,255,255,0.2);

@@ -364,7 +364,7 @@ struct AdminInfo
 
 	User loginUser;
 	User[string] users;
-	Path rootPath;
+	Path rootPath, managePath;
 	string loginError;
 
 	import vibelog.settings : VibeLogSettings;
@@ -374,7 +374,8 @@ struct AdminInfo
 		loginUser = auth.loginUser;
 		users = auth.users;
 		this.settings = settings;
-		rootPath = settings.siteURL.path ~ settings.adminPrefix;
+		rootPath = settings.siteURL.path;
+		managePath = rootPath ~ settings.adminPrefix;
 	}
 }
 

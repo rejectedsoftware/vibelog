@@ -1,5 +1,7 @@
 - if (req.session && req.session.get("vibelog.loggedInUser", "").length)
-	a.login-form(href="#{req.rootDir}logout") Log out
+	.user-area
+		p: a(href="#{info.rootPath}manage") Manage
+		p: a(href="#{req.rootDir}logout") Log out
 - else
 	form.login-form(method="POST", action="#{req.rootDir}login")
 		input(type="text", name="username", placeholder="User name")
