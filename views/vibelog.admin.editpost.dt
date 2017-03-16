@@ -15,6 +15,9 @@ block vibelog-localnav
 			a(href='#{info.post ? "../" : "./"}') Cancel
 
 block vibelog-content
+	- if (info.error.length)
+		p.error= info.error
+
 	- if (!info.post || info.post.author == info.loginUser.username || info.loginUser.isPostAdmin())
 		form(action='#{info.post ? "./" : "make_post"}', method="POST")
 			input(type="hidden", name="id", value="#{info.post ? info.post.id.toString() : null}")
