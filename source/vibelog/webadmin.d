@@ -129,7 +129,7 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		auto info = UserEditInfo(_auth, m_settings);
 
 		info.globalConfig = m_ctrl.db.getConfig("global", true);
-		info.user = m_ctrl.db.getUser(_username);
+		info.user = m_ctrl.db.getUserByName(_username);
 
 		render!("vibelog.admin.edituser.dt", info);
 	}
@@ -259,7 +259,6 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		auto info = PostEditInfo(_auth, m_settings);
 		info.globalConfig = m_ctrl.db.getConfig("global", true);
 		info.post = m_ctrl.db.getPost(_postname);
-		info.comments = m_ctrl.db.getComments(info.post.id, true);
 		info.files = m_ctrl.db.getFiles(_postname);
 		info.error = _error;
 		render!("vibelog.admin.editpost.dt", info);
@@ -273,16 +272,6 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		auto bid = BsonObjectID.fromHexString(id);
 		m_ctrl.db.deletePost(bid);
 		redirect(m_subPath ~ "posts/");
-	}
-
-	@path("posts/:postname/set_comment_public") @errorDisplay!getEditPost
-	void postSetCommentPublic(string id, string _postname, bool public_, AuthInfo _auth)
-	{
-		import vibe.data.bson : BsonObjectID;
-		// FIXME: check permissons!
-		auto bid = BsonObjectID.fromHexString(id);
-		m_ctrl.db.setCommentPublic(bid, public_);
-		redirect(m_subPath ~ "posts/"~_postname~"/");
 	}
 
 	@path("posts/:postname/") @errorDisplay!getEditPost
@@ -409,9 +398,6 @@ struct PostEditInfo
 
 	import vibelog.post : Post;
 	Post post;
-
-	import vibelog.post : Comment;
-	Comment[] comments;
 
 	string[] files;
 	string error;

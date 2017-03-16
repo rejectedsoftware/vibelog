@@ -130,32 +130,6 @@ block vibelog-content
 				input(type="file", name="files", multiple)
 				button(type="submit") Upload
 
-		- if( info.comments.length )
-			h2 Comments
-
-			table
-				tr
-					th Date
-					th Name
-					th Mail
-					th Homepage
-					th Content
-					th IP
-					th Action
-				- foreach( c; info.comments )
-					tr(class='#{c.isPublic ? "" : "inactive"}')
-						- auto d = c.date; d.fracSecs = 0.usecs;
-						td= d.toSimpleString()
-						td= c.authorName
-						td= c.authorMail
-						td= c.authorHomepage
-						td= c.content.length > 32 ? c.content[0 .. 32] : c.content
-						td= c.authorIP
-						td
-							form(action="set_comment_public", method="POST")
-								input(type="hidden", name="public_", value='#{c.isPublic ? false : true}')
-								input(type="hidden", name="id", value="#{c.id}")
-								button(type="submit")= c.isPublic ? "Hide" : "Show"
 	- else
 		p.error You are not the author of this post and/or are not authorized to change it.
 

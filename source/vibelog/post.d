@@ -135,62 +135,6 @@ final class Post {
 	}
 }
 
-final class Comment {
-	BsonObjectID id;
-	BsonObjectID postId;
-	bool isPublic;
-	SysTime date;
-	int answerTo;
-	string authorName;
-	string authorMail;
-	string authorHomepage;
-	string authorIP;
-	string header;
-	string content;
-
-	static Comment fromBson(Bson bson)
-	{
-		auto ret = new Comment;
-		ret.id = cast(BsonObjectID)bson["_id"];
-		ret.postId = cast(BsonObjectID)bson["postId"];
-		ret.isPublic = cast(bool)bson["isPublic"];
-		ret.date = SysTime.fromISOExtString(cast(string)bson["date"]);
-		ret.answerTo = cast(int)bson["answerTo"];
-		ret.authorName = cast(string)bson["authorName"];
-		ret.authorMail = cast(string)bson["authorMail"];
-		ret.authorHomepage = cast(string)bson["authorHomepage"];
-		ret.authorIP = bson["authorIP"].opt!string();
-		ret.header = cast(string)bson["header"];
-		ret.content = cast(string)bson["content"];
-		return ret;
-	}
-
-	Bson toBson()
-	const {
-		Bson[string] ret;
-		ret["_id"] = Bson(id);
-		ret["postId"] = Bson(postId);
-		ret["isPublic"] = Bson(isPublic);
-		ret["date"] = Bson(date.toISOExtString());
-		ret["answerTo"] = Bson(answerTo);
-		ret["authorName"] = Bson(authorName);
-		ret["authorMail"] = Bson(authorMail);
-		ret["authorHomepage"] = Bson(authorHomepage);
-		ret["authorIP"] = Bson(authorIP);
-		ret["header"] = Bson(header);
-		ret["content"] = Bson(content);
-		return Bson(ret);
-	}
-
-	string renderContentAsHtml()
-	const {
-		auto ret = appender!string();
-		// filter with GitHub-like features, but without unsafe inline-HTML
-		filterMarkdown(ret, content, MarkdownFlags.forumDefault);
-		return ret.data;
-	}
-}
-
 UniDecoder unidecoder;
 
 string makeSlugFromHeader(string header)

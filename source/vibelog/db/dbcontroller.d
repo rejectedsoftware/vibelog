@@ -27,7 +27,8 @@ interface DBController {
 
 	User[string] getAllUsers();
 	User getUser(BsonObjectID userid);
-	User getUser(string name);
+	User getUserByName(string name);
+	User getUserByEmail(string email);
 	BsonObjectID addUser(User user);
 	void modifyUser(User user);
 	void deleteUser(BsonObjectID id);
@@ -46,10 +47,4 @@ interface DBController {
 	string[] getFiles(string post_name);
 	InputStream getFile(string post_name, string file_name);
 	void removeFile(string post_name, string file_name);
-
-	Comment[] getComments(BsonObjectID post_id, bool allow_inactive = false);
-	long getCommentCount(BsonObjectID post_id);
-	void addComment(BsonObjectID post_id, Comment comment);
-	void setCommentPublic(BsonObjectID comment_id, bool is_public);
-	void deleteNonPublicComments(BsonObjectID post_id);
 }

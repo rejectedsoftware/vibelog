@@ -8,6 +8,7 @@ import vibelog.rss;
 import vibelog.settings;
 import vibelog.user;
 
+import diskuto.web;
 import vibe.core.log;
 import vibe.db.mongo.connection;
 import vibe.http.fileserver;
@@ -25,12 +26,16 @@ import std.string;
 
 void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 {
+	import vibelog.internal.diskuto;
+
 	string sub_path = controller.settings.rootDir;
 	assert(sub_path.endsWith("/"), "Blog site URL must end with '/'.");
 
 	if (sub_path.length > 1) router.get(sub_path[0 .. $-1], staticRedirect(sub_path));
 
-	auto web = new VibeLogWeb(controller);
+	auto diskuto = router.registerDiskuto(controller);
+
+	auto web = new VibeLogWeb(controller, diskuto);
 
 	auto websettings = new WebInterfaceSettings;
 	websettings.urlPrefix = sub_path;
@@ -47,12 +52,14 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 	private {
 		VibeLogController m_ctrl;
 		VibeLogSettings m_settings;
+		DiskutoWeb m_diskuto;
 	}
 
-	this(VibeLogController controller)
+	this(VibeLogController controller, DiskutoWeb diskuto)
 	{
 		m_settings = controller.settings;
 		m_ctrl = controller;
+		m_diskuto = diskuto;
 
 		enforce(m_settings.rootDir.startsWith("/") && m_settings.rootDir.endsWith("/"), "All local URLs must start with and end with '/'.");
 	}
@@ -76,10 +83,10 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 		info.users = m_ctrl.db.getAllUsers();
 		try info.post = m_ctrl.db.getPost(_postname);
 		catch(Exception e){ return; } // -> gives 404 error
-		info.comments = m_ctrl.db.getComments(info.post.id);
 		info.recentPosts = m_ctrl.getRecentPosts();
 		info.refPath = m_settings.rootDir~"posts/"~_postname;
 		info.error = _error;
+		info.diskuto = m_diskuto;
 
 		render!("vibelog.post.dt", info);
 	}
@@ -93,34 +100,6 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 			res.contentType = getMimeTypeForFile(_filename);
 			res.bodyWriter.write(f);
 		}
-	}
-
-	@errorDisplay!getPost
-	@path("posts/:postname/post_comment")
-	void postComment(string name, string email, string homepage, string message, string _postname, HTTPServerRequest req)
-	{
-		import std.range : walkLength;
-		import std.uni : byGrapheme;
-
-		auto post = m_ctrl.db.getPost(_postname);
-		enforce(post.commentsAllowed, "Posting comments is not allowed for this article.");
-
-		enforce(message.byGrapheme.walkLength >= 2, "The comment must contain at least two characters.");
-		enforce(message.length < 1000, "The comment has a maximum length of 1000 bytes.");
-
-		auto c = new Comment;
-		c.isPublic = true;
-		c.date = Clock.currTime().toUTC();
-		c.authorName = name;
-		c.authorMail = email;
-		c.authorHomepage = homepage;
-		c.authorIP = req.peer;
-		if (auto fip = "X-Forwarded-For" in req.headers) c.authorIP = *fip;
-		if (c.authorHomepage == "http://") c.authorHomepage = "";
-		c.content = message;
-		m_ctrl.db.addComment(post.id, c);
-
-		redirect(m_settings.rootDir ~ "posts/" ~ post.name);
 	}
 
 	@path("feed/rss")
@@ -225,8 +204,7 @@ struct PostInfo
 	import vibelog.post : Post;
 	Post post;
 
-	import vibelog.post : Comment;
-	Comment[] comments;
+	DiskutoWeb diskuto;
 
 	Post[] recentPosts;
 	string refPath;

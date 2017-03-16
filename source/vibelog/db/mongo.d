@@ -21,7 +21,6 @@ final class MongoDBController : DBController {
 		MongoCollection m_users;
 		MongoCollection m_posts;
 		MongoCollection m_postFiles;
-		MongoCollection m_comments;
 		void delegate()[] m_onConfigChange;
 	}
 
@@ -37,17 +36,8 @@ final class MongoDBController : DBController {
 		m_users = db["users"];
 		m_posts = db["posts"];
 		m_postFiles = db["postFiles"];
-		m_comments = db["comments"];
 
-		// Upgrade post contained comments to their collection
-		foreach( p; m_posts.find(["comments": ["$exists": true]], ["comments": 1]) ){
-			foreach( c; p["comments"] ){
-				c["_id"] = BsonObjectID.generate();
-				c["postId"] = p["_id"];
-				m_comments.insert(c);
-			}
-			m_posts.update(["_id": p["_id"]], ["$unset": ["comments": 1]]);
-		}
+		upgradeComments(db);
 	}
 
 	Config getConfig(string name, bool createdefault = false)
@@ -116,7 +106,7 @@ final class MongoDBController : DBController {
 		return User.fromBson(userbson);
 	}
 
-	User getUser(string name)
+	User getUserByName(string name)
 	{
 		auto userbson = m_users.findOne(["username": Bson(name)]);
 		if( userbson.isNull() ){
@@ -126,6 +116,12 @@ final class MongoDBController : DBController {
 			userbson = m_users.findOne(["_id": Bson(id)]);
 		}
 		//auto userbson = m_users.findOne(Bson(["name" : Bson(name)]));
+		return User.fromBson(userbson);
+	}
+
+	User getUserByEmail(string email)
+	{
+		auto userbson = m_users.findOne(["email": Bson(email)]);
 		return User.fromBson(userbson);
 	}
 
@@ -264,60 +260,39 @@ final class MongoDBController : DBController {
 		m_postFiles.remove(["postName": post_name, "fileName": file_name]);
 	}
 
-	Comment[] getComments(BsonObjectID post_id, bool allow_inactive = false)
+	private void upgradeComments(MongoDatabase db)
 	{
-		Comment[] ret;
-		foreach( c; m_comments.find(["postId": post_id]) )
-			if( allow_inactive || c["isPublic"].get!bool )
-				ret ~= Comment.fromBson(c);
-		return ret;
-	}
+		import diskuto.backend : StoredComment, CommentStatus;
+		import diskuto.backends.mongodb : MongoStruct;
 
-	long getCommentCount(BsonObjectID post_id)
-	{
-		return m_comments.count(["postId": Bson(post_id), "isPublic": Bson(true)]);
-	}
+		auto comments = db["comments"];
 
-
-	void addComment(BsonObjectID post_id, Comment comment)
-	{
-		Bson cmtbson = comment.toBson();
-		comment.id = BsonObjectID.generate();
-		comment.postId = post_id;
-		m_comments.insert(comment.toBson());
-
-		try {
-			auto p = m_posts.findOne(["_id": post_id]);
-			auto u = m_users.findOne(["username": p["author"]]);
-			auto msg = new MemoryOutputStream;
-
-			auto post = Post.fromBson(p);
-
-			msg.compileDietFile!("mail.new_comment.dt", comment, post);
-
-			auto mail = new Mail;
-			mail.headers["From"] = comment.authorName ~ " <" ~ comment.authorMail ~ ">";
-			mail.headers["To"] = u["email"].get!string;
-			mail.headers["Subject"] = "[VibeLog] New comment";
-			mail.headers["Content-Type"] = "text/html";
-			mail.bodyText = cast(string)msg.data();
-
-			auto settings = new SMTPClientSettings;
-			//settings.host = m_settings.mailServer;
-			sendMail(settings, mail);
-		} catch(Exception e){
-			logWarn("Failed to send comment mail: %s", e.msg);
+		// Upgrade post contained comments to their collection
+		foreach( p; m_posts.find(["comments": ["$exists": true]], ["comments": 1]) ){
+			foreach( c; p["comments"] ){
+				c["_id"] = BsonObjectID.generate();
+				c["postId"] = p["_id"];
+				comments.insert(c);
+			}
+			m_posts.update(["_id": p["_id"]], ["$unset": ["comments": 1]]);
 		}
-	}
 
-	void setCommentPublic(BsonObjectID comment_id, bool is_public)
-	{
-		m_comments.update(["_id": comment_id], ["$set": ["isPublic": is_public]]);
-	}
-
-	void deleteNonPublicComments(BsonObjectID post_id)
-	{
-		m_posts.remove(["postId": Bson(post_id), "isPublic": Bson(false)]);
+		// Upgrade old comments to Diskuto format
+		foreach (c; comments.find(["postId": ["$exists": true]])) {
+			auto oldc = OldComment.fromBson(c);
+			StoredComment newc;
+			newc.id = oldc.id.toString();
+			newc.status = oldc.isPublic ? CommentStatus.active : CommentStatus.disabled;
+			newc.topic = "vibelog-" ~ oldc.postId.toString();
+			newc.author = "vibelog-...";
+			newc.clientAddress = oldc.authorIP;
+			newc.name = oldc.authorName;
+			newc.email = oldc.authorMail;
+			newc.website = oldc.authorHomepage;
+			newc.text = oldc.content;
+			newc.time = oldc.date;
+			comments.update(["_id": c["_id"]], MongoStruct!StoredComment(newc));
+		}
 	}
 }
 
@@ -325,4 +300,36 @@ struct PostFile {
 	string postName;
 	string fileName;
 	ubyte[] contents;
+}
+
+
+final class OldComment {
+	BsonObjectID id;
+	BsonObjectID postId;
+	bool isPublic;
+	SysTime date;
+	int answerTo;
+	string authorName;
+	string authorMail;
+	string authorHomepage;
+	string authorIP;
+	string header;
+	string content;
+
+	static OldComment fromBson(Bson bson)
+	{
+		auto ret = new OldComment;
+		ret.id = cast(BsonObjectID)bson["_id"];
+		ret.postId = cast(BsonObjectID)bson["postId"];
+		ret.isPublic = cast(bool)bson["isPublic"];
+		ret.date = SysTime.fromISOExtString(cast(string)bson["date"]);
+		ret.answerTo = cast(int)bson["answerTo"];
+		ret.authorName = cast(string)bson["authorName"];
+		ret.authorMail = cast(string)bson["authorMail"];
+		ret.authorHomepage = cast(string)bson["authorHomepage"];
+		ret.authorIP = bson["authorIP"].opt!string();
+		ret.header = cast(string)bson["header"];
+		ret.content = cast(string)bson["content"];
+		return ret;
+	}
 }
