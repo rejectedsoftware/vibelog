@@ -26,9 +26,9 @@ block vibelog-content
 							footer
 								- import vibe.inet.message : toRFC822TimeString;
 								| Posted at #{toRFC822TimeString(post.date)} by #{post.author in info.users ? info.users[post.author].name : post.author}
-								a(href="posts/#{post.name}#comments") #{info.commentCount[i]} comments
-								- if( post.trackbacks.length > 0 )
-									a(href="posts/#{post.name}#trackback") #{post.trackbacks.length} trackbacks
+								a(href="posts/#{post.name}#comments")  #{info.commentCount[i]} comments
+								- if (post.trackbacks.length > 0)
+									a(href="posts/#{post.name}#trackback")  #{post.trackbacks.length} trackbacks
 						- else
 							a(href="posts/#{post.name}#trackback") Read more
 
@@ -36,9 +36,9 @@ block vibelog-content
 			p Pages:
 				- foreach( p; 0 .. info.pageCount )
 					- if( p == info.pageNumber )
-						em #{p+1}
+						em  #{p+1}
 					- else
-						a(href="?page=#{p+1}") #{p+1}
+						a(href="?page=#{p+1}")  #{p+1}
 
 block vibelog-recent-list
 	include vibelog.inc.postlist
