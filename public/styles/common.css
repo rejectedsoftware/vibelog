@@ -83,12 +83,25 @@ h1 {
 	font-size: 18pt;
 }
 
+#vibelogContent .headerImage { margin-right: 1em; }
+
+#vibelogContent .blogPostHeaderContent {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+}
+
+#vibelogContent .blogPostHeaderText {
+	flex-basis: 0;
+	flex-grow: 1;
+}
+
 #vibelogContent .blogPostDate {
+	position: absolute;
 	display: block;
+	left: 20pt;
+	top: -13pt;
 	width: 100pt;
-	margin-left: -10pt;
-	margin-top: -74pt;
-	margin-bottom: 50pt;
 	padding: 5pt;
 	color: white;
 	background-color: #841;
@@ -97,6 +110,7 @@ h1 {
 }
 
 #vibelogContent .blogPost header {
+	position: relative;
 	padding: 10pt 20pt 20pt 20pt;
 	background-color: #fff4ee;
 	background: linear-gradient(#fffaf8, #f4f0ee);
@@ -123,9 +137,8 @@ h1 {
 	color: #ddd;
 }
 
-#vibelogContent .blogSinglePost .blogPostDate {
-	margin-top: -83pt;
-	margin-bottom: 60pt;
+#vibelogContent .blogPostHeaderContent h1 {
+	flex-basis: 100%;
 }
 
 #vibelogRecentList {
