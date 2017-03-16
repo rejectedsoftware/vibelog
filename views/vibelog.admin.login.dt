@@ -1,6 +1,6 @@
-extends vibelog.layout
+extends vibelog.blocks
 
-block vibelog.layout.content
+block vibelog-content
 	form(method="POST", action="#{info.rootPath}login")
 		label(for="username") User name
 		input#username(type="text", name="username")
