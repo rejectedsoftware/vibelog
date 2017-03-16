@@ -3,7 +3,7 @@
 	"versions": {
 		"antispam": "0.1.0",
 		"diet-ng": "1.2.0+commit.1.g206d498",
-		"diskuto": "1.4.0",
+		"diskuto": "1.4.1",
 		"dyaml": "0.5.3",
 		"dyaml-dlang-tour": "0.5.5",
 		"eventcore": "0.8.8",

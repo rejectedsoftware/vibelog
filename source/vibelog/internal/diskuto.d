@@ -15,7 +15,6 @@ import std.typecons : Nullable;
 DiskutoWeb registerDiskuto(URLRouter router, VibeLogController ctrl)
 {
 	auto dsettings = new DiskutoSettings;
-	dsettings.resourcePath = "../diskuto/public";
 	dsettings.commentStore = ctrl.diskuto;
 	dsettings.userStore = new UserStore(ctrl);
 	return router.registerDiskutoWeb(dsettings);
