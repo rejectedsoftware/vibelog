@@ -25,6 +25,9 @@ block vibelog-content
 					p Posted at #{toRFC822TimeString(info.post.date)} by #{info.post.author in info.users ? info.users[info.post.author].name : info.post.author}
 
 			section.comments
+				- if (!info.post.commentsAllowed)
+					p Comments for the post are currently disabled.
+
 				include diskuto.inc.comments
 				- includeDiskuto(info.diskuto, "vibelog-"~info.post.id.toString());
 
