@@ -3,8 +3,8 @@ module vibelog.controller;
 public import vibelog.settings;
 
 import vibelog.db.dbcontroller;
-import diskuto.backend : DiskutoBackend;
-import diskuto.backends.mongodb;
+import diskuto.commentstore : DiskutoCommentStore;
+import diskuto.commentstores.mongodb;
 
 import std.conv : to;
 
@@ -14,13 +14,13 @@ class VibeLogController {
 		DBController m_db;
 		VibeLogSettings m_settings;
 		Config m_config;
-		DiskutoBackend m_diskuto;
+		DiskutoCommentStore m_diskuto;
 	}
 
 	this(VibeLogSettings settings)
 	{
 		m_settings = settings;
-		m_diskuto = new MongoDBBackend(settings.databaseURL);
+		m_diskuto = new MongoDBCommentStore(settings.databaseURL);
 		m_db = createDBController(settings);
 
 		try m_config = m_db.getConfig(settings.configName, true);
@@ -35,7 +35,7 @@ class VibeLogController {
 	@property inout(DBController) db() inout { return m_db; }
 	@property inout(VibeLogSettings) settings() inout { return m_settings; }
 	@property inout(Config) config() inout { return m_config; }
-	@property inout(DiskutoBackend) diskuto() inout { return m_diskuto; }
+	@property inout(DiskutoCommentStore) diskuto() inout { return m_diskuto; }
 
 	PostListInfo getPostListInfo(int page = 0, int page_size = 0)
 	{

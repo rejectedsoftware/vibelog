@@ -1,5 +1,6 @@
 import vibe.http.router;
 import vibe.http.server;
+import vibe.http.session : MemorySessionStore;
 
 import vibelog.controller;
 import vibelog.web;
@@ -24,5 +25,6 @@ shared static this()
 	auto settings = new HTTPServerSettings;
 	settings.port = 8080;
 	settings.bindAddresses = ["127.0.0.1"];
+	settings.sessionStore = new MemorySessionStore;
 	listenHTTP(settings, router);
 }

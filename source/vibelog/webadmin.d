@@ -346,20 +346,11 @@ logInfo("FILE %s", f.filename);
 
 	private AuthInfo performAuth(HTTPServerRequest req, HTTPServerResponse res)
 	{
-		import vibe.crypto.passwordhash;
-		import vibe.http.auth.basic_auth;
-
+		string uname = req.session ? req.session.get("vibelog.loggedInUser", "") : "";
 		User[string] users = m_ctrl.db.getAllUsers();
-		bool testauth(string user, string password)
-		{
-			auto pu = user in users;
-			if( pu is null ) return false;
-			return testSimplePasswordHash(pu.password, password);
-		}
-		string username = performBasicAuth(req, res, "VibeLog admin area", &testauth);
-		auto pusr = username in users;
-		assert(pusr, "Authorized with unknown username !?");
-		return AuthInfo(*pusr, users);
+		auto pu = uname in users;
+		enforceHTTP(pu !is null, HTTPStatus.forbidden, "Not authorized to access this page.");
+		return AuthInfo(*pu, users);
 	}
 
 	mixin PrivateAccessProxy;
@@ -374,6 +365,7 @@ struct AdminInfo
 	User loginUser;
 	User[string] users;
 	Path rootPath;
+	string loginError;
 
 	import vibelog.settings : VibeLogSettings;
 	this(AuthInfo auth, VibeLogSettings settings)

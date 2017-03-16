@@ -53,6 +53,7 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 		VibeLogController m_ctrl;
 		VibeLogSettings m_settings;
 		DiskutoWeb m_diskuto;
+		SessionVar!(string, "vibelog.loggedInUser") m_loggedInUser;
 	}
 
 	this(VibeLogController controller, DiskutoWeb diskuto)
@@ -68,10 +69,11 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 	// public pages
 	//
 
-	void get(int page = 1)
+	void get(int page = 1, string _error = null)
 	{
 		auto info = PageInfo(m_settings, m_ctrl.getPostListInfo(page - 1));
 		info.refPath = m_settings.rootDir;
+		info.loginError = _error;
 		render!("vibelog.postlist.dt", info);
 	}
 
@@ -79,6 +81,8 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 	@path("posts/:postname")
 	void getPost(string _postname, string _error)
 	{
+		m_diskuto.setupRequest();
+
 		auto info = PostInfo(m_settings);
 		info.users = m_ctrl.db.getAllUsers();
 		try info.post = m_ctrl.db.getPost(_postname);
@@ -172,6 +176,23 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 		res.bodyWriter.write("</urlset>\n");
 		res.bodyWriter.flush();
 	}
+
+	@errorDisplay!get
+	void postLogin(string username, string password)
+	{
+		import vibe.crypto.passwordhash;
+		auto usr = m_ctrl.db.getUserByName(username);
+		enforce(usr && testSimplePasswordHash(usr.password, password),
+			"Invalid user name or password.");
+		m_loggedInUser = username;
+		redirect(m_ctrl.settings.rootDir);
+	}
+
+	void getLogout()
+	{
+		m_loggedInUser = null;
+		redirect(m_ctrl.settings.rootDir);
+	}
 }
 
 import vibelog.info : VibeLogInfo;
@@ -181,6 +202,7 @@ struct PageInfo
 	PostListInfo pli;
 	alias pli this;
 	string refPath;
+	string loginError;
 
 	import vibelog.settings : VibeLogSettings;
 	this(VibeLogSettings settings, PostListInfo pli)
@@ -191,6 +213,8 @@ struct PageInfo
 
 struct PostInfo
 {
+	string loginError;
+
 	import vibelog.info : VibeLogInfo;
 	VibeLogInfo vli;
 	alias vli this;

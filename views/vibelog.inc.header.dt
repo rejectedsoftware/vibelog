@@ -1,2 +1,10 @@
+- if (req.session && req.session.get("vibelog.loggedInUser", "").length)
+	a.login-form(href="#{req.rootDir}logout") Log out
+- else
+	form.login-form(method="POST", action="#{req.rootDir}login")
+		input(type="text", name="username", placeholder="User name")
+		input(type="password", name="password", placeholder="Password")
+		button(type="submit") Log in
+		.error= info.loginError
 h1= info.settings.blogName
 h2= info.settings.blogDescription
