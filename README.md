@@ -3,7 +3,7 @@ vibelog
 
 A fast and simple embeddable blog for multi-site authoring
 
-Beware that the base package will provide a very plain blog layout. There is no styling or advanced layouting. See the [vibe.d blog](http://vibed.org/blog/posts/new-website-has-got-vibe) for a slightly styled example.
+The base package comes with a default style. For an example of a custom style see the [vibe.d blog](http://vibed.org/blog/posts/new-website-has-got-vibe).
 
 [![Build Status](https://travis-ci.org/rejectedsoftware/vibelog.svg?branch=master)](https://travis-ci.org/rejectedsoftware/vibelog)
 
