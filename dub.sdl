@@ -4,7 +4,7 @@ homepage "https://github.com/rejectedsoftware/vibelog"
 authors "Sönke Ludwig"
 license "AGPL-3.0"
 
-dependency "vibe-d" version="~>0.7.30"
+dependency "vibe-d" version="~>0.7.31-beta"
 dependency "stringex" version="~>0.0.2"
 dependency "diskuto" version="~>1.4"
 

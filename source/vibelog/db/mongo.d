@@ -160,8 +160,8 @@ final class MongoDBController : DBController {
 		foreach( i; 0 .. categories.length ) cats[i] = Bson(categories[i]);
 		Bson category = Bson(["$in" : Bson(cats)]);
 		Bson[string] query = ["query" : Bson(["category" : category]), "orderby" : Bson(["date" : Bson(-1)])];
-		foreach( idx, post; m_posts.find(query, null, QueryFlags.None, nskip) ){
-			if( !del(idx, Post.fromBson(post)) )
+		foreach (idx, post; m_posts.find(query, null, QueryFlags.None, nskip).byPair) {
+			if (!del(idx, Post.fromBson(post)))
 				break;
 		}
 	}
@@ -172,8 +172,8 @@ final class MongoDBController : DBController {
 		foreach( i; 0 .. categories.length ) cats[i] = Bson(categories[i]);
 		Bson category = Bson(["$in" : Bson(cats)]);
 		Bson[string] query = ["query" : Bson(["category" : category, "isPublic": Bson(true)]), "orderby" : Bson(["date" : Bson(-1)])];
-		foreach( idx, post; m_posts.find(query, null, QueryFlags.None, nskip) ){
-			if( !del(idx, Post.fromBson(post)) )
+		foreach (idx, post; m_posts.find(query, null, QueryFlags.None, nskip).byPair) {
+			if (!del(idx, Post.fromBson(post)))
 				break;
 		}
 	}
@@ -182,8 +182,8 @@ final class MongoDBController : DBController {
 	{
 		Bson[string] query;
 		Bson[string] extquery = ["query" : Bson(query), "orderby" : Bson(["date" : Bson(-1)])];
-		foreach( idx, post; m_posts.find(extquery, null, QueryFlags.None, nskip) ){
-			if( !del(idx, Post.fromBson(post)) )
+		foreach (idx, post; m_posts.find(extquery, null, QueryFlags.None, nskip).byPair) {
+			if (!del(idx, Post.fromBson(post)))
 				break;
 		}
 	}

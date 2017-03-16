@@ -333,7 +333,7 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 
 import vibe.core.log;
 logInfo("FILES %s %s", req.files.length, req.files.getAll("files"));
-		foreach (f; req.files) {
+		foreach (f; req.files.byValue) {
 logInfo("FILE %s", f.filename);
 			auto fil = openFile(f.tempPath, FileMode.read);
 			scope (exit) fil.close();
