@@ -2,6 +2,7 @@ extends vibelog.blocks
 
 block vibelog-content
 	form(method="POST", action="#{info.rootPath}login")
+		input(type="hidden", name="redirect", value="#{info.managePath}")
 		label(for="username") User name
 		input#username(type="text", name="username")
 		label(for="password") Password

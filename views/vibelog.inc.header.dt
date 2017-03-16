@@ -4,6 +4,7 @@
 		p: a(href="#{req.rootDir}logout") Log out
 - else
 	form.vibelog-login-form(method="POST", action="#{req.rootDir}login")
+		input(type="hidden", name="redirect", value=req.path)
 		input(type="text", name="username", placeholder="User name")
 		input(type="password", name="password", placeholder="Password")
 		button(type="submit") Log in

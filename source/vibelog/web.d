@@ -178,14 +178,14 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 	}
 
 	@errorDisplay!get
-	void postLogin(string username, string password)
+	void postLogin(string username, string password, string redirect = null)
 	{
 		import vibe.crypto.passwordhash;
 		auto usr = m_ctrl.db.getUserByName(username);
 		enforce(usr && testSimplePasswordHash(usr.password, password),
 			"Invalid user name or password.");
 		m_loggedInUser = username;
-		redirect(m_ctrl.settings.rootDir);
+		.redirect(redirect.length ? redirect : m_ctrl.settings.rootDir);
 	}
 
 	void getLogout()
