@@ -1,0 +1,9 @@
+extends vibelog.layout
+
+block vibelog.layout.content
+	form(method="POST", action="#{info.rootPath}login")
+		label(for="username") User name
+		input#username(type="text", name="username")
+		label(for="password") Password
+		input#password(type="password", name="password")
+		button(type="submit") Log in

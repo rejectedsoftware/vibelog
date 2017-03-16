@@ -35,6 +35,12 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		m_subPath = (m_settings.siteURL.path ~ m_settings.adminPrefix).toString();
 	}
 
+	void getLogin()
+	{
+		auto info = AdminInfo(AuthInfo.init, m_settings);
+		render!("vibelog.admin.login.dt", info);
+	}
+
 	// the whole admin interface needs authentication
 	@auth:
 
