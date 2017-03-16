@@ -12,6 +12,7 @@ block vibelog-content
 			.blogPost
 				header
 					.blogPostHeaderContent
+						h1= info.post.header
 						- if( info.post.headerImage.length )
 							img.headerImage(alt="Header image", src="#{info.post.headerImage}")
 						.blogPostHeaderText(class='#{info.post.headerImage.length ? "with-image" : "without-image"}')
