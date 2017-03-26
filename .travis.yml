@@ -8,3 +8,7 @@ services:
   - mongodb
 
 sudo: false
+
+script:
+  - dub upgrade --missing-only # attempt to work around DUB build issue
+  - dub test
