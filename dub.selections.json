@@ -1,12 +1,12 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"antispam": "0.1.0",
+		"antispam": "0.1.2",
 		"diet-ng": "1.2.0+commit.1.g206d498",
-		"diskuto": "1.4.1",
+		"diskuto": "1.5.0",
 		"dyaml": "0.5.3",
 		"dyaml-dlang-tour": "0.5.5",
-		"eventcore": "0.8.8",
+		"eventcore": "0.8.10",
 		"fuzzydate": "1.0.0",
 		"libasync": "0.8.3",
 		"libevent": "2.0.2+2.0.16",
@@ -15,7 +15,7 @@
 		"stringex": "0.0.3",
 		"taggedalgebraic": "0.10.5+commit.1.ge4c5ec7",
 		"tinyendian": "0.1.2",
-		"vibe-core": "1.0.0-beta.4+commit.5.ge3f9d07",
-		"vibe-d": "0.8.0-beta.4+commit.7.g5dc9617"
+		"vibe-core": "1.0.0-beta.5",
+		"vibe-d": "0.8.0-beta.5"
 	}
 }
