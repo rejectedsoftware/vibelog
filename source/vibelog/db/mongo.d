@@ -109,11 +109,15 @@ final class MongoDBController : DBController {
 	User getUserByName(string name)
 	{
 		auto userbson = m_users.findOne(["username": Bson(name)]);
-		if( userbson.isNull() ){
-			auto id = BsonObjectID.fromHexString(name);
-			logDebug("%s <-> %s", name, id.toString());
-			assert(id.toString() == name);
-			userbson = m_users.findOne(["_id": Bson(id)]);
+		if (userbson.isNull()) {
+			try {
+				auto id = BsonObjectID.fromHexString(name);
+				logDebug("%s <-> %s", name, id.toString());
+				assert(id.toString() == name);
+				userbson = m_users.findOne(["_id": Bson(id)]);
+			} catch (Exception e) {
+				return null;
+			}
 		}
 		//auto userbson = m_users.findOne(Bson(["name" : Bson(name)]));
 		return User.fromBson(userbson);
