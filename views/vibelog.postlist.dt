@@ -6,6 +6,9 @@ block title
 block vibelog-content
 	- import vibe.inet.message;
 	#vibelogContent
+		- if (info.loginError.length)
+			.error= info.loginError
+
 		#vibelogPostList
 			- foreach( i, post; info.posts )
 				.blogMultiPost

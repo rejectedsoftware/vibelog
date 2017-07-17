@@ -35,10 +35,10 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		m_subPath = (m_settings.siteURL.path ~ m_settings.adminPrefix).toString();
 	}
 
-	void getLogin()
+	void getLogin(string redirect = "")
 	{
 		auto info = AdminInfo(AuthInfo.init, m_settings);
-		render!("vibelog.admin.login.dt", info);
+		render!("vibelog.admin.login.dt", info, redirect);
 	}
 
 	// the whole admin interface needs authentication
@@ -352,9 +352,15 @@ logInfo("FILE %s", f.filename);
 
 	private AuthInfo performAuth(HTTPServerRequest req, HTTPServerResponse res)
 	{
+		import vibe.inet.webform : formEncode;
+
 		string uname = req.session ? req.session.get("vibelog.loggedInUser", "") : "";
 		User[string] users = m_ctrl.db.getAllUsers();
 		auto pu = uname in users;
+		if (pu is null) {
+			redirect(m_subPath ~ "login?"~formEncode(["redirect": req.path]));
+			return AuthInfo.init;
+		}
 		enforceHTTP(pu !is null, HTTPStatus.forbidden, "Not authorized to access this page.");
 		return AuthInfo(*pu, users);
 	}
