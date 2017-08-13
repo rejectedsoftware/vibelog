@@ -135,14 +135,12 @@ final class Post {
 	}
 }
 
-UniDecoder unidecoder;
-
 string makeSlugFromHeader(string header)
 {
 	Appender!string ret;
-	auto decoded_header = getDecoder().decode(header);
-	foreach( dchar ch; strip(decoded_header) ){
-		switch( ch ){
+	auto decoded_header = unidecode(header).replace("[?]", "-");
+	foreach (dchar ch; strip(decoded_header)) {
+		switch (ch) {
 			default:
 				ret.put('-');
 				break;
@@ -171,11 +169,4 @@ unittest {
 	assert(makeSlugFromHeader("østlige og vestlige del udviklede sig uafhængigt ") == "ostlige-og-vestlige-del-udviklede-sig-uafhaengigt");
 	assert(makeSlugFromHeader("¿pchnąć w tę łódź jeża lub ośm skrzyń fig?") == "pchnac-w-te-lodz-jeza-lub-osm-skrzyn-fig");
 	assert(makeSlugFromHeader("¼ €") == "1-4-eu");
-}
-
-private UniDecoder getDecoder() {
-	if (unidecoder is null) {
-		unidecoder = new UniDecoder();
-	}
-	return unidecoder;
 }
