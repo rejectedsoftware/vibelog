@@ -14,7 +14,6 @@ import vibe.db.mongo.connection;
 import vibe.http.fileserver;
 import vibe.http.router;
 import vibe.inet.url;
-import vibe.templ.diet;
 import vibe.textfilter.markdown;
 import vibe.web.web;
 

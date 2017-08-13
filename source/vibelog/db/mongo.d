@@ -9,7 +9,6 @@ import vibe.data.bson;
 import vibe.db.mongo.mongo;
 import vibe.mail.smtp;
 import vibe.stream.memory;
-import vibe.templ.diet;
 
 import std.exception;
 import std.variant;
