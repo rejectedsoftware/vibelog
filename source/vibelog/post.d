@@ -121,9 +121,9 @@ final class Post {
 					import std.algorithm : startsWith;
 					if (lnk.startsWith("http://") || lnk.startsWith("https://"))
 						return lnk;
-					auto pp = Path(page_path);
+					auto pp = InetPath(page_path);
 					if (!pp.endsWithSlash)
-						pp = pp[0 .. $-1];
+						pp = pp.parentPath;
 					return (settings.siteURL.path~("posts/"~slug~"/"~lnk)).relativeTo(pp).toString();
 				};
 			}

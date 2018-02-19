@@ -234,14 +234,14 @@ final class MongoDBController : DBController {
 		m_posts.remove(["_id": Bson(id)]);
 	}
 
-	void addFile(string post_name, string file_name, InputStream contents)
+	void addFile(string post_name, string file_name, in ubyte[] contents)
 	{
 		import vibe.stream.operations : readAll;
 		struct I {
 			string postName;
 			string fileName;
 		}
-		m_postFiles.insert(PostFile(post_name, file_name, contents.readAll()));
+		m_postFiles.insert(PostFile(post_name, file_name, cast(ubyte[])contents));
 	}
 
 	string[] getFiles(string post_name)
@@ -255,7 +255,7 @@ final class MongoDBController : DBController {
 	{
 		auto f = m_postFiles.findOne!PostFile(["postName": post_name, "fileName": file_name]);
 		if (f.isNull) return null;
-		return new MemoryStream(f.contents);
+		return createMemoryStream(f.contents);
 	}
 
 	void removeFile(string post_name, string file_name)

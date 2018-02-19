@@ -1,6 +1,6 @@
-- import vibe.inet.path : Path, relativeTo;
-- auto tmp = Path(req.path);
-- if (!tmp.endsWithSlash) tmp = tmp[0 .. $-1];
+- import vibe.inet.path : relativeTo;
+- auto tmp = req.requestPath;
+- if (!tmp.endsWithSlash) tmp = tmp.parentPath;
 - tmp = info.managePath.relativeTo(tmp);
 - auto root_dir = tmp.toString();
 - if (!root_dir.length) root_dir = "./";

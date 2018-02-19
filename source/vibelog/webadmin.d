@@ -336,14 +336,15 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 	void postUploadFile(string _postname, HTTPServerRequest req, AuthInfo _auth)
 	{
 		import vibe.core.file;
+		import vibe.stream.operations : readAll;
 
 import vibe.core.log;
 logInfo("FILES %s %s", req.files.length, req.files.getAll("files"));
 		foreach (f; req.files.byValue) {
-logInfo("FILE %s", f.filename);
+logInfo("FILE %s", f.filename.name);
 			auto fil = openFile(f.tempPath, FileMode.read);
 			scope (exit) fil.close();
-			m_ctrl.db.addFile(_postname, f.filename.toString(), fil);
+			m_ctrl.db.addFile(_postname, f.filename.name, fil.readAll());
 		}
 		redirect("../");
 	}
@@ -376,7 +377,7 @@ struct AdminInfo
 
 	User loginUser;
 	User[string] users;
-	Path rootPath, managePath;
+	InetPath rootPath, managePath;
 	string loginError;
 
 	import vibelog.settings : VibeLogSettings;

@@ -97,11 +97,13 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 	@path("posts/:postname/:filename")
 	void getPostFile(string _postname, string _filename, HTTPServerResponse res)
 	{
-		import vibe.inet.mimetypes;
+		import vibe.core.stream : pipe;
+		import vibe.inet.mimetypes : getMimeTypeForFile;
+
 		auto f = m_ctrl.db.getFile(_postname, _filename);
 		if (f) {
 			res.contentType = getMimeTypeForFile(_filename);
-			res.bodyWriter.write(f);
+			f.pipe(res.bodyWriter);
 		}
 	}
 
