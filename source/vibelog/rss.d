@@ -9,7 +9,8 @@ import std.datetime;
 final class RssFeed {
 	RssChannel[] channels;
 
-	void render(OutputStream dst)
+	void render(OutputStream)(OutputStream dst)
+		if (isOutputStream!OutputStream)
 	{
 		dst.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
 		dst.write("<rss version=\"2.0\">\n");
@@ -34,7 +35,8 @@ final class RssChannel {
 
 	RssEntry[] entries;
 
-	void render(OutputStream dst)
+	void render(OutputStream)(OutputStream dst)
+		if (isOutputStream!OutputStream)
 	{
 		dst.write("\t<channel>\n");
 		dst.write("\t\t<title>"); dst.write(title); dst.write("</title>\n");
@@ -65,7 +67,8 @@ final class RssEntry {
 	string guid;
 	SysTime pubDate;
 
-	void render(OutputStream dst)
+	void render(OutputStream)(OutputStream dst)
+		if (isOutputStream!OutputStream)
 	{
 		dst.write("\t\t<item>\n");
 		dst.write("\t\t\t<title>"); dst.write(title); dst.write("</title>\n");
