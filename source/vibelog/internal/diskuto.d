@@ -8,15 +8,21 @@ import diskuto.commentstores.mongodb;
 import diskuto.web : DiskutoWeb, registerDiskutoWeb;
 import diskuto.settings : DiskutoSettings;
 import diskuto.userstore : StoredUser, DiskutoUserStore;
+import vibe.data.json : parseJsonString;
 import vibe.http.router : URLRouter;
 import vibe.http.server : HTTPServerRequest;
 import std.typecons : Nullable;
 
 DiskutoWeb registerDiskuto(URLRouter router, VibeLogController ctrl)
 {
+	import antispam.antispam : AntispamState, SpamFilter;
+	import antispam.filters.bayes : BayesSpamFilter;
+	AntispamState.registerFilter("bayes", () => cast(SpamFilter)new BayesSpamFilter);
+
 	auto dsettings = new DiskutoSettings;
 	dsettings.commentStore = ctrl.diskuto;
 	dsettings.userStore = new UserStore(ctrl);
+	dsettings.antispam = parseJsonString(`[{"filter": "bayes", "settings": {}}]`);
 	return router.registerDiskutoWeb(dsettings);
 }
 
@@ -53,27 +59,28 @@ private final class UserStore : DiskutoUserStore {
 		import std.algorithm.searching : startsWith;
 		import vibe.data.bson : BsonObjectID;
 
+		if (!user.startsWith("vibelog-"))
+			return StoredUser.Role.member;
+
+		User dbuser;
+		try {
+			auto user_id = BsonObjectID.fromString(user[8 .. $]);
+			dbuser = m_ctrl.db.getUser(user_id);
+			if (dbuser.inGroup("admin")) return StoredUser.Role.moderator;
+		} catch (Exception e) {}
+
+
 		if (!topic.startsWith("vibelog-")) 
 			return StoredUser.Role.member;
 
 		try {
 			auto post_id = BsonObjectID.fromString(topic[8 .. $]);
 			auto post = m_ctrl.db.getPost(post_id);
-			if (!post.commentsAllowed) return StoredUser.Role.reader;
-		} catch (Exception) return StoredUser.Role.member;
-
-		if (!user.startsWith("vibelog-"))
-			return StoredUser.Role.member;
-
-		try {
-			auto post_id = BsonObjectID.fromString(topic[8 .. $]);
-			auto post = m_ctrl.db.getPost(post_id);
-			if (!post.commentsAllowed) return StoredUser.Role.reader;
-			auto user_id = BsonObjectID.fromString(user[8 .. $]);
-			auto dbuser = m_ctrl.db.getUser(user_id);
-			return dbuser.mayPostInCategory(post.category) ? StoredUser.Role.moderator : StoredUser.Role.member;
+			if (dbuser.mayPostInCategory(post.category))
+				return StoredUser.Role.moderator;
+			return post.commentsAllowed ? StoredUser.Role.member : StoredUser.Role.reader;
 		} catch (Exception e) {
-			return StoredUser.Role.member;
+			return StoredUser.Role.reader;
 		}
 	}
 
