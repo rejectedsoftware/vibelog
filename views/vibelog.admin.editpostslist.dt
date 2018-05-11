@@ -17,6 +17,7 @@ block vibelog-content
 		tr
 			th Date
 			th Pub
+			th Comment
 			th Header
 			th Author
 			th Category
@@ -28,6 +29,7 @@ block vibelog-content
 				tr
 					td= (cast(Date)post.date).toSimpleString()
 					td= post.isPublic ? "yes" : ""
+					td= post.commentsAllowed ? "yes" : ""
 					td= post.header
 					td= post.author
 					td= post.category
