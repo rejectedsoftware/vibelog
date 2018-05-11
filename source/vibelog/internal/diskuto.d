@@ -59,16 +59,14 @@ private final class UserStore : DiskutoUserStore {
 		import std.algorithm.searching : startsWith;
 		import vibe.data.bson : BsonObjectID;
 
-		if (!user.startsWith("vibelog-"))
-			return StoredUser.Role.member;
-
 		User dbuser;
 		try {
-			auto user_id = BsonObjectID.fromString(user[8 .. $]);
-			dbuser = m_ctrl.db.getUser(user_id);
-			if (dbuser.inGroup("admin")) return StoredUser.Role.moderator;
+			if (user.startsWith("vibelog-")) {
+				auto user_id = BsonObjectID.fromString(user[8 .. $]);
+				dbuser = m_ctrl.db.getUser(user_id);
+				if (dbuser.inGroup("admin")) return StoredUser.Role.moderator;
+			}
 		} catch (Exception e) {}
-
 
 		if (!topic.startsWith("vibelog-")) 
 			return StoredUser.Role.member;
@@ -76,7 +74,7 @@ private final class UserStore : DiskutoUserStore {
 		try {
 			auto post_id = BsonObjectID.fromString(topic[8 .. $]);
 			auto post = m_ctrl.db.getPost(post_id);
-			if (dbuser.mayPostInCategory(post.category))
+			if (dbuser && dbuser.mayPostInCategory(post.category))
 				return StoredUser.Role.moderator;
 			return post.commentsAllowed ? StoredUser.Role.member : StoredUser.Role.reader;
 		} catch (Exception e) {
