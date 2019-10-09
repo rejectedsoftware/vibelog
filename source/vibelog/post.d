@@ -121,6 +121,7 @@ final class Post {
 					import std.algorithm : startsWith;
 					if (lnk.startsWith("http://") || lnk.startsWith("https://"))
 						return lnk;
+					if (lnk.startsWith("#")) return lnk;
 					auto pp = InetPath(page_path);
 					if (!pp.endsWithSlash)
 						pp = pp.parentPath;
