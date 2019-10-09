@@ -1,9 +1,8 @@
 language: d
 
 d:
+  - dmd-2.088.0
   - dmd-2.078.2
-  - dmd-2.073.2
-  - dmd-2.072.2
 
 services:
   - mongodb
