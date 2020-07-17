@@ -1,6 +1,5 @@
 module vibelog.user;
 
-import vibe.crypto.passwordhash;
 import vibe.data.bson;
 import vibe.textfilter.markdown;
 import vibe.textfilter.html;

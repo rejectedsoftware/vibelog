@@ -4,7 +4,6 @@ import vibelog.db.dbcontroller;
 
 import vibe.core.log;
 import vibe.core.stream;
-import vibe.crypto.passwordhash;
 import vibe.data.bson;
 import vibe.db.mongo.mongo;
 import vibe.mail.smtp;
@@ -81,6 +80,8 @@ final class MongoDBController : DBController {
 
 	User[string] getAllUsers()
 	{
+		import vibelog.internal.passwordhash : generatePasswordHash;
+
 		Bson[string] query;
 		User[string] ret;
 		foreach( user; m_users.find(query) ){
@@ -90,7 +91,7 @@ final class MongoDBController : DBController {
 		if( ret.length == 0 ){
 			auto initial_admin = new User;
 			initial_admin.username = "admin";
-			initial_admin.password = generateSimplePasswordHash("admin");
+			initial_admin.password = generatePasswordHash("admin");
 			initial_admin.name = "Default Administrator";
 			initial_admin.groups ~= "admin";
 			m_users.insert(initial_admin);
@@ -255,7 +256,7 @@ final class MongoDBController : DBController {
 	{
 		auto f = m_postFiles.findOne!PostFile(["postName": post_name, "fileName": file_name]);
 		if (f.isNull) return null;
-		return createMemoryStream(f.contents);
+		return createMemoryStream(f.get.contents);
 	}
 
 	void removeFile(string post_name, string file_name)
@@ -265,8 +266,8 @@ final class MongoDBController : DBController {
 
 	private void upgradeComments(MongoDatabase db)
 	{
-		import diskuto.backend : StoredComment, CommentStatus;
-		import diskuto.backends.mongodb : MongoStruct;
+		import diskuto.commentstore : StoredComment, CommentStatus;
+		import diskuto.commentstores.mongodb : MongoStruct;
 
 		auto comments = db["comments"];
 

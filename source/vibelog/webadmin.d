@@ -90,8 +90,8 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 			cfg.categories = categories.splitLines();
 		else {
 			cfg.categories = null;
-			foreach( k, v; req.form ){
-				if( k.startsWith("category_") )
+			foreach (k, v; req.form.byKeyValue) {
+				if (k.startsWith("category_"))
 					cfg.categories ~= k[9 .. $];
 			}
 		}
@@ -143,7 +143,7 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 	@path("users/:username/")
 	void postPutUser(string id, string username, string password, string name, string email, string passwordConfirmation, Nullable!string oldPassword, string _username, HTTPServerRequest req, AuthInfo _auth)
 	{
-		import vibe.crypto.passwordhash;
+		import vibelog.internal.passwordhash : generatePasswordHash, validatePasswordHash;
 		import vibe.data.bson : BsonObjectID;
 		import std.algorithm.searching : startsWith;
 
@@ -166,20 +166,20 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		usr.email = email;
 
 		if (password.length) {
-			enforce(_auth.loginUser.isUserAdmin() || testSimplePasswordHash(oldPassword, usr.password), "Old password does not match.");
-			usr.password = generateSimplePasswordHash(password);
+			enforce(_auth.loginUser.isUserAdmin() || validatePasswordHash(oldPassword.get, usr.password), "Old password does not match.");
+			usr.password = generatePasswordHash(password);
 		}
 
 		if (_auth.loginUser.isUserAdmin()) {
 			usr.groups = null;
-			foreach( k, v; req.form ){
-				if( k.startsWith("group_") )
+			foreach (k, v; req.form.byKeyValue) {
+				if (k.startsWith("group_"))
 					usr.groups ~= k[6 .. $];
 			}
 
 			usr.allowedCategories = null;
-			foreach( k, v; req.form ){
-				if( k.startsWith("category_") )
+			foreach (k, v; req.form.byKeyValue) {
+				if (k.startsWith("category_"))
 					usr.allowedCategories ~= k[9 .. $];
 			}
 		}

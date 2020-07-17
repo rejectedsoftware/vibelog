@@ -1,8 +1,8 @@
 language: d
 
 d:
-  - dmd-2.088.0
-  - dmd-2.078.2
+  - dmd
+  - dmd-2.078.2,dub
 
 services:
   - mongodb
