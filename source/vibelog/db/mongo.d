@@ -256,7 +256,7 @@ final class MongoDBController : DBController {
 	{
 		auto f = m_postFiles.findOne!PostFile(["postName": post_name, "fileName": file_name]);
 		if (f.isNull) return null;
-		return createMemoryStream(f.contents);
+		return createMemoryStream(f.get.contents);
 	}
 
 	void removeFile(string post_name, string file_name)
@@ -266,8 +266,8 @@ final class MongoDBController : DBController {
 
 	private void upgradeComments(MongoDatabase db)
 	{
-		import diskuto.backend : StoredComment, CommentStatus;
-		import diskuto.backends.mongodb : MongoStruct;
+		import diskuto.commentstore : StoredComment, CommentStatus;
+		import diskuto.commentstores.mongodb : MongoStruct;
 
 		auto comments = db["comments"];
 
