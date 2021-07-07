@@ -25,6 +25,8 @@ block vibelog-content
 									- import vibe.inet.message : toRFC822DateString;
 									span.blogPostDate= toRFC822DateString(post.date)
 									| #{post.subHeader}
+									- if (!info.settings.showFullPostsInPostList && info.settings.inlineReadMoreButton)
+										a(href="posts/#{post.name}#trackback") Read more…
 						- if (info.settings.showFullPostsInPostList)
 							.blogPostContent(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 								!= post.renderContentAsHtml(info.settings, info.refPath, 2)
@@ -34,8 +36,8 @@ block vibelog-content
 								|  #[a(href="posts/#{post.name}#comments") #{info.commentCount[i]} comments]
 								- if (post.trackbacks.length > 0)
 									|  #[a(href="posts/#{post.name}#trackback") #{post.trackbacks.length} trackbacks]
-						- else
-							a(href="posts/#{post.name}#trackback") Read more
+						- else if (!info.settings.inlineReadMoreButton)
+							a(href="posts/#{post.name}#trackback") Read more…
 
 		.pageNumbers
 			p Pages:

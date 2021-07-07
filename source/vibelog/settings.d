@@ -14,6 +14,7 @@ final class VibeLogSettings {
 	bool showFullPostsInPostList = true;
 	bool placePostHeaderImageFirst = false;
 	bool enableBackButton = false;
+	bool inlineReadMoreButton = false;
 	URL siteURL = URL.parse("http://localhost:8080/");
 	deprecated("Use siteURL instead.") alias siteUrl = siteURL;
 	string adminPrefix = "manage/";
