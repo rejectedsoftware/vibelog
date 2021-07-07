@@ -1,6 +1,6 @@
 extends vibelog.admin.layout
 
-block title
+block vibelog.title
 	- title = "User overview";
 
 block vibelog-localnav

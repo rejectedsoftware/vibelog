@@ -1,6 +1,6 @@
 extends vibelog.blocks
 
-block title
+block vibelog.title
 	- title = "All posts";
 
 block vibelog-content

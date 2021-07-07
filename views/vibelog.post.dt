@@ -1,6 +1,6 @@
 extends vibelog.blocks
 
-block title
+block vibelog.title
 	- title = info.post.header;
 
 block vibelog-content
