@@ -12,8 +12,10 @@ block vibelog-content
 			.blogPost
 				header
 					.blogPostHeaderContent
+						- if (info.post.headerImage.length && info.settings.placePostHeaderImageFirst)
+							img.headerImage(alt="Header image", src="#{info.post.headerImage}")
 						h1= info.post.header
-						- if( info.post.headerImage.length )
+						- if (info.post.headerImage.length && !info.settings.placePostHeaderImageFirst)
 							img.headerImage(alt="Header image", src="#{info.post.headerImage}")
 						.blogPostHeaderText(class='#{info.post.headerImage.length ? "with-image" : "without-image"}')
 							span.blogPostDate= toRFC822DateString(info.post.date)

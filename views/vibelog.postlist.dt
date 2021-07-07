@@ -14,10 +14,12 @@ block vibelog-content
 				.blogMultiPost
 					.blogPost
 						header
+							- if (post.headerImage.length && info.settings.placePostHeaderImageFirst)
+								img.headerImage(alt="Header image", src="#{post.headerImage}")
 							h2
 								a(href="posts/#{post.name}")= post.header
 							.blogPostHeaderContent
-								- if( post.headerImage.length )
+								- if (post.headerImage.length && !info.settings.placePostHeaderImageFirst)
 									img.headerImage(alt="Header image", src="#{post.headerImage}")
 								.blogPostHeaderText(class='#{post.headerImage.length ? "with-image" : "without-image"}')
 									- import vibe.inet.message : toRFC822DateString;
