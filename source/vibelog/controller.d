@@ -7,6 +7,7 @@ import diskuto.commentstore : DiskutoCommentStore;
 import diskuto.commentstores.mongodb;
 
 import std.conv : to;
+import vibe.data.bson : BsonObjectID;
 
 
 class VibeLogController {
@@ -54,6 +55,21 @@ class VibeLogController {
 		if (page_size <= 0) page_size = m_settings.postsPerPage;
 		int cnt = m_db.countPostsForCategory(m_config.categories);
 		return (cnt + page_size - 1) / page_size;
+	}
+
+	int getPostPage(BsonObjectID post_id, int page_size = 0)
+	{
+		if (page_size <= 0) page_size = m_settings.postsPerPage;
+		try {
+			int cnt = 0;
+			m_db.getPublicPostsForCategory(m_config.categories, 0, (size_t i, Post p){
+				if (p.id == post_id)
+					return false;
+				cnt++;
+				return true;
+			});
+			return cnt / page_size + 1;
+		} catch (Exception e) return 1;
 	}
 
 	Post[] getPostsForPage(int n, int page_size = 0)
