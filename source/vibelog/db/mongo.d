@@ -266,7 +266,7 @@ final class MongoDBController : DBController {
 
 	private void upgradeComments(MongoDatabase db)
 	{
-		import diskuto.commentstore : StoredComment, CommentStatus;
+		import diskuto.commentstore : StoredComment;
 		import diskuto.commentstores.mongodb : MongoStruct;
 
 		auto comments = db["comments"];
@@ -286,7 +286,7 @@ final class MongoDBController : DBController {
 			auto oldc = OldComment.fromBson(c);
 			StoredComment newc;
 			newc.id = oldc.id.toString();
-			newc.status = oldc.isPublic ? CommentStatus.active : CommentStatus.disabled;
+			newc.status = oldc.isPublic ? StoredComment.Status.active : StoredComment.Status.disabled;
 			newc.topic = "vibelog-" ~ oldc.postId.toString();
 			newc.author = "vibelog-...";
 			newc.clientAddress = oldc.authorIP;
