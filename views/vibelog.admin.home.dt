@@ -1,6 +1,6 @@
 extends vibelog.admin.layout
 
-block title
+block vibelog.title
 	- title = "VibeLog Admin Panel";
 	
 block vibelog-content

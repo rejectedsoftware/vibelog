@@ -1,6 +1,6 @@
 extends vibelog.admin.layout
 
-block title
+block vibelog.title
 	- title = "Edit user '"~info.user.username~"'";
 
 block vibelog-localnav

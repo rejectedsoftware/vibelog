@@ -1,4 +1,4 @@
-- import vibe.inet.path : relativeTo;
+- import vibe.core.path : relativeTo;
 - auto tmp = req.requestPath;
 - if (!tmp.endsWithSlash) tmp = tmp.parentPath;
 - tmp = info.managePath.relativeTo(tmp);

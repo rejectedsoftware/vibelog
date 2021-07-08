@@ -1,6 +1,6 @@
 extends vibelog.admin.layout
 
-block title
+block vibelog.title
 	- import std.datetime : Clock;
 	- import core.time : usecs;
 	- title = (info.post ? "Modify" : "Add new") ~ " blog post";

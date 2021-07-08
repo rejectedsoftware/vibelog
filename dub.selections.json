@@ -1,12 +1,12 @@
 {
 	"fileVersion": 1,
 	"versions": {
-		"antispam": "0.1.5+commit.1.gd4b6094",
-		"botan": "1.12.18",
+		"antispam": "0.1.6",
+		"botan": "1.12.19",
 		"botan-math": "1.0.3",
-		"diet-ng": "1.7.2",
-		"diskuto": "1.7.1",
-		"eventcore": "0.9.6",
+		"diet-ng": "1.7.5",
+		"diskuto": "1.7.2",
+		"eventcore": "0.9.17",
 		"fuzzydate": "1.0.0",
 		"libasync": "0.8.6",
 		"libevent": "2.0.2+2.0.16",
@@ -15,8 +15,8 @@
 		"openssl": "1.1.6+1.0.1g",
 		"stdx-allocator": "2.77.5",
 		"stringex": "0.1.1",
-		"taggedalgebraic": "0.11.16",
-		"vibe-core": "1.9.2",
-		"vibe-d": "0.9.0-rc.1+commit.3.g72f5453a"
+		"taggedalgebraic": "0.11.22",
+		"vibe-core": "1.18.1",
+		"vibe-d": "0.9.3"
 	}
 }

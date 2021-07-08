@@ -86,6 +86,8 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 		info.users = m_ctrl.db.getAllUsers();
 		try info.post = m_ctrl.db.getPost(_postname);
 		catch(Exception e){ return; } // -> gives 404 error
+		if (m_settings.enableBackButton)
+			info.postPage = m_ctrl.getPostPage(info.post.id);
 		info.recentPosts = m_ctrl.getRecentPosts();
 		info.refPath = m_settings.rootDir~"posts/"~_postname;
 		info.error = _error;
@@ -231,6 +233,8 @@ struct PostInfo
 
 	import vibelog.post : Post;
 	Post post;
+
+	int postPage;
 
 	DiskutoWeb diskuto;
 

@@ -1,6 +1,6 @@
 extends vibelog.blocks
 
-block title
+block vibelog.title
 	- title = info.post.header;
 
 block vibelog-content
@@ -8,12 +8,17 @@ block vibelog-content
 	- import vibe.inet.message;
 
 	#vibelogContent
+		- if (info.settings.enableBackButton)
+			a.backButton(href="../?page=#{info.postPage}") Back
+
 		.blogSinglePost
 			.blogPost
 				header
 					.blogPostHeaderContent
+						- if (info.post.headerImage.length && info.settings.placePostHeaderImageFirst)
+							img.headerImage(alt="Header image", src="#{info.post.headerImage}")
 						h1= info.post.header
-						- if( info.post.headerImage.length )
+						- if (info.post.headerImage.length && !info.settings.placePostHeaderImageFirst)
 							img.headerImage(alt="Header image", src="#{info.post.headerImage}")
 						.blogPostHeaderText(class='#{info.post.headerImage.length ? "with-image" : "without-image"}')
 							span.blogPostDate= toRFC822DateString(info.post.date)

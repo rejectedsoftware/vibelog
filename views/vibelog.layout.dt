@@ -1,4 +1,6 @@
 extends layout
+block title
+	block vibelog.title
 block layout.head
 	block vibelog.layout.head
 block layout.header
