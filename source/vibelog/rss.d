@@ -24,6 +24,7 @@ final class RssFeed {
 final class RssChannel {
 	string title;
 	string link;
+	string webLink;
 	string description;
 	string language = "en-us";
 	string copyright;
@@ -41,6 +42,7 @@ final class RssChannel {
 		dst.write("\t<channel>\n");
 		dst.write("\t\t<title>"); dst.write(title); dst.write("</title>\n");
 		dst.write("\t\t<link>"); dst.write(link); dst.write("</link>\n");
+		dst.write("\t\t<atom:link href=\""); dst.write(link); dst.write("feed/rss\" rel=\"self\" type=\"application/rss+xml\" />\n");
 		dst.write("\t\t<description>"); dst.write(description); dst.write("</description>\n");
 		dst.write("\t\t<language>"); dst.write(language); dst.write("</language>\n");
 		dst.write("\t\t<copyright>"); dst.write(copyright); dst.write("</copyright>\n");
@@ -75,7 +77,7 @@ final class RssEntry {
 		dst.write("\t\t\t<description>"); dst.write(description); dst.write("</description>\n");
 		dst.write("\t\t\t<link>"); dst.write(link); dst.write("</link>\n");
 		dst.write("\t\t\t<author>"); dst.write(author); dst.write("</author>\n");
-		dst.write("\t\t\t<guid>"); dst.write(guid); dst.write("</guid>\n");
+		dst.write("\t\t\t<guid isPermaLink=\"false\">"); dst.write(guid); dst.write("</guid>\n");
 		dst.write("\t\t\t<pubDate>"); dst.write(toRFC822DateTimeString(pubDate)); dst.write("</pubDate>\n");
 		dst.write("\t\t</item>\n");
 	}

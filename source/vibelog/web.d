@@ -126,12 +126,15 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 
 		m_ctrl.db.getPostsForCategory(cfg.categories, 0, (size_t i, Post p){
 				if( !p.isPublic ) return true;
+
+				auto usr = m_ctrl.db.getUserByName(p.author);
+
 				auto itm = new RssEntry;
 				itm.title = p.header;
 				itm.description = p.subHeader;
 				itm.link = m_settings.siteURL.toString() ~ "posts/" ~ p.name;
-				itm.author = p.author;
-				itm.guid = "xxyyzz";
+				itm.author = usr ? usr.email : "unknown@unknown.unknown";
+				itm.guid = p.id.toString;
 				itm.pubDate = p.date;
 				ch.entries ~= itm;
 				return i < 10;
