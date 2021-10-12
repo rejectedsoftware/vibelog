@@ -4,9 +4,9 @@
 		"antispam": "0.1.6",
 		"botan": "1.12.19",
 		"botan-math": "1.0.3",
-		"diet-ng": "1.7.5",
+		"diet-ng": "1.8.0",
 		"diskuto": "1.7.2",
-		"eventcore": "0.9.17",
+		"eventcore": "0.9.18",
 		"fuzzydate": "1.0.0",
 		"libasync": "0.8.6",
 		"libevent": "2.0.2+2.0.16",
@@ -16,7 +16,7 @@
 		"stdx-allocator": "2.77.5",
 		"stringex": "0.1.1",
 		"taggedalgebraic": "0.11.22",
-		"vibe-core": "1.18.1",
-		"vibe-d": "0.9.3"
+		"vibe-core": "1.21.0",
+		"vibe-d": "0.9.4"
 	}
 }
