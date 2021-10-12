@@ -92,7 +92,7 @@ block vibelog-content
 					td
 						label(for="subHeader") Sub-Heading
 					td
-						textarea#subHeader(rows=3, name="subHeader")= info.post ? info.post.subHeader : null
+						textarea#subHeader(cols="80", rows="5", name="subHeader")= info.post ? info.post.subHeader : null
 				tr
 					td Article text
 						p
@@ -104,7 +104,7 @@ block vibelog-content
 							input#filters-field(type="text", name="filters", onchange="previewUpdate();", style="width: auto;", autocomplete="off", value='#{info.post ? info.post.filters.join(" ") : "markdown"}')
 					td
 						#message-area
-							textarea#message(name="content", rows="18")= info.post ? info.post.content : null
+							textarea#message(name="content", cols="80", rows="40")= info.post ? info.post.content : null
 							#message-preview(style="display: none;")
 			input(type="submit", value='#{info.post ? "Apply changes" : "Create post!"}')
 
