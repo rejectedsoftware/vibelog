@@ -166,7 +166,9 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		usr.email = email;
 
 		if (password.length) {
-			enforce(_auth.loginUser.isUserAdmin() || validatePasswordHash(oldPassword.get, usr.password), "Old password does not match.");
+			enforce((_auth.loginUser.isUserAdmin() && _auth.loginUser._id != usr._id)
+				|| validatePasswordHash(usr.password, oldPassword.get),
+				"Old password does not match.");
 			usr.password = generatePasswordHash(password);
 		}
 
