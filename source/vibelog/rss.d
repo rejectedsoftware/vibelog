@@ -13,7 +13,7 @@ final class RssFeed {
 		if (isOutputStream!OutputStream)
 	{
 		dst.write("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
-		dst.write("<rss version=\"2.0\">\n");
+		dst.write("<rss version=\"2.0\" xmlns:atom=\"http://www.w3.org/2005/Atom\">\n");
 		foreach( ch; channels )
 			ch.render(dst);
 		dst.write("</rss>\n");
