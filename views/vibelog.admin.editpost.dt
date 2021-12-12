@@ -90,6 +90,16 @@ block vibelog-content
 						input#header-field(type="text", name="header", value="#{info.post ? info.post.header : null}")
 				tr
 					td
+						label(for="summary-title-field") Summary title
+					td
+						input#summary-title-field(type="text", name="summaryTitle", value="#{info.post ? info.post.summaryTitle : null}", maxlength=70)
+				tr
+					td
+						label(for="summary-field") Summary
+					td
+						input#summary-field(type="text", name="summary", value="#{info.post ? info.post.summary : null}", maxlength=240)
+				tr
+					td
 						label(for="subHeader") Sub-Heading
 					td
 						textarea#subHeader(cols="80", rows="5", name="subHeader")= info.post ? info.post.subHeader : null
