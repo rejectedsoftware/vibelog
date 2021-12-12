@@ -22,9 +22,11 @@ final class Post {
 	string author;  // user name
 	string category; // can be hierarchical using dotted.syntax.format
 	SysTime date;
-	string header;
-	string headerImage;
-	string subHeader;
+	string header; // Title/heading
+	string headerImage; // URL of large header image
+	string summaryTitle; // Short title used for the summary (<=70chars)
+	string summary; // Short summary of the article (<=240 chars), displayed on cards
+	string subHeader; // First paragraph of the articule, displayed on overview pages
 	string content;
 	string[] filters;
 	string[] tags;
@@ -52,6 +54,8 @@ final class Post {
 		ret.header = cast(string)bson["header"];
 		ret.subHeader = cast(string)bson["subHeader"];
 		ret.content = cast(string)bson["content"];
+		ret.summary = bson["summary"].opt!string;
+		ret.summaryTitle = bson["summaryTitle"].opt!string;
 
 		if (bson["filters"].isNull) ret.filters = ["markdown"];
 		else {
@@ -81,6 +85,8 @@ final class Post {
 		ret["header"] = Bson(header);
 		ret["subHeader"] = Bson(subHeader);
 		ret["content"] = Bson(content);
+		ret["summary"] = Bson(summary);
+		ret["summaryTitle"] = Bson(summaryTitle);
 
 		import std.algorithm : map;
 		import std.array : array;

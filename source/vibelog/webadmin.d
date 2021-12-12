@@ -256,9 +256,10 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 	@auth @errorDisplay!getMakePost
 	void postMakePost(bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
-		string content, string filters, AuthInfo _auth)
+		string summary, string summaryTitle, string content, string filters, AuthInfo _auth)
 	{
-		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage, header, subHeader, content, filters, null, _auth);
+		postPutPost(null, isPublic, commentsAllowed, author, date, category, slug, headerImage,
+			header, subHeader, summary, summaryTitle, content, filters, null, _auth);
 	}
 
 	@path("posts/:postname/")
@@ -285,7 +286,7 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 	@path("posts/:postname/") @errorDisplay!getEditPost
 	void postPutPost(string id, bool isPublic, bool commentsAllowed, string author,
 		string date, string category, string slug, string headerImage, string header, string subHeader,
-		string content, string filters, string _postname, AuthInfo _auth)
+		string summary, string summaryTitle, string content, string filters, string _postname, AuthInfo _auth)
 	{
 		import vibe.data.bson : BsonObjectID;
 
@@ -309,6 +310,8 @@ void registerVibeLogWebAdmin(URLRouter router, VibeLogController controller)
 		p.headerImage = headerImage;
 		p.header = header;
 		p.subHeader = subHeader;
+		p.summary = summary;
+		p.summaryTitle = summaryTitle;
 		p.content = content;
 		import std.array : split;
 		p.filters = filters.split();
