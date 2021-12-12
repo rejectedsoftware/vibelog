@@ -72,11 +72,13 @@ final class RssEntry {
 	void render(OutputStream)(OutputStream dst)
 		if (isOutputStream!OutputStream)
 	{
+		import vibe.textfilter.html : htmlEscape;
+
 		dst.write("\t\t<item>\n");
 		dst.write("\t\t\t<title>"); dst.write(title); dst.write("</title>\n");
 		dst.write("\t\t\t<description>"); dst.write(description); dst.write("</description>\n");
 		dst.write("\t\t\t<link>"); dst.write(link); dst.write("</link>\n");
-		dst.write("\t\t\t<author>"); dst.write(author); dst.write("</author>\n");
+		dst.write("\t\t\t<author>"); dst.write(htmlEscape(author)); dst.write("</author>\n");
 		dst.write("\t\t\t<guid isPermaLink=\"false\">"); dst.write(guid); dst.write("</guid>\n");
 		dst.write("\t\t\t<pubDate>"); dst.write(toRFC822DateTimeString(pubDate)); dst.write("</pubDate>\n");
 		dst.write("\t\t</item>\n");
