@@ -134,8 +134,8 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 				itm.description = p.subHeader;
 				itm.link = m_settings.siteURL.toString() ~ "posts/" ~ p.name;
 				itm.author = usr
-					? usr.name ~ " <" ~ usr.email ~ ">"
-					: "Unknown <unknown@unknown.unknown>";
+					? usr.email ~ " (" ~ usr.name ~ ")"
+					: "unknown@unknown.unknown (Unknown)";
 				itm.guid = p.id.toString;
 				itm.pubDate = p.date;
 				ch.entries ~= itm;
