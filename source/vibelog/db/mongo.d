@@ -35,6 +35,8 @@ final class MongoDBController : DBController {
 		m_posts = db["posts"];
 		m_postFiles = db["postFiles"];
 
+		m_posts.createIndex(["category": 1, "date": -1, "isPublic": 1]);
+
 		upgradeComments(db);
 	}
 
@@ -153,9 +155,9 @@ final class MongoDBController : DBController {
 
 	int countPostsForCategory(string[] categories)
 	{
-		int cnt;
-		getPostsForCategory(categories, 0, (size_t, Post p){ if( p.isPublic ) cnt++; return true; });
-		return cnt;
+		static struct CQ { @name("$in") string[] categories; }
+		static struct Q { CQ category; bool isPublic; }
+		return cast(int)m_posts.count(Q(CQ(categories), true));
 	}
 
 	void getPostsForCategory(string[] categories, int nskip, bool delegate(size_t idx, Post post) del)
