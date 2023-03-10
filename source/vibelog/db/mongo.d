@@ -35,6 +35,8 @@ final class MongoDBController : DBController {
 		m_posts = db["posts"];
 		m_postFiles = db["postFiles"];
 
+		m_posts.createIndex(["category": 1, "date": -1, "isPublic": 1]);
+
 		upgradeComments(db);
 	}
 
