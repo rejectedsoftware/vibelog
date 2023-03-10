@@ -15,7 +15,7 @@ final class VibeLogSettings {
 	bool placePostHeaderImageFirst = false;
 	bool enableBackButton = false;
 	bool inlineReadMoreButton = false;
-	URL siteURL = URL.parse("http://localhost:8080/");
+	URL siteURL = URL("http", "localhost", 8080, InetPath("/"));
 	deprecated("Use siteURL instead.") alias siteUrl = siteURL;
 	string adminPrefix = "manage/";
 	string delegate(string) @safe [] textFilters;
