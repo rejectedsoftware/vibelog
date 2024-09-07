@@ -364,7 +364,7 @@ logInfo("FILE %s", f.filename.name);
 		User[string] users = m_ctrl.db.getAllUsers();
 		auto pu = uname in users;
 		if (pu is null) {
-			redirect(m_subPath ~ "login?"~formEncode(["redirect": req.path]));
+			redirect(m_subPath ~ "login?"~formEncode(["redirect": (cast(PosixPath)req.requestPath).toString()]));
 			return AuthInfo.init;
 		}
 		enforceHTTP(pu !is null, HTTPStatus.forbidden, "Not authorized to access this page.");
