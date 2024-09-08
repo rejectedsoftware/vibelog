@@ -48,14 +48,14 @@ final class MongoDBController : DBController {
 		enforce(createdefault, "Configuration does not exist.");
 		auto cfg = new Config;
 		cfg.name = name;
-		m_configs.insert(cfg.toBson());
+		m_configs.insertOne(cfg.toBson());
 		return cfg;
 	}
 
 	void setConfig(Config cfg)
 	{
 		Bson update = cfg.toBson();
-		m_configs.update(["name": Bson(cfg.name)], update);
+		m_configs.replaceOne(["name": Bson(cfg.name)], update);
 		foreach (d; m_onConfigChange) d();
 	}
 
@@ -66,7 +66,7 @@ final class MongoDBController : DBController {
 
 	void deleteConfig(string name)
 	{
-		m_configs.remove(["name": Bson(name)]);
+		m_configs.deleteOne(["name": Bson(name)]);
 	}
 
 	Config[] getAllConfigs()
@@ -96,7 +96,7 @@ final class MongoDBController : DBController {
 			initial_admin.password = generatePasswordHash("admin");
 			initial_admin.name = "Default Administrator";
 			initial_admin.groups ~= "admin";
-			m_users.insert(initial_admin);
+			m_users.insertOne(initial_admin);
 			ret["admin"] = initial_admin;
 		}
 		return ret;
@@ -136,7 +136,7 @@ final class MongoDBController : DBController {
 		auto id = BsonObjectID.generate();
 		Bson userbson = user.toBson();
 		userbson["_id"] = Bson(id);
-		m_users.insert(userbson);
+		m_users.insertOne(userbson);
 		return id;
 	}
 
@@ -144,20 +144,20 @@ final class MongoDBController : DBController {
 	{
 		assert(user._id.valid);
 		Bson update = user.toBson();
-		m_users.update(["_id": Bson(user._id)], update);
+		m_users.replaceOne(["_id": Bson(user._id)], update);
 	}
 
 	void deleteUser(BsonObjectID id)
 	{
 		assert(id.valid);
-		m_users.remove(["_id": Bson(id)]);
+		m_users.deleteOne(["_id": Bson(id)]);
 	}
 
 	int countPostsForCategory(string[] categories)
 	{
 		static struct CQ { @name("$in") string[] categories; }
 		static struct Q { CQ category; bool isPublic; }
-		return cast(int)m_posts.count(Q(CQ(categories), true));
+		return cast(int)m_posts.countDocuments(Q(CQ(categories), true));
 	}
 
 	void getPostsForCategory(string[] categories, int nskip, bool delegate(size_t idx, Post post) del)
@@ -165,8 +165,11 @@ final class MongoDBController : DBController {
 		auto cats = new Bson[categories.length];
 		foreach( i; 0 .. categories.length ) cats[i] = Bson(categories[i]);
 		Bson category = Bson(["$in" : Bson(cats)]);
-		Bson[string] query = ["query" : Bson(["category" : category]), "orderby" : Bson(["date" : Bson(-1)])];
-		foreach (idx, post; m_posts.find(query, null, QueryFlags.None, nskip).byPair) {
+		Bson[string] query = ["category" : category];
+		FindOptions opts;
+		opts.skip = nskip;
+		opts.sort = Bson(["date" : Bson(-1)]);
+		foreach (idx, post; m_posts.find(query, opts).byPair) {
 			if (!del(idx, Post.fromBson(post)))
 				break;
 		}
@@ -177,8 +180,11 @@ final class MongoDBController : DBController {
 		auto cats = new Bson[categories.length];
 		foreach( i; 0 .. categories.length ) cats[i] = Bson(categories[i]);
 		Bson category = Bson(["$in" : Bson(cats)]);
-		Bson[string] query = ["query" : Bson(["category" : category, "isPublic": Bson(true)]), "orderby" : Bson(["date" : Bson(-1)])];
-		foreach (idx, post; m_posts.find(query, null, QueryFlags.None, nskip).byPair) {
+		Bson[string] query = ["category" : category, "isPublic": Bson(true)];
+		FindOptions opts;
+		opts.skip = nskip;
+		opts.sort = Bson(["date" : Bson(-1)]);
+		foreach (idx, post; m_posts.find(query, opts).byPair) {
 			if (!del(idx, Post.fromBson(post)))
 				break;
 		}
@@ -187,8 +193,10 @@ final class MongoDBController : DBController {
 	void getAllPosts(int nskip, bool delegate(size_t idx, Post post) del)
 	{
 		Bson[string] query;
-		Bson[string] extquery = ["query" : Bson(query), "orderby" : Bson(["date" : Bson(-1)])];
-		foreach (idx, post; m_posts.find(extquery, null, QueryFlags.None, nskip).byPair) {
+		FindOptions opts;
+		opts.skip = nskip;
+		opts.sort = Bson(["date" : Bson(-1)]);
+		foreach (idx, post; m_posts.find(query, opts).byPair) {
 			if (!del(idx, Post.fromBson(post)))
 				break;
 		}
@@ -220,7 +228,7 @@ final class MongoDBController : DBController {
 		auto id = BsonObjectID.generate();
 		Bson postbson = post.toBson();
 		postbson["_id"] = Bson(id);
-		m_posts.insert(postbson);
+		m_posts.insertOne(postbson);
 		return id;
 	}
 
@@ -228,13 +236,13 @@ final class MongoDBController : DBController {
 	{
 		assert(post.id.valid);
 		Bson update = post.toBson();
-		m_posts.update(["_id": Bson(post.id)], update);
+		m_posts.replaceOne(["_id": Bson(post.id)], update);
 	}
 
 	void deletePost(BsonObjectID id)
 	{
 		assert(id.valid);
-		m_posts.remove(["_id": Bson(id)]);
+		m_posts.deleteOne(["_id": Bson(id)]);
 	}
 
 	void addFile(string post_name, string file_name, in ubyte[] contents)
@@ -244,7 +252,7 @@ final class MongoDBController : DBController {
 			string postName;
 			string fileName;
 		}
-		m_postFiles.insert(PostFile(post_name, file_name, cast(ubyte[])contents));
+		m_postFiles.insertOne(PostFile(post_name, file_name, cast(ubyte[])contents));
 	}
 
 	string[] getFiles(string post_name)
@@ -263,7 +271,7 @@ final class MongoDBController : DBController {
 
 	void removeFile(string post_name, string file_name)
 	{
-		m_postFiles.remove(["postName": post_name, "fileName": file_name]);
+		m_postFiles.deleteOne(["postName": post_name, "fileName": file_name]);
 	}
 
 	private void upgradeComments(MongoDatabase db)
@@ -278,9 +286,9 @@ final class MongoDBController : DBController {
 			foreach( c; p["comments"] ){
 				c["_id"] = BsonObjectID.generate();
 				c["postId"] = p["_id"];
-				comments.insert(c);
+				comments.insertOne(c);
 			}
-			m_posts.update(["_id": p["_id"]], ["$unset": ["comments": 1]]);
+			m_posts.updateOne(["_id": p["_id"]], ["$unset": ["comments": 1]]);
 		}
 
 		// Upgrade old comments to Diskuto format
@@ -297,7 +305,7 @@ final class MongoDBController : DBController {
 			newc.website = oldc.authorHomepage;
 			newc.text = oldc.content;
 			newc.time = oldc.date;
-			comments.update(["_id": c["_id"]], MongoStruct!StoredComment(newc));
+			comments.replaceOne(["_id": c["_id"]], MongoStruct!StoredComment(newc));
 		}
 	}
 }
