@@ -3,6 +3,15 @@ extends vibelog.blocks
 block vibelog.title
 	- title = info.post.header;
 
+block vibelog.layout.head
+	meta(property="og:type", content="article")
+	meta(property="og:title", content=info.post.summaryTitle.length ? info.post.summaryTitle : info.post.header)
+	- if (info.post.summary.length)
+		meta(property="og:description", content=info.post.summary)
+	meta(property="og:image", content=info.post.summaryImage.length ? info.post.summaryImage : info.post.headerImage)
+	meta(property="twitter:card", content="summary_large_image")
+	meta(property="twitter:site", content="@bildhuus")
+
 block vibelog-content
 	- import std.datetime;
 	- import vibe.inet.message;
