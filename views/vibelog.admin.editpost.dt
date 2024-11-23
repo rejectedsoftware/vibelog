@@ -90,6 +90,11 @@ block vibelog-content
 						input#header-field(type="text", name="header", value="#{info.post ? info.post.header : null}")
 				tr
 					td
+						label(for="summaryImage-field") Summary image
+					td
+						input#summaryImage-field(type="text", name="summaryImage", value="#{info.post ? info.post.summaryImage : null}")
+				tr
+					td
 						label(for="summary-title-field") Summary title
 					td
 						input#summary-title-field(type="text", name="summaryTitle", value="#{info.post ? info.post.summaryTitle : null}", maxlength=70)
