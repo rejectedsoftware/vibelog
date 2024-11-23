@@ -99,6 +99,8 @@ block vibelog-content
 					td
 						input#summary-field(type="text", name="summary", value="#{info.post ? info.post.summary : null}", maxlength=240)
 				tr
+					td(colspan=2) Note: Summary fields are used to generate the meta tags used for link previews
+				tr
 					td(colspan=2)
 						hr
 				tr
