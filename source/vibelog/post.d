@@ -24,9 +24,10 @@ final class Post {
 	SysTime date;
 	string header; // Title/heading
 	string headerImage; // URL of large header image
+	string summaryImage; // Image to use for the summary (fall back to headerImage)
 	string summaryTitle; // Short title used for the summary (<=70chars)
 	string summary; // Short summary of the article (<=240 chars), displayed on cards
-	string subHeader; // First paragraph of the articule, displayed on overview pages
+	string subHeader; // First paragraph of the article, displayed on overview pages
 	string content;
 	string[] filters;
 	string[] tags;
@@ -54,6 +55,7 @@ final class Post {
 		ret.header = cast(string)bson["header"];
 		ret.subHeader = cast(string)bson["subHeader"];
 		ret.content = cast(string)bson["content"];
+		ret.summaryImage = bson["summaryImage"].opt!string;
 		ret.summary = bson["summary"].opt!string;
 		ret.summaryTitle = bson["summaryTitle"].opt!string;
 
@@ -85,6 +87,7 @@ final class Post {
 		ret["header"] = Bson(header);
 		ret["subHeader"] = Bson(subHeader);
 		ret["content"] = Bson(content);
+		ret["summaryImage"] = Bson(summaryImage);
 		ret["summary"] = Bson(summary);
 		ret["summaryTitle"] = Bson(summaryTitle);
 

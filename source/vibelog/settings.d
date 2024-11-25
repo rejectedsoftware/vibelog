@@ -5,10 +5,10 @@ import vibe.db.mongo.connection;
 import vibe.textfilter.markdown;
 
 final class VibeLogSettings {
-	string databaseURL = "mongodb://localhost/vibelog";
+	string databaseURL = "mongodb://127.0.0.1/vibelog";
 	string configName = "global";
 	string blogName = "VibeLog";
-	string blogDescription = "Publishing software utilizing the vibe.d framework";
+	string blogDescription = "Web publishing based on the vibe.d framework";
 	int postsPerPage = 4;
 	int maxRecentPosts = 20;
 	bool showFullPostsInPostList = true;

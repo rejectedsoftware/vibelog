@@ -85,9 +85,9 @@ block vibelog-content
 						hr
 				tr
 					td
-						label(for="header-field") Heading
+						label(for="summaryImage-field") Summary image
 					td
-						input#header-field(type="text", name="header", value="#{info.post ? info.post.header : null}")
+						input#summaryImage-field(type="text", name="summaryImage", value="#{info.post ? info.post.summaryImage : null}")
 				tr
 					td
 						label(for="summary-title-field") Summary title
@@ -98,6 +98,16 @@ block vibelog-content
 						label(for="summary-field") Summary
 					td
 						input#summary-field(type="text", name="summary", value="#{info.post ? info.post.summary : null}", maxlength=240)
+				tr
+					td(colspan=2) Note: Summary fields are used to generate the meta tags used for link previews
+				tr
+					td(colspan=2)
+						hr
+				tr
+					td
+						label(for="header-field") Heading
+					td
+						input#header-field(type="text", name="header", value="#{info.post ? info.post.header : null}")
 				tr
 					td
 						label(for="subHeader") Sub-Heading
