@@ -245,14 +245,16 @@ final class MongoDBController : DBController {
 		m_posts.deleteOne(["_id": Bson(id)]);
 	}
 
-	void addFile(string post_name, string file_name, in ubyte[] contents)
+	BsonObjectID addFile(string post_name, string file_name, in ubyte[] contents)
 	{
 		import vibe.stream.operations : readAll;
 		struct I {
 			string postName;
 			string fileName;
 		}
-		m_postFiles.insertOne(PostFile(post_name, file_name, cast(ubyte[])contents));
+		auto id = BsonObjectID.generate();
+		m_postFiles.insertOne(PostFile(id, post_name, file_name, cast(ubyte[])contents));
+		return id;
 	}
 
 	string[] getFiles(string post_name)
@@ -262,10 +264,12 @@ final class MongoDBController : DBController {
 		return m_postFiles.find(["postName": post_name], ["fileName": true]).map!(p => p["fileName"].get!string).array;
 	}
 
-	InputStream getFile(string post_name, string file_name)
+	InputStream getFile(string post_name, string file_name, out SysTime modification_time, out string etag)
 	{
 		auto f = m_postFiles.findOne!PostFile(["postName": post_name, "fileName": file_name]);
 		if (f.isNull) return null;
+		modification_time = f.get._id.timeStamp;
+		etag = f.get._id.toString();
 		return createMemoryStream(f.get.contents);
 	}
 
@@ -311,6 +315,7 @@ final class MongoDBController : DBController {
 }
 
 struct PostFile {
+	BsonObjectID _id;
 	string postName;
 	string fileName;
 	ubyte[] contents;
