@@ -21,6 +21,7 @@ import std.conv;
 import std.datetime;
 import std.exception;
 import std.string;
+import std.typecons;
 
 
 void registerVibeLogWeb(URLRouter router, VibeLogController controller)
@@ -97,15 +98,19 @@ void registerVibeLogWeb(URLRouter router, VibeLogController controller)
 	}
 
 	@path("posts/:postname/:filename")
-	void getPostFile(string _postname, string _filename, HTTPServerResponse res)
+	void getPostFile(string _postname, string _filename, HTTPServerRequest req, HTTPServerResponse res)
 	{
 		import vibe.core.stream : pipe;
 		import vibe.inet.mimetypes : getMimeTypeForFile;
 
-		auto f = m_ctrl.db.getFile(_postname, _filename);
+		SysTime tm;
+		string etag;
+		auto f = m_ctrl.db.getFile(_postname, _filename, tm, etag);
 		if (f) {
-			res.contentType = getMimeTypeForFile(_filename);
-			f.pipe(res.bodyWriter);
+			if (!handleCache(req, res, ETag.md5(No.weak, etag), tm)) {
+				res.contentType = getMimeTypeForFile(_filename);
+				f.pipe(res.bodyWriter);
+			}
 		}
 	}
 

@@ -43,8 +43,8 @@ interface DBController {
 	BsonObjectID addPost(Post post);
 	void modifyPost(Post post);
 	void deletePost(BsonObjectID id);
-	void addFile(string post_name, string file_name, in ubyte[] contents);
+	BsonObjectID addFile(string post_name, string file_name, in ubyte[] contents);
 	string[] getFiles(string post_name);
-	InputStream getFile(string post_name, string file_name);
+	InputStream getFile(string post_name, string file_name, out SysTime modification_time, out string etag);
 	void removeFile(string post_name, string file_name);
 }
